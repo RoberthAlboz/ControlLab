@@ -1,0 +1,149 @@
+/* Control Lab — Diário de aula (NotesPage, nt-*). Tokens --fl-* (claro/escuro).
+   A página fica dentro de .clean-app, que força font-size .875rem !important em
+   span/small/button/label/li; textos com tamanho próprio usam p/b/strong/em ou
+   repetem o !important. */
+
+.nt-page { width: min(1240px, 100%); margin: 0 auto; padding: 26px clamp(16px, 3vw, 40px) 56px; }
+.nt-back { display: inline-flex; align-items: center; gap: 6px; padding: 6px 10px 6px 6px; border: 0; border-radius: 999px; background: transparent; color: var(--fl-red-deep); font-weight: 600; cursor: pointer; }
+.nt-back:hover { background: var(--fl-red-wash); }
+.nt-page :is(button, select, input, textarea):focus-visible { outline: 2px solid var(--fl-red); outline-offset: 2px; }
+
+/* Cabeçalho */
+.nt-header { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 18px; margin: 18px 0 22px; }
+.clean-app .nt-page p.nt-eyebrow { margin: 0; color: var(--fl-red-deep); font: 700 0.7rem var(--fl-body) !important; letter-spacing: 0.14em; text-transform: uppercase; }
+.clean-app .nt-header h1 { margin: 6px 0 6px; color: var(--fl-ink); font: 700 clamp(1.9rem, 3.4vw, 2.6rem)/1.05 var(--fl-display) !important; letter-spacing: -0.035em; }
+.clean-app .nt-header p.nt-lead { max-width: 58ch; margin: 0; color: var(--fl-muted); font-size: 0.95rem !important; line-height: 1.5; }
+.nt-header-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+.nt-search { display: flex; width: 260px; max-width: 100%; align-items: center; gap: 8px; padding: 0 12px; border: 1px solid var(--fl-line); border-radius: 12px; background: var(--fl-surface); color: var(--fl-muted); transition: border-color 160ms, box-shadow 160ms; }
+.nt-search:focus-within { border-color: var(--fl-red); box-shadow: 0 0 0 4px rgba(196, 8, 12, 0.1); }
+.nt-search input { min-width: 0; height: 42px; flex: 1; border: 0; outline: 0; background: transparent; color: var(--fl-ink); }
+.nt-search input::-webkit-search-cancel-button { display: none; }
+.nt-search button { display: grid; width: 24px; height: 24px; place-items: center; border: 0; border-radius: 50%; background: var(--fl-surface-2); color: var(--fl-muted); cursor: pointer; }
+.nt-search input:focus-visible { outline: none; }
+.nt-primary { display: inline-flex; min-height: 44px; align-items: center; gap: 8px; padding: 0 18px; border: 0; border-radius: 12px; background: linear-gradient(135deg, #8e0707, #c4080c); box-shadow: 0 10px 22px rgba(196, 8, 12, 0.22); color: #fff6f6; font-weight: 700; cursor: pointer; transition: transform 160ms var(--fl-ease), box-shadow 160ms; }
+.nt-primary:hover { box-shadow: 0 14px 28px rgba(196, 8, 12, 0.3); transform: translateY(-1px); }
+
+/* Semana */
+.nt-week { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 18px; padding: 14px 16px; border: 1px solid var(--fl-line); border-radius: 18px; background: var(--fl-surface); }
+.nt-week-nav { display: flex; align-items: center; gap: 6px; }
+.clean-app .nt-week-nav p { display: inline-flex; min-width: 128px; align-items: center; justify-content: center; gap: 6px; margin: 0; color: var(--fl-ink); font: 600 0.86rem var(--fl-body) !important; white-space: nowrap; }
+.nt-icon { display: grid; width: 34px; height: 34px; place-items: center; border: 1px solid var(--fl-line); border-radius: 10px; background: var(--fl-surface); color: var(--fl-ink-soft); cursor: pointer; }
+.nt-icon:hover, .nt-today:hover { border-color: rgba(196, 8, 12, 0.4); background: var(--fl-red-wash); color: var(--fl-red-deep); }
+.nt-today { padding: 6px 12px; border: 1px solid var(--fl-line); border-radius: 999px; background: var(--fl-surface); color: var(--fl-red-deep); font-weight: 600; cursor: pointer; }
+.nt-days { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; }
+.nt-day { position: relative; display: grid; justify-items: center; gap: 2px; padding: 8px 4px 6px; border: 1px solid var(--fl-line); border-radius: 12px; background: var(--fl-paper); cursor: pointer; transition: border-color 160ms, background-color 160ms; }
+.nt-day:hover { border-color: rgba(196, 8, 12, 0.35); }
+.clean-app .nt-day em { color: var(--fl-muted); font: 600 0.7rem var(--fl-body); font-style: normal; letter-spacing: 0.06em; text-transform: uppercase; }
+.clean-app .nt-day strong { color: var(--fl-ink); font: 700 1.2rem/1.1 var(--fl-display); }
+.nt-day i { display: flex; height: 6px; }
+.nt-day i b { width: 6px; height: 6px; border-radius: 50%; background: #c4080c; }
+.nt-day.is-today::after { position: absolute; top: 6px; right: 6px; width: 6px; height: 6px; border-radius: 50%; background: var(--fl-ok); content: ""; }
+.nt-day.is-active { border-color: transparent; background: linear-gradient(135deg, #8e0707, #c4080c); box-shadow: 0 10px 22px rgba(196, 8, 12, 0.25); }
+.clean-app .nt-day.is-active :is(em, strong) { color: #fff6f6; }
+.nt-day.is-active i b { background: #fff6f6; }
+.nt-progress { display: grid; grid-template-columns: auto auto; align-items: baseline; column-gap: 8px; row-gap: 6px; min-width: 150px; }
+.clean-app .nt-progress strong { color: var(--fl-ink); font: 700 1.4rem/1 var(--fl-display); }
+.clean-app .nt-progress strong em { color: var(--fl-subtle); font: 600 0.85rem var(--fl-body); font-style: normal; }
+.clean-app .nt-progress p { margin: 0; color: var(--fl-muted); font-size: 0.74rem !important; line-height: 1.25; }
+.nt-progress-bar { grid-column: 1 / -1; height: 6px; overflow: hidden; border-radius: 999px; background: var(--fl-surface-2); }
+.nt-progress-bar i { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, #8e0707, #c4080c); transition: width 400ms var(--fl-ease); }
+
+/* Conteúdo: aulas à esquerda, editor à direita */
+.nt-layout { display: grid; grid-template-columns: 300px minmax(0, 1fr); align-items: start; gap: 18px; margin-top: 18px; }
+.nt-side { position: sticky; top: 16px; max-height: calc(100dvh - 32px); overflow-y: auto; padding: 14px 10px; border: 1px solid var(--fl-line); border-radius: 18px; background: var(--fl-surface); }
+.clean-app .nt-side p.nt-side-title { margin: 0 6px 10px; color: var(--fl-muted); font: 700 0.7rem var(--fl-body) !important; letter-spacing: 0.12em; text-transform: uppercase; }
+.clean-app .nt-side p.nt-side-empty { margin: 0 6px; padding: 18px 12px; border: 1px dashed var(--fl-line-strong); border-radius: 12px; color: var(--fl-muted); font-size: 0.84rem !important; text-align: center; }
+.nt-periods, .nt-results { display: grid; gap: 2px; margin: 0; padding: 0; list-style: none; }
+.nt-period { position: relative; display: grid; width: 100%; grid-template-columns: 54px minmax(0, 1fr) auto; align-items: center; gap: 10px; padding: 9px 10px 9px 8px; border: 0; border-radius: 12px; background: transparent; cursor: pointer; text-align: left; transition: background-color 140ms; }
+.nt-period:hover { background: var(--fl-paper); }
+.nt-period.is-active { background: var(--fl-red-wash); }
+.nt-period.is-active::before { position: absolute; top: 10px; bottom: 10px; left: 0; width: 3px; border-radius: 0 3px 3px 0; background: #c4080c; content: ""; }
+.clean-app .nt-period .nt-period-time { display: grid; color: var(--fl-ink); font: 700 0.92rem/1.15 var(--fl-display); font-variant-numeric: tabular-nums; }
+.clean-app .nt-period .nt-period-time em { color: var(--fl-subtle); font: 500 0.72rem var(--fl-body); font-style: normal; }
+.nt-period-copy { display: grid; min-width: 0; gap: 1px; }
+.clean-app .nt-period strong { display: flex; align-items: center; gap: 6px; color: var(--fl-ink); font: 600 0.86rem var(--fl-body); }
+.clean-app .nt-period p { overflow: hidden; margin: 0; color: var(--fl-subtle); font-size: 0.74rem !important; text-overflow: ellipsis; white-space: nowrap; }
+.clean-app .nt-period.is-recorded p { color: var(--fl-ok); }
+.clean-app .nt-now { padding: 1px 6px; border-radius: 999px; background: var(--fl-ok-wash); color: var(--fl-ok); font: 700 0.62rem var(--fl-body); font-style: normal; text-transform: uppercase; letter-spacing: 0.06em; }
+.nt-period-check { color: var(--fl-ok); }
+.nt-results button { display: grid; width: 100%; gap: 3px; padding: 10px; border: 0; border-radius: 12px; background: transparent; cursor: pointer; text-align: left; }
+.nt-results button:hover { background: var(--fl-paper); }
+.clean-app .nt-results strong { color: var(--fl-ink); font: 700 0.88rem var(--fl-body); }
+.clean-app .nt-results p { display: -webkit-box; overflow: hidden; margin: 0; color: var(--fl-muted); font-size: 0.78rem !important; line-height: 1.4; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+.clean-app .nt-results em { color: var(--fl-red-deep); font: 600 0.7rem var(--fl-body); font-style: normal; }
+
+/* Editor */
+.nt-editor { display: grid; gap: 14px; min-width: 0; padding: 22px 24px 18px; border: 1px solid var(--fl-line); border-radius: 18px; background: var(--fl-surface); }
+.nt-editor-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.clean-app .nt-editor-head .nt-eyebrow::first-letter { text-transform: uppercase; }
+.clean-app .nt-editor h2 { margin: 4px 0 0; color: var(--fl-ink); font: 700 1.3rem var(--fl-display) !important; letter-spacing: -0.02em; }
+.clean-app .nt-editor p.nt-editor-activity { margin: 4px 0 0; color: var(--fl-muted); font-size: 0.84rem !important; }
+.clean-app .nt-readonly { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 999px; background: var(--fl-surface-2); color: var(--fl-muted); font: 700 0.72rem var(--fl-body); white-space: nowrap; }
+.nt-tabs { display: flex; flex-wrap: wrap; gap: 6px; }
+.nt-tabs button { max-width: 220px; overflow: hidden; padding: 6px 12px; border: 1px solid var(--fl-line); border-radius: 999px; background: var(--fl-paper); color: var(--fl-muted); font-weight: 600; text-overflow: ellipsis; white-space: nowrap; cursor: pointer; }
+.nt-tabs button.is-active { border-color: var(--fl-ink); background: var(--fl-ink); color: var(--fl-paper); }
+.nt-tabs .nt-tab-add { display: grid; width: 32px; padding: 0; place-items: center; }
+.nt-sheet { display: grid; gap: 12px; }
+.nt-sheet-meta { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.nt-subject { height: 34px; padding: 0 30px 0 12px; border: 1px solid var(--fl-line); border-radius: 999px; background: var(--fl-red-wash) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238e0707' stroke-width='2.5'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") right 10px center / 12px no-repeat; color: var(--fl-red-deep); font: 700 0.8rem var(--fl-body); cursor: pointer; appearance: none; }
+.nt-subject:disabled { cursor: default; opacity: 1; }
+.nt-delete { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border: 1px solid var(--fl-line); border-radius: 999px; background: transparent; color: var(--fl-muted); font-weight: 600; cursor: pointer; transition: all 160ms ease; }
+.nt-delete:hover { border-color: rgba(196, 8, 12, 0.4); color: var(--fl-red-deep); }
+.nt-delete.is-confirming { border-color: transparent; background: #c4080c; color: #fff6f6; }
+.nt-title { width: 100%; padding: 4px 0; border: 0; border-bottom: 1px solid var(--fl-line); outline: 0; background: transparent; color: var(--fl-ink); font: 700 1.5rem/1.3 var(--fl-display); letter-spacing: -0.02em; }
+.nt-title:focus { border-bottom-color: var(--fl-red); }
+.nt-title:focus-visible { outline: none; }
+.nt-title::placeholder, .nt-body::placeholder { color: var(--fl-subtle); }
+.nt-prompts { display: flex; flex-wrap: wrap; gap: 6px; }
+.nt-prompts button { display: inline-flex; align-items: center; gap: 4px; padding: 5px 11px; border: 1px dashed var(--fl-line-strong); border-radius: 999px; background: transparent; color: var(--fl-ink-soft); font-weight: 600; cursor: pointer; }
+.nt-prompts button:hover:not(:disabled) { border-style: solid; border-color: rgba(196, 8, 12, 0.45); color: var(--fl-red-deep); }
+.nt-prompts button:disabled { border-style: solid; background: var(--fl-ok-wash); color: var(--fl-ok); cursor: default; }
+.nt-body { width: 100%; min-height: 340px; padding: 16px; border: 1px solid var(--fl-line); border-radius: 14px; outline: 0; background: var(--fl-paper); color: var(--fl-ink); font: 400 1rem/1.7 var(--fl-body); resize: vertical; transition: border-color 160ms, box-shadow 160ms; }
+.nt-body:focus { border-color: var(--fl-red); box-shadow: 0 0 0 4px rgba(196, 8, 12, 0.08); }
+.nt-body:focus-visible { outline: none; }
+.nt-body[readonly], .nt-title[readonly] { cursor: default; }
+.nt-sheet-foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; }
+.clean-app .nt-sheet-foot p { display: inline-flex; align-items: center; gap: 6px; margin: 0; color: var(--fl-subtle); font-size: 0.76rem !important; }
+.clean-app .nt-sheet-foot p.nt-save.is-saved { color: var(--fl-ok); }
+.clean-app .nt-sheet-foot p.nt-save.is-error { color: var(--fl-red-deep); font-weight: 700; }
+.nt-spin { animation: nt-spin 900ms linear infinite; }
+@keyframes nt-spin { to { transform: rotate(360deg); } }
+
+.nt-empty { display: grid; justify-items: center; gap: 8px; padding: 56px 20px 60px; border: 1px dashed var(--fl-line-strong); border-radius: 14px; background: var(--fl-paper); text-align: center; }
+.nt-empty-icon { display: grid; width: 56px; height: 56px; place-items: center; margin-bottom: 6px; border-radius: 16px; background: var(--fl-red-wash); color: var(--fl-red-deep); }
+.clean-app .nt-empty strong { color: var(--fl-ink); font: 700 1.1rem var(--fl-display); }
+.clean-app .nt-empty p { max-width: 44ch; margin: 0 0 10px; color: var(--fl-muted); font-size: 0.9rem !important; line-height: 1.5; }
+
+@media (max-width: 1100px) {
+  .nt-week { grid-template-columns: minmax(0, 1fr); }
+  .nt-week-nav { justify-content: center; }
+  .nt-progress { grid-template-columns: auto minmax(0, 1fr); }
+}
+@media (max-width: 860px) {
+  .nt-layout { grid-template-columns: minmax(0, 1fr); }
+  .nt-side { position: static; max-height: none; padding: 10px; }
+  /* No celular as aulas viram uma faixa horizontal */
+  .nt-periods { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px; scroll-snap-type: x mandatory; scrollbar-width: none; }
+  .nt-periods li { flex: 0 0 auto; scroll-snap-align: start; }
+  .nt-period { width: 150px; grid-template-columns: 50px minmax(0, 1fr); border: 1px solid var(--fl-line); }
+  .nt-period-check { position: absolute; top: 6px; right: 6px; }
+  .nt-editor { padding: 18px 16px 14px; }
+}
+@media (max-width: 560px) {
+  .nt-header-actions, .nt-search { width: 100%; }
+  .nt-primary { flex: 1; justify-content: center; }
+  .nt-days { gap: 4px; }
+  .nt-day { border-radius: 10px; }
+  .nt-body { min-height: 260px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .nt-page * { transition: none !important; animation: none !important; }
+}
+
+/* O app força font-size .875rem !important em input/textarea/select/button dentro de .clean-app. */
+.clean-app .nt-page .nt-title { font-size: 1.5rem !important; }
+.clean-app .nt-page .nt-body { font-size: 1rem !important; }
+.clean-app .nt-page .nt-subject { font-size: 0.8rem !important; }
+.nt-sheet-actions { display: flex; flex-wrap: wrap; gap: 6px; }
+.nt-ghost { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border: 1px solid var(--fl-line); border-radius: 999px; background: transparent; color: var(--fl-ink-soft); font-weight: 600; cursor: pointer; }
+.nt-ghost:hover { border-color: rgba(196, 8, 12, 0.4); color: var(--fl-red-deep); }

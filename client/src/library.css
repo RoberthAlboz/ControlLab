@@ -1,0 +1,92 @@
+/* Control Lab — biblioteca de módulos (filtros, busca e cards), versão enxuta.
+   Mantém a estrutura e a cor de capa escolhida pelo docente (module.cover);
+   o app força font-size .875rem !important em span/button/p, por isso alguns
+   tamanhos repetem o !important. */
+
+.clean-app .library-content .library-toolbar { align-items: center; gap: 14px; }
+.clean-app .library-content .search-box {
+  min-height: 44px;
+  padding: 0 14px;
+  border: 1px solid var(--fl-line);
+  border-radius: 999px;
+  background: var(--fl-surface);
+  transition: border-color 160ms ease, box-shadow 160ms ease;
+}
+.clean-app .library-content .search-box:focus-within { border-color: var(--fl-red); box-shadow: 0 0 0 4px rgba(196, 8, 12, 0.1); }
+.clean-app .library-content .library-tabs button:not(.selected):hover { border-color: rgba(196, 8, 12, 0.4); color: var(--fl-red-deep); }
+.clean-app .library-content .library-results-bar { margin-top: 14px; }
+
+/* Grade */
+.clean-app .library-content .module-grid { grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr)); gap: 20px; }
+
+/* Card */
+.clean-app .library-content .module-card {
+  overflow: hidden;
+  border: 1px solid var(--fl-line);
+  border-radius: 16px;
+  background: var(--fl-surface);
+  transition: transform 220ms var(--fl-ease), box-shadow 220ms ease, border-color 220ms ease;
+}
+.clean-app .library-content .module-card:hover { border-color: rgba(196, 8, 12, 0.28); box-shadow: 0 14px 32px rgba(142, 7, 7, 0.08); transform: translateY(-2px); }
+
+/* Capa: só a cor do módulo, o código, o ícone e o status */
+.clean-app .library-content .module-cover {
+  display: grid;
+  min-height: 0;
+  align-content: start;
+  justify-items: start;
+  gap: 12px;
+  padding: 18px 20px;
+  border: 0;
+  border-bottom: 1px solid var(--fl-line);
+  border-radius: 0;
+  text-align: left;
+}
+.clean-app .library-content .module-cover-kicker { color: var(--fl-muted); font-size: 0.72rem !important; font-weight: 700; letter-spacing: 0.12em; }
+.clean-app .library-content .module-cover-icon { display: grid; width: 44px; height: 44px; place-items: center; border-radius: 12px; background: #ffffff; color: #c4080c; }
+.clean-app .library-content .module-cover .module-status { border-radius: 999px; font-size: 0.72rem !important; font-weight: 700; }
+.clean-app .library-content .module-cover:focus-visible { outline: 2px solid var(--fl-red); outline-offset: -4px; }
+
+/* Corpo */
+.clean-app .library-content .module-card-body { display: flex; flex-direction: column; gap: 10px; padding: 18px 20px 20px; }
+.clean-app .library-content .module-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 0 0 4px; color: var(--fl-subtle); font: 600 0.76rem var(--fl-body) !important; }
+.clean-app .library-content .module-meta i { font-style: normal; }
+.clean-app .library-content .module-card h3 { margin: 0; color: var(--fl-ink); font: 700 1.25rem/1.2 var(--fl-display) !important; letter-spacing: -0.02em; }
+.clean-app .library-content .module-card-body > p { display: -webkit-box; min-height: 2.9em; overflow: hidden; margin: 0; color: var(--fl-muted); font-size: 0.9rem !important; line-height: 1.45; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+
+.clean-app .library-content .module-progress { display: grid; grid-template-columns: 1fr auto; align-items: center; row-gap: 6px; margin-top: 6px; }
+.clean-app .library-content .module-progress span { color: var(--fl-subtle); font-size: 0.76rem !important; }
+.clean-app .library-content .module-progress b { color: var(--fl-ink); font: 700 0.82rem var(--fl-body); }
+.clean-app .library-content .module-progress i { grid-column: 1 / -1; display: block; height: 4px; overflow: hidden; border-radius: 999px; background: var(--fl-surface-2); }
+.clean-app .library-content .module-progress i em { display: block; height: 100%; border-radius: inherit; background: #c4080c; transition: width 600ms var(--fl-ease); }
+
+.clean-app .library-content .open-module {
+  display: inline-flex;
+  align-self: flex-start;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--fl-red-deep);
+  font-weight: 700;
+}
+.clean-app .library-content .open-module svg { transition: transform 200ms var(--fl-ease); }
+.clean-app .library-content .module-card:hover .open-module svg { transform: translateX(3px); }
+.clean-app .library-content .open-module:focus-visible { outline: 2px solid var(--fl-red); outline-offset: 3px; border-radius: 4px; }
+
+/* Tema escuro: a cor de capa vem do módulo (estilo inline, pensada para o tema claro);
+   uma sombra interna a escurece, ficando entre o fundo e o conteúdo. */
+html.dark .clean-app .library-content .module-cover { box-shadow: inset 0 0 0 999px rgba(24, 19, 18, 0.8); }
+html.dark .clean-app .library-content .module-cover-icon { background: #211e1b; color: #ff5a5f; }
+
+@media (max-width: 600px) {
+  .clean-app .library-content .search-box { width: 100%; }
+  .clean-app .library-content .module-cover { padding: 16px 18px; }
+  .clean-app .library-content .module-card-body { padding: 16px 18px 18px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .clean-app .library-content .module-card,
+  .clean-app .library-content .module-card * { transition: none !important; transform: none !important; }
+}

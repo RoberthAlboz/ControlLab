@@ -1,0 +1,14 @@
+{
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "editor.formatOnSave": false,
+  "files.eol": "\n",
+  "files.exclude": {
+    "**/node_modules": true,
+    "dist": true
+  },
+  "search.exclude": {
+    "pnpm-lock.yaml": true,
+    "drizzle/meta": true,
+    "drizzle/legacy": true
+  }
+}

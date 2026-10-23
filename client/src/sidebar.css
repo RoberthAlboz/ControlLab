@@ -1,0 +1,242 @@
+/* Control Lab — menu lateral (AppSidebar): trilho branco com acentos vermelhos da marca
+   (no tema escuro acompanha as superfícies escuras do app).
+   Arquivo carregado depois de forge-platform.css; usa classes próprias (cl-nav-*)
+   para não herdar as regras antigas de .clean-sidebar. */
+
+.cl-nav {
+  --nav-rail: 76px;
+  --nav-open: 272px;
+  --nav-col: 52px;
+  --nav-bg: #ffffff;
+  --nav-text: #000000;
+  --nav-muted: #7a6a6a;
+  --nav-line: #f0e1e1;
+  --nav-hover: #fff6f6;
+  --nav-soft: #fff6f6;
+  --nav-accent: #c4080c;
+  --nav-active-bg: linear-gradient(90deg, rgba(196, 8, 12, 0.1), rgba(196, 8, 12, 0.03) 70%, transparent);
+  --nav-ring-track: #f3e3e3;
+  --nav-ring-hole: #ffffff;
+  --nav-avatar-bg: #fde6e6;
+  --nav-shadow: 18px 0 50px rgba(142, 7, 7, 0.12);
+  --nav-glow: rgba(196, 8, 12, 0.07);
+  position: fixed;
+  z-index: 40;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  display: flex;
+  width: var(--nav-rail);
+  flex-direction: column;
+  gap: 14px;
+  overflow: hidden;
+  padding: 18px 12px 14px;
+  background: var(--nav-bg);
+  color: var(--nav-text);
+  font-family: var(--fl-body);
+  transition: width 260ms var(--fl-ease), box-shadow 260ms ease;
+}
+.cl-nav-glow {
+  position: absolute;
+  inset: auto -40% -10% -40%;
+  height: 46%;
+  background: radial-gradient(closest-side, var(--nav-glow), transparent);
+  pointer-events: none;
+}
+.cl-nav::after {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 1px;
+  background: linear-gradient(180deg, var(--nav-line), rgba(196, 8, 12, 0.45) 35%, rgba(142, 7, 7, 0.25) 70%, var(--nav-line));
+  content: "";
+}
+.cl-nav > :not(.cl-nav-glow) { position: relative; }
+
+/* Tema escuro do app: o menu acompanha as superfícies escuras. */
+html.dark .cl-nav {
+  --nav-bg: #211b1d;
+  --nav-text: #fff6f6;
+  --nav-muted: #a99b9d;
+  --nav-line: #3b3033;
+  --nav-hover: #2a2224;
+  --nav-soft: #261f21;
+  --nav-accent: #ff5a5f;
+  --nav-active-bg: linear-gradient(90deg, rgba(196, 8, 12, 0.28), rgba(142, 7, 7, 0.1) 70%, transparent);
+  --nav-ring-track: #3b3033;
+  --nav-ring-hole: #261f21;
+  --nav-avatar-bg: #3b2426;
+  --nav-shadow: 18px 0 50px rgba(0, 0, 0, 0.4);
+  --nav-glow: rgba(196, 8, 12, 0.22);
+}
+html.dark .cl-nav-avatar { color: #fff6f6; }
+
+/* O app aplica font-size: .875rem !important a todo span/small/button dentro de
+   .clean-app; o menu define os próprios tamanhos por cima dessa regra. */
+.clean-app .cl-nav .cl-nav-text b { font-size: 0.9rem !important; }
+.clean-app .cl-nav .cl-nav-text small { font-size: 0.72rem !important; }
+.clean-app .cl-nav .cl-nav-label { font-size: 0.66rem !important; }
+.clean-app .cl-nav :is(.cl-nav-badge, .cl-nav-ring b) { font-size: 0.66rem !important; }
+.clean-app .cl-nav .cl-nav-avatar { font-size: 0.8rem !important; }
+
+/* Partes textuais: escondidas no trilho, reveladas quando o menu abre. */
+.cl-nav :is(.cl-nav-text, .cl-nav-label, .cl-nav-logo, .cl-nav-pin, .cl-nav-catalog-arrow, .cl-nav-logout, .cl-nav-badge) {
+  opacity: 0;
+  transition: opacity 160ms ease;
+}
+.cl-nav-text { display: grid; min-width: 0; gap: 1px; text-align: left; }
+.cl-nav-text b { overflow: hidden; color: var(--nav-text); font: 600 0.9rem/1.2 var(--fl-body); text-overflow: ellipsis; white-space: nowrap; }
+.cl-nav-text small { overflow: hidden; color: var(--nav-muted); font-size: 0.72rem; line-height: 1.3; text-overflow: ellipsis; white-space: nowrap; }
+
+/* Topo: símbolo + logotipo */
+.cl-nav-top { display: grid; min-height: 52px; grid-template-columns: var(--nav-col) minmax(0, 1fr) auto; align-items: center; gap: 10px; }
+.cl-nav-mark {
+  display: grid;
+  width: var(--nav-col);
+  height: var(--nav-col);
+  place-items: center;
+  padding-bottom: 6px;
+  padding: 0;
+  border: 1px solid rgba(196, 8, 12, 0.18);
+  border-radius: 14px;
+  background: var(--nav-soft);
+  box-shadow: 0 8px 22px rgba(196, 8, 12, 0.12);
+}
+.cl-nav-mark .brand-mark-c { filter: drop-shadow(0 2px 6px rgba(196, 8, 12, 0.3)); transition: transform 600ms var(--fl-ease); }
+.cl-nav:hover .cl-nav-mark .brand-mark-c { transform: rotate(-51.4deg); }
+.cl-nav-logo { min-width: 0; }
+.cl-nav-pin, .cl-nav-close, .cl-nav-logout {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  border: 1px solid var(--nav-line);
+  border-radius: 10px;
+  background: transparent;
+  color: var(--nav-muted);
+  cursor: pointer;
+  transition: color 160ms, border-color 160ms, background-color 160ms, opacity 160ms ease;
+}
+.cl-nav-pin:hover, .cl-nav-close:hover, .cl-nav-logout:hover { border-color: rgba(196, 8, 12, 0.5); background: var(--nav-hover); color: var(--nav-accent); }
+.cl-nav-pin[aria-pressed="true"] { border-color: rgba(196, 8, 12, 0.45); color: var(--nav-accent); }
+.cl-nav-close { display: none; }
+
+/* Seções */
+.cl-nav-sections { display: flex; min-height: 0; flex: 1; flex-direction: column; margin-top: 10px; overflow-x: hidden; overflow-y: auto; scrollbar-width: none; }
+.cl-nav-sections ul { display: grid; gap: 4px; margin: 0; padding: 0; list-style: none; }
+.cl-nav-label { height: 30px; margin: 14px 0 0; padding: 10px 0 0 14px; overflow: hidden; color: var(--nav-muted); font: 700 0.66rem var(--fl-body); letter-spacing: 0.16em; text-transform: uppercase; white-space: nowrap; }
+.cl-nav-label:first-child { margin-top: 0; }
+
+.cl-nav-item {
+  position: relative;
+  display: grid;
+  width: 100%;
+  min-height: 52px;
+  grid-template-columns: var(--nav-col) minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  padding: 0 10px 0 0;
+  border: 0;
+  border-radius: 14px;
+  background: transparent;
+  color: var(--nav-muted);
+  cursor: pointer;
+  text-align: left;
+  transition: color 160ms ease, background-color 160ms ease;
+}
+.cl-nav-item:hover { background: var(--nav-hover); color: var(--nav-text); }
+.cl-nav :is(.cl-nav-item, .cl-nav-catalog, .cl-nav-pin, .cl-nav-close, .cl-nav-logout):focus-visible { outline: 2px solid var(--nav-accent); outline-offset: 2px; }
+.cl-nav-item.is-active { color: var(--nav-text); }
+.cl-nav-active {
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  border: 1px solid rgba(196, 8, 12, 0.2);
+  border-radius: 14px;
+  background: var(--nav-active-bg);
+  box-shadow: 0 6px 18px rgba(196, 8, 12, 0.08);
+}
+.cl-nav-active::before { position: absolute; top: 12px; bottom: 12px; left: -12px; width: 3px; border-radius: 0 3px 3px 0; background: linear-gradient(180deg, #c4080c, #8e0707); content: ""; }
+.cl-nav-item > :not(.cl-nav-active) { position: relative; z-index: 1; }
+.cl-nav-icon { display: grid; width: var(--nav-col); height: 52px; place-items: center; transition: transform 200ms var(--fl-ease); }
+.cl-nav-item:hover .cl-nav-icon { transform: scale(1.08); }
+.cl-nav-item.is-active .cl-nav-icon { color: var(--nav-accent); }
+.cl-nav-item.is-active .cl-nav-text b { color: var(--nav-text); }
+.cl-nav-dot { position: absolute; top: 13px; right: 13px; width: 8px; height: 8px; border: 2px solid var(--nav-bg); border-radius: 50%; background: #c4080c; }
+.cl-nav-badge { display: inline-grid; min-width: 22px; height: 22px; padding: 0 7px; place-items: center; border-radius: 999px; background: linear-gradient(135deg, #8e0707, #c4080c); color: #fff6f6; font: 700 0.7rem var(--fl-body); }
+
+/* Catálogo: anel com o progresso médio */
+.cl-nav-catalog {
+  position: relative;
+  display: grid;
+  width: 100%;
+  grid-template-columns: var(--nav-col) minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px 8px 0;
+  border: 1px solid var(--nav-line);
+  border-radius: 16px;
+  background: var(--nav-soft);
+  color: var(--nav-text);
+  cursor: pointer;
+  transition: border-color 160ms, background-color 160ms;
+}
+.cl-nav-catalog:hover { border-color: rgba(196, 8, 12, 0.4); background: var(--nav-hover); }
+.cl-nav-ring {
+  position: relative;
+  display: grid;
+  width: 42px;
+  height: 42px;
+  justify-self: center;
+  place-items: center;
+  border-radius: 50%;
+  background: conic-gradient(#c4080c calc(var(--p) * 1%), var(--nav-ring-track) 0);
+}
+.cl-nav-ring::after { position: absolute; inset: 5px; border-radius: 50%; background: var(--nav-ring-hole); content: ""; }
+.cl-nav-ring b { position: relative; z-index: 1; color: var(--nav-text); font: 700 0.62rem var(--fl-body); }
+.cl-nav-catalog-arrow { color: var(--nav-muted); transition: transform 200ms var(--fl-ease), opacity 160ms ease; }
+.cl-nav-catalog:hover .cl-nav-catalog-arrow { color: var(--nav-accent); transform: translateX(3px); }
+
+/* Usuário */
+.cl-nav-user { display: grid; grid-template-columns: var(--nav-col) minmax(0, 1fr) auto; align-items: center; gap: 10px; padding-top: 12px; border-top: 1px solid var(--nav-line); }
+.cl-nav-avatar {
+  display: grid;
+  width: 42px;
+  height: 42px;
+  justify-self: center;
+  overflow: hidden;
+  place-items: center;
+  border: 2px solid rgba(196, 8, 12, 0.55);
+  border-radius: 50%;
+  background: var(--nav-avatar-bg);
+  color: #8e0707;
+  font: 700 0.8rem var(--fl-body);
+}
+.cl-nav-avatar img { width: 100%; height: 100%; object-fit: cover; }
+
+.cl-nav-backdrop { display: none; }
+
+/* Desktop: trilho que expande ao passar o mouse/focar, ou fica fixado aberto. */
+@media (min-width: 861px) {
+  .cl-nav:is(:hover, :focus-within, .is-pinned) { width: var(--nav-open); }
+  .cl-nav:is(:hover, :focus-within):not(.is-pinned) { box-shadow: var(--nav-shadow); transition-delay: 60ms; }
+  .cl-nav:is(:hover, :focus-within, .is-pinned) :is(.cl-nav-text, .cl-nav-label, .cl-nav-logo, .cl-nav-pin, .cl-nav-catalog-arrow, .cl-nav-logout, .cl-nav-badge) { opacity: 1; transition-delay: 90ms; }
+  .clean-app > .clean-main { width: calc(100% - 76px); margin-left: 76px; transition: margin-left 260ms var(--fl-ease), width 260ms var(--fl-ease); }
+  html[data-nav="pinned"] .clean-app > .clean-main { width: calc(100% - 272px); margin-left: 272px; }
+}
+
+/* Celular/tablet: gaveta */
+@media (max-width: 860px) {
+  .cl-nav { width: min(300px, 86vw); transform: translateX(-102%); transition: transform 280ms var(--fl-ease), box-shadow 280ms ease; }
+  .cl-nav.is-open { transform: translateX(0); box-shadow: var(--nav-shadow); }
+  .cl-nav :is(.cl-nav-text, .cl-nav-label, .cl-nav-logo, .cl-nav-catalog-arrow, .cl-nav-logout, .cl-nav-badge) { opacity: 1; }
+  .cl-nav-pin { display: none; }
+  .cl-nav-close { display: grid; }
+  .clean-app > .clean-main { width: 100%; margin-left: 0; }
+  .cl-nav-backdrop { position: fixed; z-index: 39; inset: 0; display: block; border: 0; background: rgba(0, 0, 0, 0.35); backdrop-filter: blur(2px); animation: cl-nav-fade 200ms ease both; }
+}
+@keyframes cl-nav-fade { from { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) {
+  .cl-nav, .cl-nav *, .cl-nav-backdrop, .clean-app > .clean-main { transition: none !important; animation: none !important; }
+}
