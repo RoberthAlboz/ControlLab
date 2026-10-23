@@ -1,0 +1,40 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Control Lab: 1. Preparar banco (migrations + seed)",
+      "type": "shell",
+      "command": "pnpm db:setup",
+      "problemMatcher": []
+    },
+    {
+      "label": "Control Lab: 2. Iniciar sistema",
+      "type": "shell",
+      "command": "pnpm dev",
+      "isBackground": true,
+      "problemMatcher": [],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      }
+    },
+    {
+      "label": "Control Lab: Verificar (check + test + build)",
+      "type": "shell",
+      "command": "pnpm check && pnpm test && pnpm build",
+      "problemMatcher": [
+        "$tsc"
+      ],
+      "group": {
+        "kind": "test",
+        "isDefault": true
+      }
+    },
+    {
+      "label": "Control Lab: Resetar banco de desenvolvimento",
+      "type": "shell",
+      "command": "pnpm db:reset",
+      "problemMatcher": []
+    }
+  ]
+}
