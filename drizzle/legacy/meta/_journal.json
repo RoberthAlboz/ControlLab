@@ -1,0 +1,55 @@
+{
+  "version": "7",
+  "dialect": "mysql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "5",
+      "when": 1791462247212,
+      "tag": "0000_smiling_wilson_fisk",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "5",
+      "when": 1791464232585,
+      "tag": "0001_fast_omega_red",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1792168630353,
+      "tag": "0002_student_badges_awarded_by_teacher",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "5",
+      "when": 1792250000000,
+      "tag": "0003_auth_sessions",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "5",
+      "when": 1792262272941,
+      "tag": "0004_magical_wiccan",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "5",
+      "when": 1792268116888,
+      "tag": "0005_shiny_manta",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "5",
+      "when": 1792617076761,
+      "tag": "0006_talented_senator_kelly",
+      "breakpoints": true
+    }
+  ]
+}
