@@ -1,0 +1,137 @@
+/* Control Lab — painel de perfil do aluno (sp-*).
+   Mantém a paleta do painel (--profile-* em forge-editorial.css) e usa o mesmo trem
+   de engrenagens da tela de login (AuthGearTrain). O app força
+   font-size: .875rem !important em span/small/dt/dd/label dentro de .clean-app,
+   por isso esses elementos repetem o tamanho com !important aqui. */
+
+.clean-app .student-profile-panel.sp-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 30px 18px 24px;
+  text-align: left;
+}
+.clean-app .sp-panel > :not(.sp-gears) { position: relative; z-index: 2; }
+
+/* Engrenagens: o mesmo trem do login, reposicionado para a coluna estreita. */
+.clean-app .sp-gears { z-index: 1; opacity: 0.85; }
+.clean-app .sp-gears .auth-gears-train { right: -88px; bottom: -70px; height: min(58%, 520px); }
+.clean-app .sp-gears .auth-gears-ghost { top: -54px; left: -76px; width: 190px; height: 190px; }
+.clean-app .sp-gears .auth-gear path { fill: rgba(255, 246, 246, 0.035); stroke: rgba(255, 246, 246, 0.16); }
+.clean-app .sp-gears .auth-gear.is-accent path { stroke: color-mix(in srgb, var(--profile-accent) 70%, transparent); }
+
+/* Identidade: avatar dentro do anel de nível */
+.sp-identity { display: grid; justify-items: center; gap: 4px; text-align: center; }
+.sp-avatar-ring {
+  --level-progress: 0;
+  position: relative;
+  display: grid;
+  width: 116px;
+  height: 116px;
+  margin-bottom: 18px;
+  padding: 5px;
+  place-items: center;
+  border-radius: 50%;
+  background: conic-gradient(from -90deg, var(--profile-accent-strong), var(--profile-accent) calc(var(--level-progress) * 1%), var(--profile-line) 0);
+  box-shadow: 0 0 0 1px var(--profile-line), 0 18px 44px rgba(0, 0, 0, 0.35), 0 0 46px color-mix(in srgb, var(--profile-accent) 22%, transparent);
+}
+.sp-avatar {
+  display: grid;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  place-items: center;
+  border: 4px solid var(--profile-bg-deep);
+  border-radius: 50%;
+  background: linear-gradient(145deg, color-mix(in srgb, var(--profile-accent) 85%, white), var(--profile-accent-strong) 76%);
+  color: #fff;
+  font: 700 1.9rem var(--fl-display);
+}
+.sp-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.sp-avatar-upload {
+  position: absolute;
+  right: 2px;
+  bottom: 10px;
+  display: grid;
+  width: 32px;
+  height: 32px;
+  place-items: center;
+  border: 3px solid var(--profile-bg-deep);
+  border-radius: 50%;
+  background: var(--profile-text);
+  color: var(--profile-bg-deep);
+  cursor: pointer;
+  transition: transform 180ms var(--fl-ease), background-color 160ms;
+}
+.sp-avatar-upload:hover { background: var(--profile-accent); transform: scale(1.08); }
+.sp-avatar-upload:focus-within { outline: 2px solid var(--profile-accent); outline-offset: 2px; }
+.sp-avatar-upload input { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0, 0, 0, 0); }
+.sp-level-chip {
+  position: absolute;
+  bottom: -12px;
+  left: 50%;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border: 2px solid var(--profile-bg-deep);
+  border-radius: 999px;
+  background: linear-gradient(135deg, var(--profile-accent-strong), color-mix(in srgb, var(--profile-accent) 70%, var(--profile-accent-strong)));
+  color: #fff;
+  font: 700 0.72rem var(--fl-body);
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  transform: translateX(-50%);
+}
+.clean-app .sp-panel .sp-level-chip { color: #fff; }
+.clean-app .sp-panel h2.sp-hello { display: block; margin: 4px 0 0; color: var(--profile-text); font: 600 1.35rem/1.2 var(--fl-display); letter-spacing: -0.02em; }
+.clean-app .sp-panel h2.sp-hello strong { color: var(--profile-accent); }
+.clean-app .sp-panel p.sp-role { margin: 0; color: var(--profile-muted); font-size: 0.78rem !important; line-height: 1.4; }
+
+/* Nível */
+.sp-level { display: grid; gap: 8px; padding: 12px 14px; border: 1px solid var(--profile-line); border-radius: 14px; background: var(--profile-card); }
+.sp-level-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+.clean-app .sp-panel .sp-level-head b { color: var(--profile-muted); font: 600 0.78rem var(--fl-body) !important; }
+.clean-app .sp-panel .sp-level-head strong { color: var(--profile-text); font: 700 1rem var(--fl-display); }
+.sp-level-bar { height: 8px; overflow: hidden; border-radius: 999px; background: var(--profile-line); }
+.sp-level-bar i { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--profile-accent-strong), var(--profile-accent)); box-shadow: 0 0 12px color-mix(in srgb, var(--profile-accent) 60%, transparent); transition: width 600ms var(--fl-ease); }
+
+
+/* Pontos fortes */
+.sp-badges { display: grid; gap: 10px; padding-top: 16px; border-top: 1px solid var(--profile-line); }
+.sp-badges-head { display: flex; align-items: center; justify-content: space-between; }
+.clean-app .sp-panel .sp-badges-head b { display: inline-flex; align-items: center; gap: 6px; color: var(--profile-text); font: 700 0.72rem var(--fl-body); letter-spacing: 0.12em; text-transform: uppercase; }
+.sp-badges-head b svg { color: var(--profile-accent); }
+.clean-app .sp-panel .sp-badges-head strong { display: grid; min-width: 24px; height: 24px; padding: 0 7px; place-items: center; border: 1px solid color-mix(in srgb, var(--profile-accent) 40%, transparent); border-radius: 999px; background: color-mix(in srgb, var(--profile-accent) 12%, transparent); color: var(--profile-accent); font: 700 0.72rem var(--fl-body); }
+.sp-badges ul { display: grid; gap: 8px; max-height: 260px; margin: 0; padding: 0; overflow-y: auto; list-style: none; }
+.sp-badges li { display: grid; grid-template-columns: 30px minmax(0, 1fr); align-items: center; gap: 10px; padding: 10px; border: 1px solid var(--profile-line); border-left: 3px solid var(--profile-accent-strong); border-radius: 12px; background: linear-gradient(110deg, var(--profile-card-strong), var(--profile-card)); }
+.sp-badge-icon { display: grid; width: 30px; height: 30px; place-items: center; border-radius: 9px; background: color-mix(in srgb, var(--profile-accent) 16%, transparent); color: var(--profile-accent); }
+.clean-app .sp-panel .sp-badges li b { display: block; overflow: hidden; color: var(--profile-text); font: 600 0.82rem/1.25 var(--fl-body); text-overflow: ellipsis; white-space: nowrap; }
+.clean-app .sp-panel .sp-badges li p { margin: 2px 0 0; color: var(--profile-muted); font-size: 0.72rem !important; line-height: 1.35; }
+.clean-app .sp-panel p.sp-badges-empty { margin: 0; padding: 12px; border: 1px dashed var(--profile-line); border-radius: 12px; color: var(--profile-muted); font-size: 0.76rem !important; line-height: 1.45; }
+
+/* Tablet/celular: cartão horizontal no topo da página */
+@media (max-width: 860px) {
+  .clean-app .student-profile-panel.sp-panel {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas: none;
+    gap: 14px;
+    padding: 20px 16px;
+  }
+  .clean-app .sp-panel > * { grid-area: auto; }
+  .sp-identity { grid-template-columns: auto minmax(0, 1fr); justify-items: start; column-gap: 16px; text-align: left; }
+  .clean-app .sp-panel .sp-avatar-ring { grid-area: auto; grid-column: 1; grid-row: 1 / span 2; width: 84px; height: 84px; margin-bottom: 0; }
+  .clean-app .sp-panel h2.sp-hello { grid-area: auto; grid-column: 2; grid-row: 1; text-align: left; }
+  .clean-app .sp-panel p.sp-role { grid-area: auto; grid-column: 2; grid-row: 2; text-align: left; }
+  .clean-app .sp-panel .sp-avatar { font-size: 1.4rem; }
+  .sp-avatar-upload { right: -4px; bottom: 2px; width: 28px; height: 28px; }
+  .sp-level-chip { bottom: -8px; padding: 2px 8px; font-size: 0.66rem; }
+  .clean-app .sp-panel h2.sp-hello { align-self: end; }
+  .clean-app .sp-panel p.sp-role { align-self: start; }
+  .clean-app .sp-gears .auth-gears-train { right: -60px; bottom: -40px; height: 240px; }
+  .clean-app .sp-gears .auth-gears-ghost { display: none; }
+  .sp-badges.is-empty { display: none; }
+  .sp-badges ul { display: flex; max-height: none; overflow-x: auto; padding-bottom: 4px; }
+  .sp-badges li { flex: 0 0 min(220px, 72vw); }
+}

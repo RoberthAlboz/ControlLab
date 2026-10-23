@@ -1,0 +1,288 @@
+/* Control Lab — refinamento do painel do aluno (coluna principal) sobre o design existente:
+   mesma estrutura e linguagem editorial (bordas finas, filete vermelho), com hierarquia,
+   alinhamento e estados de interação mais cuidados. Regras com !important só onde o
+   CSS anterior já usa !important para a mesma propriedade. */
+
+/* Cards de módulo */
+.clean-app .student-main-column .student-module-card {
+  border-radius: 6px;
+  transition: transform 220ms var(--fl-ease), box-shadow 220ms ease, border-color 220ms ease;
+}
+.clean-app .student-main-column .student-module-card:hover {
+  border-color: rgba(196, 8, 12, 0.45) !important;
+  box-shadow: 0 14px 32px rgba(142, 7, 7, 0.1) !important;
+  transform: translateY(-2px) !important;
+}
+.clean-app .student-main-column .student-module-card:focus-visible { outline: 2px solid var(--fl-red); outline-offset: 2px; }
+/* O "…" parecia um menu, mas não abre nada. */
+.clean-app .student-main-column .student-card-menu { display: none; }
+.clean-app .student-main-column .student-card-icon {
+  display: grid;
+  width: 40px;
+  height: 40px;
+  place-items: center;
+  border-radius: 10px;
+  background: var(--fl-red-wash);
+  color: var(--fl-red-deep);
+}
+.clean-app .student-main-column .student-module-card strong { margin-top: 2px; font-size: 1.05rem !important; line-height: 1.3; }
+.clean-app .student-main-column .student-card-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  align-self: flex-start;
+  margin-top: 4px;
+  padding: 6px 12px 6px 10px;
+  border-radius: 999px;
+  transition: background-color 180ms ease, color 180ms ease;
+}
+.clean-app .student-main-column .student-module-card:hover .student-card-action { background: linear-gradient(135deg, #8e0707, #c4080c); color: #fff6f6; }
+
+/* Abas: contador do filtro ativo em vermelho */
+.clean-app .student-main-column .student-tabs button.active .student-tab-count { border-color: #c4080c; background: #c4080c; color: #fff6f6; }
+
+/* Visão geral: os três números com a mesma anatomia (ícone, rótulo, valor, legenda) */
+.clean-app .student-main-column .student-stat-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 4px;
+  padding: 22px 22px 20px;
+}
+.clean-app .student-main-column .student-stat-card > span { margin-top: 10px; }
+.clean-app .student-main-column .student-stat-card > strong,
+.clean-app .student-main-column .student-stat-card > strong * { color: var(--fl-ink); font: 700 1.75rem/1.1 var(--fl-display) !important; letter-spacing: -0.03em; }
+.clean-app .student-main-column .stat-icon { display: grid; width: 44px; height: 44px; place-items: center; border-radius: 50%; }
+.clean-app .student-main-column .stat-icon.dark { background: var(--fl-red-wash); color: var(--fl-red-deep); }
+.clean-app .student-main-column .stat-highlight { flex-direction: column; align-items: flex-start; }
+.clean-app .student-main-column .stat-highlight > div:last-child { display: grid; gap: 4px; margin-top: 10px; }
+.clean-app .student-main-column .stat-highlight > div:last-child > strong { color: var(--fl-ink); font: 700 1.25rem/1.2 var(--fl-display); }
+.clean-app .student-main-column .stat-ring {
+  display: grid;
+  width: 44px;
+  height: 44px;
+  place-content: center;
+  border: 0;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #8e0707, #c4080c);
+  box-shadow: 0 8px 18px rgba(196, 8, 12, 0.22);
+  line-height: 1;
+  text-align: center;
+}
+.clean-app .student-main-column .stat-ring strong { color: #fff6f6; font: 700 1rem var(--fl-display); }
+.clean-app .student-main-column .stat-ring span { color: rgba(255, 246, 246, 0.8); font-size: 0.6rem !important; }
+
+/* Títulos de seção e cronograma */
+.clean-app .student-main-column .student-section-heading { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
+.clean-app .student-main-column .student-section-heading button,
+.clean-app .student-main-column .period-select {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border: 1px solid var(--fl-line);
+  border-radius: 999px;
+  background: var(--fl-surface);
+  transition: border-color 160ms ease, background-color 160ms ease;
+}
+.clean-app .student-main-column .student-section-heading button:hover,
+.clean-app .student-main-column .period-select:hover { border-color: rgba(196, 8, 12, 0.4); background: var(--fl-red-wash); }
+.clean-app .student-main-column .schedule-row { display: grid; grid-template-columns: 56px minmax(0, 1fr); align-items: stretch; gap: 14px; }
+.clean-app .student-main-column .schedule-day { display: grid; place-content: center; justify-items: center; padding: 8px 0; border-radius: 10px; background: var(--fl-red-wash); color: var(--fl-red-deep); font-size: 0.7rem !important; font-weight: 700; letter-spacing: 0.08em; }
+.clean-app .student-main-column .schedule-day strong { color: var(--fl-ink); font: 700 1.3rem/1.1 var(--fl-display); }
+.clean-app .student-main-column .schedule-block { border-radius: 10px; transition: transform 200ms var(--fl-ease), box-shadow 200ms ease; }
+.clean-app .student-main-column .schedule-block:hover { box-shadow: 0 10px 24px rgba(142, 7, 7, 0.1); transform: translateX(3px); }
+.clean-app .student-main-column .schedule-empty {
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+  padding: 28px 20px;
+  border: 1px dashed var(--fl-line-strong);
+  border-radius: 10px;
+  background: var(--fl-surface);
+  color: var(--fl-muted);
+  text-align: center;
+}
+.clean-app .student-main-column .schedule-empty::before {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: var(--fl-red-wash) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='22' height='22' viewBox='0 0 24 24' fill='none' stroke='%238e0707' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='4' width='18' height='18' rx='2'/%3E%3Cpath d='M16 2v4M8 2v4M3 10h18'/%3E%3C/svg%3E") center / 22px no-repeat;
+  content: "";
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .clean-app .student-main-column :is(.student-module-card, .student-card-action, .schedule-block) { transition: none !important; transform: none !important; }
+}
+
+/* Alinhamento: os três "ícones" da visão geral ocupam a mesma caixa de 44px,
+   então rótulos e valores ficam na mesma linha nas três colunas. */
+.clean-app .student-main-column .student-stat-card > .forge-progress-ring { width: 44px; height: 44px; flex: 0 0 44px; }
+.clean-app .student-main-column .student-stat-card > span,
+.clean-app .student-main-column .stat-highlight > div:last-child { margin-top: 12px; }
+.clean-app .student-main-column .stat-highlight > div:last-child > span { color: var(--fl-muted); font-size: 0.875rem !important; }
+/* Uma única linha entre a visão geral e o cronograma */
+.clean-app .student-main-column .student-schedule { margin-top: 28px; padding-top: 0; border-top: 0; }
+.clean-app .student-main-column .stat-icon { margin: 0; }
+
+/* ------------------------------------------------------------------ */
+/* Coluna direita: docentes e anotações (rc-*)                         */
+/* ------------------------------------------------------------------ */
+.clean-app .rc-column { display: flex; flex-direction: column; gap: 14px; }
+.rc-card { position: relative; overflow: hidden; border: 1px solid var(--fl-line); border-radius: 14px; background: var(--fl-surface); }
+.rc-teachers { padding: 18px 16px 12px; }
+.rc-teachers::before { position: absolute; top: 0; right: 0; left: 0; height: 3px; background: linear-gradient(90deg, #8e0707, #c4080c 60%, transparent); content: ""; }
+.rc-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; padding: 0 4px 12px; }
+.clean-app .rc-head .rc-eyebrow { color: var(--fl-red-deep); font: 700 0.66rem var(--fl-body); letter-spacing: 0.16em; }
+.clean-app .rc-head h2 { margin: 4px 0 0; color: var(--fl-ink); font: 700 1.3rem/1.15 var(--fl-display) !important; letter-spacing: -0.02em; }
+.clean-app .rc-head .rc-count { display: grid; min-width: 28px; height: 28px; padding: 0 8px; place-items: center; border-radius: 999px; background: var(--fl-red-wash); color: var(--fl-red-deep); font: 700 0.8rem var(--fl-body); }
+.clean-app .rc-teachers p.rc-empty { margin: 0; padding: 14px; border: 1px dashed var(--fl-line-strong); border-radius: 10px; color: var(--fl-muted); font-size: 0.84rem; }
+
+.rc-teacher-list { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.rc-teacher {
+  display: grid;
+  width: 100%;
+  grid-template-columns: 52px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 10px;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  background: var(--fl-paper);
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 180ms ease, background-color 180ms ease, transform 200ms var(--fl-ease);
+}
+.rc-teacher:hover { border-color: rgba(196, 8, 12, 0.3); background: var(--fl-red-wash); }
+.rc-teacher:focus-visible, .rc-notes:focus-visible, .rc-more:focus-visible { outline: 2px solid var(--fl-red); outline-offset: 2px; }
+.clean-app .rc-teacher .rc-teacher-avatar {
+  position: relative;
+  display: grid;
+  width: 52px;
+  height: 52px;
+  overflow: hidden;
+  place-items: center;
+  border: 2px solid var(--fl-surface);
+  border-radius: 50%;
+  background: linear-gradient(135deg, #8e0707, #c4080c);
+  box-shadow: 0 0 0 2px rgba(196, 8, 12, 0.35);
+  color: #fff6f6;
+  font: 700 1rem var(--fl-display);
+}
+.rc-teacher-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.rc-teacher-copy { display: grid; min-width: 0; gap: 2px; }
+.clean-app .rc-teacher strong { overflow: hidden; color: var(--fl-ink); font: 700 0.95rem/1.25 var(--fl-body); text-overflow: ellipsis; white-space: nowrap; }
+.clean-app .rc-teacher p { display: -webkit-box; overflow: hidden; margin: 0; color: var(--fl-muted); font-size: 0.78rem; line-height: 1.35; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+.clean-app .rc-teacher em { justify-self: start; margin-top: 4px; padding: 2px 8px; border-radius: 999px; background: var(--fl-surface); box-shadow: inset 0 0 0 1px var(--fl-line); color: var(--fl-red-deep); font: 700 0.68rem var(--fl-body); font-style: normal; letter-spacing: 0.04em; }
+.rc-chevron { color: var(--fl-subtle); transition: transform 200ms var(--fl-ease), color 160ms; }
+.rc-teacher:hover .rc-chevron { color: var(--fl-red-deep); transform: translateX(3px); }
+.rc-more { display: flex; width: 100%; align-items: center; justify-content: center; gap: 6px; margin-top: 8px; padding: 8px; border: 0; border-radius: 10px; background: transparent; color: var(--fl-red-deep); font-weight: 600; cursor: pointer; }
+.rc-more:hover { background: var(--fl-red-wash); }
+.rc-more[aria-expanded="true"] svg { transform: rotate(180deg); }
+
+.rc-notes {
+  display: grid;
+  width: 100%;
+  grid-template-columns: 44px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 14px;
+  padding: 16px;
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 200ms ease, box-shadow 200ms ease, transform 200ms var(--fl-ease);
+}
+.rc-notes::after { position: absolute; right: -30px; bottom: -40px; width: 120px; height: 120px; border-radius: 50%; background: radial-gradient(circle, rgba(196, 8, 12, 0.1), transparent 70%); content: ""; pointer-events: none; }
+.rc-notes:hover { border-color: rgba(196, 8, 12, 0.35); box-shadow: 0 14px 30px rgba(142, 7, 7, 0.1); transform: translateY(-2px); }
+.rc-notes-icon { display: grid; width: 44px; height: 44px; place-items: center; border-radius: 12px; background: linear-gradient(135deg, #8e0707, #c4080c); box-shadow: 0 8px 18px rgba(196, 8, 12, 0.22); color: #fff6f6; }
+.rc-notes-copy { display: grid; min-width: 0; gap: 3px; }
+.clean-app .rc-notes strong { color: var(--fl-ink); font: 700 1rem var(--fl-body); }
+.clean-app .rc-notes p { margin: 0; color: var(--fl-muted); font-size: 0.8rem; line-height: 1.4; }
+.rc-notes-go { display: grid; width: 32px; height: 32px; place-items: center; border-radius: 50%; background: var(--fl-surface-2); color: var(--fl-ink-soft); transition: background-color 180ms, color 180ms, transform 200ms var(--fl-ease); }
+.rc-notes:hover .rc-notes-go { background: #c4080c; color: #fff6f6; transform: translateX(2px); }
+
+@media (prefers-reduced-motion: reduce) {
+  .rc-column * { transition: none !important; transform: none !important; }
+}
+
+/* Coluna estreita: docente como mini perfil empilhado; textos com tamanho próprio
+   (o CSS anterior força o tamanho de p dentro desta coluna). */
+.rc-teacher { grid-template-columns: minmax(0, 1fr); justify-items: center; gap: 10px; padding: 16px 12px 14px; text-align: center; }
+.clean-app .rc-teacher .rc-teacher-avatar { width: 64px; height: 64px; font-size: 1.15rem; }
+.rc-teacher-copy { justify-items: center; }
+.clean-app .rc-teacher strong { white-space: normal; }
+.clean-app .rc-teacher em { justify-self: center; }
+.clean-app .rc-column p { font-size: 0.8rem !important; line-height: 1.4 !important; }
+.rc-chevron { display: none; }
+.rc-teacher::after { color: var(--fl-red-deep); font: 600 0.78rem var(--fl-body); content: "Ver perfil →"; opacity: 0; transition: opacity 180ms ease; }
+.rc-teacher:hover::after, .rc-teacher:focus-visible::after { opacity: 1; }
+.rc-notes { grid-template-columns: 44px minmax(0, 1fr); padding-right: 52px; }
+.rc-notes-go { position: absolute; top: 50%; right: 14px; transform: translateY(-50%); }
+.rc-notes:hover .rc-notes-go { transform: translate(2px, -50%); }
+.rc-notes { grid-template-columns: minmax(0, 1fr); gap: 12px; padding: 18px 16px; }
+.rc-notes-go { top: 18px; transform: none; }
+.rc-notes:hover .rc-notes-go { transform: translateX(2px); }
+.rc-teacher::after { color: var(--fl-subtle); opacity: 1; }
+.rc-teacher:hover::after, .rc-teacher:focus-visible::after { color: var(--fl-red-deep); }
+
+@media (max-width: 860px) {
+  .clean-app .student-main-column .student-section-heading { align-items: flex-start; }
+}
+
+/* Docente minimalista: uma linha (avatar, nome, área, seta), sem faixas nem selos. */
+.rc-teachers { padding: 14px 12px 10px; }
+.rc-teachers::before { display: none; }
+.rc-head { padding: 0 6px 8px; }
+.clean-app .rc-head h2 { margin: 0; color: var(--fl-muted); font: 600 0.8rem var(--fl-body) !important; letter-spacing: 0; }
+.rc-teacher { grid-template-columns: 40px minmax(0, 1fr) auto; justify-items: stretch; gap: 12px; padding: 8px 6px; border: 0; background: transparent; text-align: left; }
+.rc-teacher:hover { border: 0; background: var(--fl-paper); }
+.rc-teacher::after { display: none; }
+.clean-app .rc-teacher .rc-teacher-avatar { width: 40px; height: 40px; border: 0; box-shadow: none; font-size: 0.82rem; }
+.rc-teacher-copy { justify-items: start; gap: 1px; }
+.clean-app .rc-teacher strong { overflow: hidden; font-size: 0.9rem; text-overflow: ellipsis; white-space: nowrap; }
+.clean-app .rc-column .rc-teacher p { overflow: hidden; font-size: 0.78rem !important; text-overflow: ellipsis; white-space: nowrap; -webkit-line-clamp: 1; }
+.rc-chevron { display: block; }
+
+/* ------------------------------------------------------------------ */
+/* Banner da biblioteca: anéis pulsando                               */
+/* ------------------------------------------------------------------ */
+/* Ondas que nascem no centro dos anéis do banner (o ::after de 390px, ancorado em
+   top -170px / right -74px) e se dissipam para fora, como um sonar. */
+.library-hero-pulse { position: absolute; z-index: 0; top: 25px; right: 121px; width: 0; height: 0; pointer-events: none; }
+.library-hero-pulse i {
+  position: absolute;
+  top: -195px;
+  left: -195px;
+  width: 390px;
+  height: 390px;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  border-radius: 50%;
+  opacity: 0;
+  animation: cl-hero-ripple 4.8s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+}
+.library-hero-pulse i:nth-child(2) { animation-delay: 1.6s; }
+.library-hero-pulse i:nth-child(3) { animation-delay: 3.2s; }
+@keyframes cl-hero-ripple {
+  0% { opacity: 0; transform: scale(0.55); }
+  15% { opacity: 0.9; }
+  100% { opacity: 0; transform: scale(1.65); border-width: 1px; }
+}
+/* Os próprios anéis "respiram" junto com as ondas. */
+.library-hero::after { animation: cl-hero-breathe 4.8s ease-in-out infinite !important; }
+@keyframes cl-hero-breathe {
+  0%, 100% { opacity: 0.7; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.06); }
+}
+/* Com "reduzir movimento" o pulso continua, mais lento e suave. */
+/* O CSS antigo zera toda animação nesse modo (animation-duration: .01ms !important em *);
+   o banner é exceção explícita, por isso a especificidade maior e o !important. */
+@media (prefers-reduced-motion: reduce) {
+  .clean-app .library-hero .library-hero-pulse i { animation-duration: 9s !important; animation-iteration-count: infinite !important; }
+  .clean-app .library-hero .library-hero-pulse i:nth-child(2) { animation-delay: 3s; }
+  .clean-app .library-hero .library-hero-pulse i:nth-child(3) { animation-delay: 6s; }
+  .clean-app main .library-hero::after { animation-duration: 9s !important; animation-iteration-count: infinite !important; }
+}
+@media (max-width: 600px) {
+  .library-hero-pulse { top: 10px; right: 60px; }
+  .library-hero-pulse i { top: -140px; left: -140px; width: 280px; height: 280px; }
+}

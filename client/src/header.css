@@ -1,0 +1,141 @@
+/* Control Lab — ações do header (notificações, tema, usuário, sair) e central de notificações.
+   Classes próprias (cl-header-*, cl-notif-*); os tamanhos usam !important só onde o app
+   força font-size: .875rem !important em todo span/small/button dentro de .clean-app. */
+
+.cl-header-actions { display: flex; align-items: center; gap: 8px; }
+.cl-header-icon {
+  position: relative;
+  display: grid;
+  width: 40px;
+  height: 40px;
+  place-items: center;
+  border: 1px solid var(--fl-line);
+  border-radius: 12px;
+  background: var(--fl-surface);
+  color: var(--fl-ink-soft);
+  cursor: pointer;
+  transition: border-color 160ms, background-color 160ms, color 160ms, transform 160ms var(--fl-ease);
+}
+.cl-header-icon:hover { border-color: rgba(196, 8, 12, 0.45); background: var(--fl-red-wash); color: var(--fl-red-deep); }
+.cl-header-icon:active { transform: scale(0.96); }
+.cl-header-icon:focus-visible { outline: 2px solid var(--fl-red); outline-offset: 2px; }
+.cl-header-icon:disabled { opacity: 0.6; cursor: progress; }
+
+
+/* Sino */
+.cl-notif { position: relative; }
+.cl-notif-trigger.has-unread svg { transform-origin: 50% 2px; }
+@media (prefers-reduced-motion: no-preference) {
+  .cl-notif-trigger.has-unread svg { animation: cl-bell 4.5s ease-in-out infinite; }
+}
+@keyframes cl-bell {
+  0%, 88%, 100% { transform: rotate(0); }
+  90% { transform: rotate(14deg); }
+  93% { transform: rotate(-12deg); }
+  96% { transform: rotate(6deg); }
+}
+.cl-notif-count {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  display: grid;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  place-items: center;
+  border: 2px solid var(--fl-surface);
+  border-radius: 999px;
+  background: linear-gradient(135deg, #8e0707, #c4080c);
+  color: #fff6f6;
+  font: 700 0.66rem/1 var(--fl-body);
+}
+.clean-app .cl-notif-count { font-size: 0.66rem !important; }
+
+/* Painel */
+.cl-notif-panel {
+  position: absolute;
+  z-index: 80;
+  top: calc(100% + 10px);
+  right: -8px;
+  display: flex;
+  width: min(400px, calc(100vw - 24px));
+  max-height: min(560px, calc(100dvh - 100px));
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid var(--fl-line);
+  border-radius: 18px;
+  background: var(--fl-surface);
+  box-shadow: 0 24px 60px rgba(142, 7, 7, 0.16), 0 4px 14px rgba(0, 0, 0, 0.06);
+  transform-origin: top right;
+}
+.cl-notif-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 16px 16px 10px 18px; }
+.cl-notif-head strong { display: block; color: var(--fl-ink); font: 700 1.05rem var(--fl-display); letter-spacing: -0.01em; }
+.cl-notif-head span { color: var(--fl-muted); font-size: 0.78rem; }
+.clean-app .cl-notif-head span { font-size: 0.78rem !important; }
+.cl-notif-readall { display: inline-flex; align-items: center; gap: 6px; padding: 6px 10px; border: 0; border-radius: 999px; background: transparent; color: var(--fl-red-deep); font: 600 0.8rem var(--fl-body); cursor: pointer; }
+.cl-notif-readall:hover:not(:disabled) { background: var(--fl-red-wash); }
+.cl-notif-readall:disabled { color: var(--fl-subtle); cursor: default; }
+.clean-app .cl-notif-readall { font-size: 0.8rem !important; }
+
+.cl-notif-tabs { display: flex; gap: 6px; padding: 0 16px 10px; border-bottom: 1px solid var(--fl-line); }
+.cl-notif-tabs button { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border: 1px solid var(--fl-line); border-radius: 999px; background: transparent; color: var(--fl-muted); font: 600 0.8rem var(--fl-body); cursor: pointer; }
+.cl-notif-tabs button[aria-selected="true"] { border-color: var(--fl-ink); background: var(--fl-ink); color: var(--fl-paper); }
+.cl-notif-tabs i { font-style: normal; opacity: 0.7; }
+.clean-app .cl-notif-tabs button { font-size: 0.8rem !important; }
+
+.cl-notif-body { flex: 1; overflow-y: auto; padding: 6px 8px 8px; overscroll-behavior: contain; }
+.cl-notif-group h3 { margin: 10px 10px 6px; color: var(--fl-subtle); font: 700 0.66rem var(--fl-body); letter-spacing: 0.14em; text-transform: uppercase; }
+.cl-notif-group ul { display: grid; gap: 2px; margin: 0; padding: 0; list-style: none; }
+.cl-notif-item {
+  display: grid;
+  width: 100%;
+  grid-template-columns: 38px minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 12px;
+  padding: 10px;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  color: var(--fl-ink);
+  cursor: pointer;
+  text-align: left;
+  transition: background-color 140ms;
+}
+.cl-notif-item:hover { background: var(--fl-paper); }
+.cl-notif-item:focus-visible { outline: 2px solid var(--fl-red); outline-offset: -2px; }
+.cl-notif-item.is-unread { background: color-mix(in srgb, var(--fl-red-wash) 55%, transparent); }
+.cl-notif-item.is-unread:hover { background: var(--fl-red-wash); }
+.cl-notif-icon { display: grid; width: 38px; height: 38px; place-items: center; border-radius: 12px; background: var(--fl-surface-2); color: var(--fl-ink-soft); }
+.cl-notif-item.kind-stock .cl-notif-icon, .cl-notif-item.kind-loan .cl-notif-icon, .cl-notif-item.is-urgent .cl-notif-icon { background: linear-gradient(135deg, #8e0707, #c4080c); color: #fff6f6; }
+.cl-notif-item.kind-class .cl-notif-icon { background: var(--fl-info-wash); color: var(--fl-info); }
+.cl-notif-item.kind-progress .cl-notif-icon, .cl-notif-item.kind-new .cl-notif-icon { background: var(--fl-red-wash); color: var(--fl-red-deep); }
+.cl-notif-item.kind-done .cl-notif-icon { background: var(--fl-ok-wash); color: var(--fl-ok); }
+.cl-notif-item.kind-draft .cl-notif-icon { background: var(--fl-warn-wash); color: var(--fl-warn); }
+.cl-notif-copy { display: grid; min-width: 0; gap: 2px; }
+.cl-notif-copy b { overflow: hidden; color: var(--fl-ink); font: 600 0.875rem/1.3 var(--fl-body); text-overflow: ellipsis; white-space: nowrap; }
+.cl-notif-copy small { display: -webkit-box; overflow: hidden; color: var(--fl-muted); font-size: 0.78rem; line-height: 1.4; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+.clean-app .cl-notif-copy small { font-size: 0.78rem !important; }
+.cl-notif-meta { display: grid; justify-items: end; gap: 6px; padding-top: 2px; }
+.cl-notif-meta time { color: var(--fl-subtle); font-size: 0.7rem; white-space: nowrap; }
+.clean-app .cl-notif-meta time { font-size: 0.7rem !important; }
+.cl-notif-unread { width: 8px; height: 8px; border-radius: 50%; background: #c4080c; box-shadow: 0 0 0 3px rgba(196, 8, 12, 0.15); }
+
+.cl-notif-empty { display: grid; justify-items: center; gap: 6px; padding: 36px 24px 30px; text-align: center; }
+.cl-notif-empty span { display: grid; width: 48px; height: 48px; place-items: center; margin-bottom: 4px; border-radius: 50%; background: var(--fl-ok-wash); color: var(--fl-ok); }
+.cl-notif-empty b { color: var(--fl-ink); font: 700 0.95rem var(--fl-body); }
+.cl-notif-empty small { max-width: 30ch; color: var(--fl-muted); font-size: 0.8rem; line-height: 1.45; }
+.clean-app .cl-notif-empty small { font-size: 0.8rem !important; }
+
+.cl-notif-foot { display: flex; align-items: center; gap: 6px; padding: 10px 18px; border-top: 1px solid var(--fl-line); background: var(--fl-paper); color: var(--fl-subtle); font-size: 0.72rem; }
+
+@media (max-width: 600px) {
+  .cl-notif-panel { position: fixed; top: 72px; right: 12px; left: 12px; width: auto; }
+  .cl-header-actions { gap: 6px; }
+  .cl-header-icon { width: 38px; height: 38px; }
+}
+
+/* Sem o bloco do usuário (já está no menu lateral), o header cabe numa linha no celular. */
+@media (max-width: 860px) {
+  .clean-app .clean-header { flex-wrap: nowrap; }
+  .clean-app .clean-header .cl-header-actions { width: auto; flex-shrink: 0; justify-content: flex-end; margin-left: auto; }
+}

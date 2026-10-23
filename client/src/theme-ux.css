@@ -1,0 +1,55 @@
+/* Control Lab — barras de rolagem e seleção de texto com a identidade da marca
+   (degradê #C4080C → #8E0707), nos temas claro e escuro. */
+
+:root {
+  --cl-scroll-track: #fff6f6;
+  --cl-scroll-thumb: linear-gradient(180deg, #c4080c, #8e0707);
+  --cl-scroll-thumb-hover: linear-gradient(180deg, #e0161b, #a10909);
+  --cl-scroll-firefox: #c4080c #fde6e6;
+}
+html.dark {
+  --cl-scroll-track: #151312;
+  --cl-scroll-firefox: #c4080c #211e1b;
+}
+
+/* Barras de rolagem — Chrome, Edge, Safari */
+::-webkit-scrollbar { width: 12px; height: 12px; }
+::-webkit-scrollbar-track { background: var(--cl-scroll-track); }
+::-webkit-scrollbar-thumb {
+  border: 3px solid var(--cl-scroll-track);
+  border-radius: 999px;
+  background: var(--cl-scroll-thumb);
+  background-clip: padding-box;
+}
+::-webkit-scrollbar-thumb:hover { background: var(--cl-scroll-thumb-hover); background-clip: padding-box; border-width: 2px; }
+::-webkit-scrollbar-thumb:active { background: #8e0707; background-clip: padding-box; }
+::-webkit-scrollbar-corner { background: var(--cl-scroll-track); }
+::-webkit-scrollbar-button { display: none; width: 0; height: 0; }
+/* Áreas internas (listas, painéis): barra mais fina e trilho transparente */
+:not(html, body)::-webkit-scrollbar { width: 8px; height: 8px; }
+:not(html, body)::-webkit-scrollbar-track { background: transparent; }
+:not(html, body)::-webkit-scrollbar-thumb { border-width: 2px; border-color: transparent; }
+
+/* Firefox (não tem os seletores acima) */
+@supports not selector(::-webkit-scrollbar) {
+  * { scrollbar-color: var(--cl-scroll-firefox); }
+}
+
+/* Seleção de texto e cursor de digitação */
+::selection { background: rgba(196, 8, 12, 0.18); color: inherit; }
+html.dark ::selection { background: rgba(255, 90, 95, 0.32); }
+:where(input, textarea) { caret-color: #c4080c; }
+
+/* Chrome/Edge 121+ ignoram os ::-webkit-scrollbar onde o CSS antigo declara
+   scrollbar-width: thin; nesses elementos a barra fina recebe as cores da marca. */
+.student-competency-list,
+.stepper,
+.category-tabs,
+.reader-carousel-nav { scrollbar-color: #c4080c transparent; }
+
+/* Tema escuro: símbolo da marca em branco (#FFF6F6), como a variante para fundo escuro
+   do manual — no "C" do menu lateral e no símbolo oficial do cabeçalho. */
+html.dark .cl-nav-mark .brand-mark-c :is(path, circle) { fill: #fff6f6; }
+html.dark .cl-nav-mark .brand-mark-c { filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.35)); }
+html.dark .cl-nav-mark { border-color: rgba(255, 246, 246, 0.14); background: rgba(255, 246, 246, 0.04); box-shadow: none; }
+html.dark .clean-header .brand-symbol { filter: brightness(0) invert(0.97); }

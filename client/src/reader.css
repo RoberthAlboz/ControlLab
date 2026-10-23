@@ -1,0 +1,222 @@
+/* Control Lab — leitor de módulos (main.rd). Escopo próprio e especificidade alta porque o
+   CSS antigo do leitor (index.css / forge-editorial.css) define grade em 3 colunas, tamanhos
+   com !important e várias camadas de sobrescrita. Tokens --fl-* (claro/escuro). */
+
+.clean-app .rd { width: min(1240px, 100%); margin: 0 auto; padding: 24px clamp(16px, 3vw, 40px) 56px; }
+.clean-app .rd .back-library { display: inline-flex; align-items: center; gap: 6px; padding: 6px 10px 6px 6px; border: 0; border-radius: 999px; background: transparent; color: var(--fl-red-deep); font-weight: 600; }
+.clean-app .rd .back-library:hover { background: var(--fl-red-wash); }
+.clean-app .rd :is(button, a):focus-visible { outline: 2px solid var(--fl-red); outline-offset: 2px; }
+
+/* Cabeçalho: título, objetivo e progresso num só cartão */
+.clean-app .rd .rd-header { display: grid; gap: 18px; margin-top: 14px; padding: 24px 26px; border: 1px solid var(--fl-line); border-radius: 20px; background: var(--fl-surface); }
+.clean-app .rd .reader-title { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 14px; margin: 0; padding: 0; border: 0; }
+.clean-app .rd .reader-title .breadcrumb { color: var(--fl-red-deep); font-size: 0.72rem !important; font-weight: 700; letter-spacing: 0.14em; }
+.clean-app .rd .reader-title h1 { margin: 8px 0 6px; color: var(--fl-ink); font: 700 clamp(1.8rem, 3vw, 2.4rem)/1.1 var(--fl-display) !important; letter-spacing: -0.03em; }
+.clean-app .rd .reader-title p { max-width: 70ch; margin: 0; color: var(--fl-muted); font-size: 0.95rem !important; line-height: 1.5; }
+.clean-app .rd .edit-module-button { display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; border: 1px solid var(--fl-line); border-radius: 999px; background: var(--fl-surface); color: var(--fl-ink-soft); font-weight: 600; }
+.clean-app .rd .edit-module-button:hover { border-color: rgba(196, 8, 12, 0.4); color: var(--fl-red-deep); }
+.clean-app .rd .reader-overview { display: grid; grid-template-columns: minmax(0, 1fr) minmax(220px, 300px); gap: 16px; margin: 0; padding: 0; border: 0; }
+.clean-app .rd .reader-objective { display: grid; gap: 6px; padding: 14px 16px; border-radius: 14px; background: var(--fl-paper); }
+.clean-app .rd .reader-objective .eyebrow { display: inline-flex; align-items: center; gap: 6px; color: var(--fl-red-deep); font-size: 0.68rem !important; font-weight: 700; letter-spacing: 0.12em; }
+.clean-app .rd .reader-objective p { margin: 0; color: var(--fl-ink); font-size: 0.92rem !important; line-height: 1.5; }
+.clean-app .rd .reader-progress-summary { display: grid; grid-template-columns: minmax(0, 1fr); align-content: center; gap: 8px; padding: 14px 16px; border: 1px solid var(--fl-line); border-radius: 14px; }
+.clean-app .rd .reader-progress-heading { display: flex; align-items: baseline; justify-content: space-between; }
+.clean-app .rd .reader-progress-heading .eyebrow { color: var(--fl-muted); font-size: 0.68rem !important; font-weight: 700; letter-spacing: 0.12em; }
+.clean-app .rd .reader-progress-heading strong { color: var(--fl-ink); font: 700 1.5rem/1 var(--fl-display) !important; }
+.clean-app .rd .reader-progress-track { height: 8px; overflow: hidden; border-radius: 999px; background: var(--fl-surface-2); }
+.clean-app .rd .reader-progress-track span { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, #8e0707, #c4080c); }
+.clean-app .rd .rd-progress-caption { color: var(--fl-subtle); font-size: 0.76rem !important; }
+
+/* Grade: etapas à esquerda (fixas ao rolar), conteúdo à direita */
+.clean-app .rd .reader-content-grid { display: grid; grid-template-columns: 290px minmax(0, 1fr); grid-template-areas: none; align-items: start; gap: 22px; margin-top: 22px; }
+.clean-app .rd .reader-content-grid > * { grid-area: auto; grid-column: auto; grid-row: auto; min-width: 0; }
+
+/* Lista de etapas */
+.clean-app .rd .reader-timeline { position: sticky; top: 16px; gap: 12px; padding: 16px 12px 12px; border: 1px solid var(--fl-line); border-radius: 18px; background: var(--fl-surface); }
+.clean-app .rd .reader-timeline-heading .eyebrow { color: var(--fl-red-deep); }
+.clean-app .rd .reader-timeline-heading strong { color: var(--fl-ink); font: 700 1rem var(--fl-display); }
+.clean-app .rd .reader-timeline-count { padding: 3px 10px; border: 0; border-radius: 999px; background: var(--fl-red-wash); color: var(--fl-red-deep); font-weight: 700; }
+.clean-app .rd .reader-timeline-progress { height: 4px; margin: 0 4px; overflow: hidden; border-radius: 999px; background: var(--fl-surface-2); }
+.clean-app .rd .reader-timeline-progress span { display: block; height: 100%; border-radius: inherit; background: #c4080c; }
+.clean-app .rd .reader-timeline-step { border: 0; border-radius: 12px; transition: background-color 160ms ease; }
+.clean-app .rd .reader-timeline-step:not(:disabled):hover { background: var(--fl-paper); }
+.clean-app .rd .reader-timeline-step.is-current { background: var(--fl-red-wash); box-shadow: inset 3px 0 0 #c4080c; }
+.clean-app .rd .reader-timeline-step.is-locked { opacity: 0.6; }
+.clean-app .rd .reader-timeline-step.is-complete .reader-timeline-marker { border-color: transparent; background: var(--fl-ok); color: #fff; }
+.clean-app .rd .reader-timeline-step.is-current .reader-timeline-marker { border-color: #c4080c; color: #c4080c; }
+.clean-app .rd .reader-timeline-note { margin: 0; padding: 10px 6px 2px; border-top: 1px solid var(--fl-line); color: var(--fl-subtle); font-size: 0.74rem !important; line-height: 1.4; }
+
+/* Conteúdo da etapa */
+.clean-app .rd .main-analysis { position: static; inset: auto; width: auto; display: grid; gap: 16px; padding: 24px 26px; border: 1px solid var(--fl-line); border-radius: 20px; background: var(--fl-surface); }
+.clean-app .rd .reader-carousel-heading { margin: 0; padding: 0; border: 0; }
+.clean-app .rd .reader-carousel-heading .eyebrow { color: var(--fl-red-deep); font-size: 0.7rem !important; font-weight: 700; letter-spacing: 0.14em; }
+.clean-app .rd .reader-carousel-heading h2 { margin: 6px 0 0; color: var(--fl-ink); font: 700 clamp(1.4rem, 2.2vw, 1.75rem)/1.2 var(--fl-display) !important; letter-spacing: -0.02em; }
+.clean-app .rd .reader-instruction { margin: 0; padding: 0; border: 0; background: none; }
+.clean-app .rd .reader-instruction p { margin: 0; color: var(--fl-ink-soft); font-size: 1.02rem !important; line-height: 1.7; }
+
+.clean-app .rd .rd-tip { display: grid; grid-template-columns: 34px minmax(0, 1fr); align-items: start; gap: 12px; padding: 14px 16px; border: 1px solid rgba(196, 8, 12, 0.18); border-radius: 14px; background: var(--fl-red-wash); }
+.clean-app .rd .rd-tip-icon { display: grid; width: 34px; height: 34px; place-items: center; border-radius: 10px; background: var(--fl-surface); color: var(--fl-red-deep); }
+.clean-app .rd .rd-tip .eyebrow { color: var(--fl-red-deep); font-size: 0.66rem !important; font-weight: 700; letter-spacing: 0.14em; }
+.clean-app .rd .rd-tip p { margin: 4px 0 0; color: var(--fl-ink); font-size: 0.92rem !important; line-height: 1.5; }
+
+.clean-app .rd .reader-image-panel { margin: 0; overflow: hidden; border: 1px solid var(--fl-line); border-radius: 16px; background: var(--fl-paper); }
+.clean-app .rd .reader-image-panel.has-image { min-height: 0; }
+.clean-app .rd .reader-image-panel.has-image img { display: block; width: 100%; max-height: 520px; object-fit: contain; background: var(--fl-surface-2); }
+.clean-app .rd .reader-image-caption { padding: 10px 14px; color: var(--fl-muted); font-size: 0.68rem !important; font-weight: 700; letter-spacing: 0.12em; }
+/* Sem imagem: aviso compacto em linha, em vez de um bloco vazio de ~330px */
+.clean-app .rd .reader-image-panel.is-empty { min-height: 0; border-style: dashed; background: transparent; }
+.clean-app .rd .reader-image-panel.is-empty .reader-image-empty { display: grid; min-height: 0; grid-template-columns: auto minmax(0, 1fr); align-items: center; justify-items: start; column-gap: 12px; row-gap: 2px; padding: 14px 16px; text-align: left; color: var(--fl-muted); }
+.clean-app .rd .reader-image-panel.is-empty .reader-image-empty svg { grid-row: span 2; color: var(--fl-subtle); }
+.clean-app .rd .reader-image-panel.is-empty .reader-image-empty strong { color: var(--fl-ink-soft); font-size: 0.88rem !important; }
+.clean-app .rd .reader-image-panel.is-empty .reader-image-empty span { color: var(--fl-subtle); font-size: 0.8rem !important; }
+
+/* Cronômetro + navegação */
+.clean-app .rd .step-timer-widget { display: grid; grid-template-columns: 40px minmax(0, 1fr) auto; align-items: center; gap: 12px; margin: 4px 0 0; padding: 12px 16px; border: 1px solid var(--fl-line); border-radius: 14px; background: var(--fl-paper); }
+.clean-app .rd .step-timer-widget.is-running { border-color: rgba(196, 8, 12, 0.35); background: var(--fl-red-wash); }
+.clean-app .rd .step-timer-widget.is-complete { border-color: rgba(47, 107, 79, 0.3); background: var(--fl-ok-wash); }
+.clean-app .rd .step-timer-icon { display: grid; width: 40px; height: 40px; place-items: center; border-radius: 12px; background: var(--fl-surface); color: var(--fl-red-deep); }
+.clean-app .rd .step-timer-widget.is-complete .step-timer-icon { color: var(--fl-ok); }
+.clean-app .rd .step-timer-label strong { color: var(--fl-ink); font-size: 0.7rem !important; letter-spacing: 0.12em; }
+.clean-app .rd .step-timer-label small { color: var(--fl-muted); font-size: 0.8rem !important; }
+.clean-app .rd .step-timer-display { color: var(--fl-ink); font: 700 1.6rem/1 var(--fl-display) !important; font-variant-numeric: tabular-nums; letter-spacing: 0.02em; }
+
+.clean-app .rd .reader-carousel-controls { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 14px; margin: 0; padding-top: 14px; border-top: 1px solid var(--fl-line); }
+.clean-app .rd .reader-carousel-previous { display: inline-flex; min-height: 44px; align-items: center; gap: 6px; padding: 0 16px; border: 1px solid var(--fl-line); border-radius: 12px; background: var(--fl-surface); color: var(--fl-ink-soft); font-weight: 600; }
+.clean-app .rd .reader-carousel-previous:not(:disabled):hover { border-color: rgba(196, 8, 12, 0.4); color: var(--fl-red-deep); }
+.clean-app .rd .reader-carousel-previous:disabled { opacity: 0.45; }
+.clean-app .rd .reader-carousel-position { display: grid; justify-items: center; gap: 6px; color: var(--fl-muted); }
+.clean-app .rd .reader-carousel-position > span:first-child { font-size: 0.8rem !important; font-weight: 600; }
+.clean-app .rd .reader-carousel-track { width: min(180px, 100%); height: 4px; overflow: hidden; border-radius: 999px; background: var(--fl-surface-2); }
+.clean-app .rd .reader-carousel-track i { display: block; height: 100%; border-radius: inherit; background: #c4080c; transition: width 300ms var(--fl-ease); }
+.clean-app .rd .reader-action-button { display: inline-flex; min-height: 44px; align-items: center; justify-content: center; gap: 8px; padding: 0 20px; border: 0; border-radius: 12px; background: linear-gradient(135deg, #8e0707, #c4080c); box-shadow: 0 10px 22px rgba(196, 8, 12, 0.22); color: #fff6f6; font-weight: 700; }
+.clean-app .rd .reader-action-button:not(:disabled):hover { box-shadow: 0 14px 28px rgba(196, 8, 12, 0.3); }
+.clean-app .rd .reader-action-button.is-complete { background: var(--fl-ok-wash); box-shadow: none; color: var(--fl-ok); }
+.clean-app .rd .reader-action-button.is-next { background: var(--fl-ink); box-shadow: none; color: var(--fl-paper); }
+.clean-app .rd .reader-teacher-preview-note { justify-self: end; padding: 6px 12px; border-radius: 999px; background: var(--fl-surface-2); color: var(--fl-muted); font-size: 0.76rem !important; font-weight: 600; }
+
+/* Recursos: largura total, abaixo do conteúdo */
+.clean-app .rd .rd-resources { position: static; margin-top: 26px; padding: 0; border: 0; background: none; }
+.clean-app .rd .rd-resources .panel-heading h2 { margin: 0; color: var(--fl-ink); font: 700 1.3rem var(--fl-display) !important; }
+.clean-app .rd .rd-resources .panel-heading p { margin: 4px 0 0; color: var(--fl-muted); font-size: 0.88rem !important; }
+.clean-app .rd .rd-resources .category-tabs { display: flex; flex-wrap: wrap; gap: 6px; margin: 14px 0; padding: 0; border: 0; }
+.clean-app .rd .rd-resources .category-tabs button { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border: 1px solid var(--fl-line); border-radius: 999px; background: var(--fl-surface); color: var(--fl-muted); font-weight: 600; }
+.clean-app .rd .rd-resources .category-tabs button.selected { border-color: var(--fl-ink); background: var(--fl-ink); color: var(--fl-paper); }
+.clean-app .rd .rd-resources .category-tab-count { display: grid; min-width: 20px; height: 18px; padding: 0 5px; place-items: center; border-radius: 999px; background: var(--fl-surface-2); color: var(--fl-muted); font-size: 0.7rem !important; }
+.clean-app .rd .rd-resources .category-tabs button.selected .category-tab-count { background: #c4080c; color: #fff6f6; }
+.clean-app .rd .rd-resources .resource-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr)); gap: 12px; }
+.clean-app .rd .rd-resources .resource-card-light { display: flex; flex-direction: column; justify-content: space-between; gap: 12px; margin: 0; padding: 16px; border: 1px solid var(--fl-line); border-radius: 16px; background: var(--fl-surface); transition: border-color 180ms ease, box-shadow 180ms ease; }
+.clean-app .rd .rd-resources .resource-card-light:hover { border-color: rgba(196, 8, 12, 0.3); box-shadow: 0 10px 24px rgba(142, 7, 7, 0.08); }
+.clean-app .rd .rd-resources .resource-icon { display: grid; width: 36px; height: 36px; place-items: center; border-radius: 10px; background: var(--fl-red-wash); color: var(--fl-red-deep); }
+.clean-app .rd .rd-resources .resource-card-foot { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding-top: 10px; border-top: 1px solid var(--fl-line); }
+.clean-app .rd .rd-resources .resource-stage-badge { padding: 2px 8px; border-radius: 999px; background: var(--fl-surface-2); color: var(--fl-muted); }
+
+@media (max-width: 960px) {
+  .clean-app .rd .reader-content-grid { grid-template-columns: minmax(0, 1fr); }
+  .clean-app .rd .reader-timeline { position: static; }
+  /* Etapas viram uma faixa horizontal compacta acima do conteúdo */
+  .clean-app .rd .reader-timeline-list { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px; scroll-snap-type: x mandatory; }
+  .clean-app .rd .reader-timeline-item { flex: 0 0 min(220px, 70vw); scroll-snap-align: start; }
+  .clean-app .rd .reader-timeline-list::before, .clean-app .rd .reader-timeline-item::before, .clean-app .rd .reader-timeline-item::after { display: none; }
+  .clean-app .rd .reader-timeline-step { border: 1px solid var(--fl-line); }
+  .clean-app .rd .reader-timeline-note { display: none; }
+}
+@media (max-width: 640px) {
+  .clean-app .rd { padding: 16px 14px 40px; }
+  .clean-app .rd .rd-header, .clean-app .rd .main-analysis { padding: 18px 16px; border-radius: 16px; }
+  .clean-app .rd .reader-overview { grid-template-columns: minmax(0, 1fr); }
+  .clean-app .rd .step-timer-widget { grid-template-columns: 36px minmax(0, 1fr) auto; padding: 10px 12px; }
+  .clean-app .rd .step-timer-display { font-size: 1.3rem !important; }
+  .clean-app .rd .reader-carousel-controls { grid-template-columns: auto minmax(0, 1fr); }
+  .clean-app .rd .reader-carousel-controls > :last-child { grid-column: 1 / -1; width: 100%; justify-self: stretch; }
+}
+
+/* Ajustes sobre o CSS antigo: o painel de imagem tinha padding/altura mínima fixos e as
+   abas de categoria herdavam canto reto. */
+.clean-app .rd .reader-image-panel { padding: 0; }
+.clean-app .rd .reader-image-panel.is-empty { min-height: 0 !important; }
+.clean-app .rd .reader-image-panel.is-empty .reader-image-empty { justify-content: start; padding: 14px 16px !important; }
+.clean-app .rd .rd-resources .category-tabs button { border-radius: 999px !important; border-bottom-width: 1px; }
+
+/* Cronômetro rodando: os ponteiros do ícone de relógio giram (o círculo fica parado) e um
+   anel pulsa em volta. O CSS antigo zera animações com "reduzir movimento"
+   (animation-duration: .01ms !important); aqui é exceção, mais lenta nesse modo. */
+.clean-app .rd .step-timer-icon { position: relative; }
+.clean-app .rd .step-timer-widget.is-running .step-timer-icon { background: linear-gradient(135deg, #8e0707, #c4080c); color: #fff6f6; }
+.clean-app .rd .step-timer-widget.is-running .step-timer-icon svg :is(polyline, path:not(:first-child), line) {
+  transform-box: view-box;
+  transform-origin: 12px 12px;
+  animation: rd-clock-hands 3s linear infinite !important;
+  animation-iteration-count: infinite !important;
+}
+.clean-app .rd .step-timer-widget.is-running .step-timer-icon::after {
+  position: absolute;
+  inset: -4px;
+  border: 2px solid rgba(196, 8, 12, 0.45);
+  border-radius: 14px;
+  content: "";
+  animation: rd-clock-ring 1.6s ease-out infinite !important;
+  animation-iteration-count: infinite !important;
+}
+@keyframes rd-clock-hands { to { transform: rotate(360deg); } }
+@keyframes rd-clock-ring {
+  0% { opacity: 0.9; transform: scale(0.9); }
+  100% { opacity: 0; transform: scale(1.25); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .clean-app .rd .step-timer-widget.is-running .step-timer-icon svg :is(polyline, path:not(:first-child), line) { animation-duration: 6s !important; }
+  .clean-app .rd .step-timer-widget.is-running .step-timer-icon::after { animation-duration: 3s !important; }
+}
+
+/* ------------------------------------------------------------------ */
+/* Versão enxuta: menos molduras, progresso num lugar só, rodapé único */
+/* ------------------------------------------------------------------ */
+/* Topo sem moldura; objetivo em linha; o progresso do topo é o único do leitor */
+.clean-app .rd .rd-header { gap: 14px; padding: 6px 0 20px; border: 0; border-bottom: 1px solid var(--fl-line); border-radius: 0; background: none; }
+.clean-app .rd .reader-overview { grid-template-columns: minmax(0, 1fr) minmax(200px, 260px); align-items: end; }
+.clean-app .rd .reader-objective { padding: 0; background: none; }
+.clean-app .rd .reader-progress-summary { padding: 0; border: 0; }
+.clean-app .rd .reader-progress-heading strong { font-size: 1.1rem !important; }
+.clean-app .rd .reader-progress-track { height: 6px; }
+
+/* Lista de etapas: sem a barra e a nota repetidas */
+.clean-app .rd .reader-timeline { padding: 14px 10px 10px; }
+.clean-app .rd .reader-timeline-progress,
+.clean-app .rd .reader-timeline-note { display: none; }
+
+/* Dica: filete em vez de caixa preenchida */
+.clean-app .rd .rd-tip { padding: 4px 0 4px 16px; border: 0; border-left: 3px solid #c4080c; border-radius: 0; background: none; grid-template-columns: minmax(0, 1fr); }
+.clean-app .rd .rd-tip-icon { display: none; }
+
+/* Rodapé único: Anterior · cronômetro · ação principal */
+.clean-app .rd .reader-carousel-controls { grid-template-columns: auto minmax(0, 1fr) auto; margin-top: 4px; padding-top: 16px; }
+.clean-app .rd .reader-carousel-controls .step-timer-widget { justify-self: center; grid-template-columns: 34px auto auto; gap: 10px; margin: 0; padding: 6px 14px 6px 6px; border-radius: 999px; }
+.clean-app .rd .reader-carousel-controls .step-timer-icon { width: 34px; height: 34px; border-radius: 50%; }
+.clean-app .rd .reader-carousel-controls .step-timer-widget.is-running .step-timer-icon::after { border-radius: 50%; }
+.clean-app .rd .reader-carousel-controls .step-timer-label strong { display: none; }
+.clean-app .rd .reader-carousel-controls .step-timer-label small { font-size: 0.76rem !important; }
+.clean-app .rd .reader-carousel-controls .step-timer-display { order: -1; font-size: 1.15rem !important; }
+.clean-app .rd .reader-carousel-controls .step-timer-icon { order: -2; }
+.clean-app .rd .reader-carousel-controls .reader-carousel-position { justify-self: center; color: var(--fl-muted); font-size: 0.8rem !important; font-weight: 600; }
+
+@media (max-width: 640px) {
+  .clean-app .rd .reader-overview { grid-template-columns: minmax(0, 1fr); }
+  .clean-app .rd .reader-carousel-controls { grid-template-columns: auto minmax(0, 1fr); }
+  .clean-app .rd .reader-carousel-controls .step-timer-widget { justify-self: end; }
+  .clean-app .rd .reader-carousel-controls .step-timer-label { display: none; }
+}
+
+/* Lista de etapas só com as cores da marca: concluída = marcador vermelho com ✓ branco
+   (sem verde); o estado "Concluída" em cinza para não competir com a etapa atual. */
+.clean-app .rd .reader-timeline-step.is-complete .reader-timeline-marker {
+  border: 0 !important;
+  background: linear-gradient(135deg, #8e0707, #c4080c) !important;
+  box-shadow: none !important;
+  color: #fff6f6 !important;
+}
+.clean-app .rd .reader-timeline-step.is-complete .reader-timeline-marker svg { color: #fff6f6 !important; stroke: currentColor; }
+.clean-app .rd .reader-timeline-step.is-complete small { color: var(--fl-subtle) !important; }
+.clean-app .rd .reader-timeline-step.is-current { background: var(--fl-red-wash); border-color: transparent !important; }
+/* Cronômetro de etapa concluída: neutro (sem verde), para combinar com a lista. */
+.clean-app .rd .step-timer-widget.is-complete { border-color: var(--fl-line); background: var(--fl-paper); }
+.clean-app .rd .step-timer-widget.is-complete .step-timer-icon { color: var(--fl-red-deep); }
+.clean-app .rd .reader-action-button.is-complete { background: var(--fl-surface-2); color: var(--fl-muted); }
