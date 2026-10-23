@@ -1,0 +1,3 @@
+# Scripts das skills rodam no bash: sempre LF, em qualquer máquina
+*.sh text eol=lf
+*.py text eol=lf
