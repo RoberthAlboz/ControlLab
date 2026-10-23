@@ -124,7 +124,7 @@ data/
 *.db-wal
 *.db-shm
 
-# Configuração local do Claude Code (skills e instruções com caminhos desta máquina)
-.claude/
-CLAUDE.md
-skills-lock.json
+# Claude Code: skills, CLAUDE.md e skills-lock.json são versionados;
+# só fica fora o que é desta máquina.
+.claude/settings.local.json
+.claude/worktrees/
