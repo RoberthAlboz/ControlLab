@@ -8,6 +8,41 @@
       "when": 1792710000000,
       "tag": "0000_forgelab_baseline",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1792946818468,
+      "tag": "0001_ownership_archive_notes",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1793051508368,
+      "tag": "0002_classrooms",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1793058890984,
+      "tag": "0003_module_attachments",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1793070446962,
+      "tag": "0004_inventory_item_icon",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1793156948749,
+      "tag": "0005_learning_foreign_keys",
+      "breakpoints": true
     }
   ]
 }

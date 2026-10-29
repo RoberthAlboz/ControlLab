@@ -11,6 +11,7 @@
  */
 import { and, eq, inArray, isNull, sql } from "drizzle-orm";
 import {
+  classrooms,
   instructors,
   inventoryCategories,
   inventoryItems,
@@ -37,7 +38,7 @@ const modelUrls = {
 type SeedAccount = { email: string; name: string; password: string; role: "student" | "teacher" | "admin" };
 type SeedLog = (message: string) => void;
 
-function readAccount(prefix: "TEACHER" | "STUDENT", defaults: { email: string; name: string; role: SeedAccount["role"] }): SeedAccount {
+function readAccount(prefix: "TEACHER" | "STUDENT" | "ADMIN", defaults: { email: string; name: string; role: SeedAccount["role"] }): SeedAccount {
   const email = (process.env[`SEED_${prefix}_EMAIL`] || defaults.email).trim().toLowerCase();
   const name = process.env[`SEED_${prefix}_NAME`] || defaults.name;
   const password = process.env[`SEED_${prefix}_PASSWORD`] || "";
@@ -121,6 +122,16 @@ async function seedLearning(log: SeedLog) {
   log("módulos, etapas, recursos, docentes e agenda verificados");
 }
 
+/** Turmas de demonstração com o docente da seed como responsável; o aluno da seed entra na primeira. */
+async function seedClassrooms(teacherId: number, studentId: number, log: SeedLog) {
+  const db = await requireDb();
+  const names = ["2º Ano Mecânica A", "2º Ano Mecânica B"];
+  await db.insert(classrooms).values(names.map(name => ({ name, teacherId }))).onConflictDoNothing();
+  const [first] = await db.select({ id: classrooms.id }).from(classrooms).where(eq(classrooms.name, names[0])).limit(1);
+  if (first) await db.update(users).set({ classroomId: first.id }).where(and(eq(users.id, studentId), isNull(users.classroomId)));
+  log("turmas de demonstração verificadas");
+}
+
 const SEED_CATEGORIES = [
   { name: "Ferramentas de corte", description: "Brocas, insertos e fresas" },
   { name: "Instrumentos de medição", description: "Paquímetros, micrômetros e relógios comparadores" },
@@ -130,7 +141,9 @@ const SEED_CATEGORIES = [
   { name: "Componentes de montagem", description: "Pinos, buchas e parafusos" },
 ];
 
-type SeedItem = Omit<ItemCreateInput, "categoryId" | "requestKey" | "initialReason" | "initialQuantity"> & {
+type SeedItem = Omit<ItemCreateInput, "categoryId" | "requestKey" | "initialReason" | "initialQuantity" | "icon"> & {
+  /** Ausente = figura automática. */
+  icon?: ItemCreateInput["icon"];
   category: string;
   entrada: number;
   entradaReason: "compra" | "doacao" | "inventario";
@@ -170,6 +183,7 @@ async function seedInventory(teacherId: number, student: { id: number; name: str
     await inventory.createItem(
       {
         ...fields,
+        icon: fields.icon ?? null,
         categoryId: categoryId.get(category) ?? null,
         initialQuantity: entrada,
         initialReason: entradaReason,
@@ -252,6 +266,13 @@ export async function runSeed(log: SeedLog = message => console.log(`[seed] ${me
   const teacher = await upsertSeedUser(readAccount("TEACHER", { email: "docente@forgelab.local", name: "Docente Control Lab", role: "teacher" }), log);
   const student = await upsertSeedUser(readAccount("STUDENT", { email: "aluno@forgelab.local", name: "Aluno Control Lab", role: "student" }), log);
   if (!teacher || !student) throw new Error("Não foi possível criar as contas de desenvolvimento.");
+  // Administração é opcional para não quebrar .env antigos que ainda não têm SEED_ADMIN_*.
+  if (process.env.SEED_ADMIN_PASSWORD) {
+    await upsertSeedUser(readAccount("ADMIN", { email: "admin@forgelab.local", name: "Administração Control Lab", role: "admin" }), log);
+  } else {
+    log("conta de administração ignorada: defina SEED_ADMIN_PASSWORD no .env para criá-la");
+  }
   await seedLearning(log);
+  await seedClassrooms(teacher.id, student.id, log);
   await seedInventory(teacher.id, student, log);
 }

@@ -317,6 +317,16 @@ html.dark .fl-segmented label.is-selected { border-color: var(--fl-red); backgro
 .fl-state strong { color: var(--fl-ink); font: 700 1rem var(--fl-display); }
 .fl-state.is-error { border-style: solid; border-color: rgba(var(--fl-red-rgb), 0.3); color: var(--fl-red-deep); }
 .fl-state .fl-button { margin-top: 6px; }
+/* Estado vazio: gancho sem ferramenta, com a sombra pintada no painel. */
+.empty-hook { width: 46px; height: 52px; margin-bottom: 4px; overflow: visible; }
+.empty-hook-pegs { stroke: var(--fl-line-strong); stroke-width: 3.2; stroke-linecap: round; }
+.empty-hook-shadow { fill: rgba(var(--fl-red-rgb), 0.07); stroke: rgba(var(--fl-red-rgb), 0.5); stroke-width: 1.2; stroke-dasharray: 3 2; }
+.empty-hook-arm { transform-box: view-box; transform-origin: 32px 6px; }
+.empty-hook-arm path { fill: none; stroke: var(--fl-muted); stroke-width: 2.2; stroke-linecap: round; }
+@media (prefers-reduced-motion: no-preference) {
+  /* Ao aparecer, o gancho balança uma vez e para (sem loop). */
+  .empty-hook-arm { animation: shadow-swing 1.1s ease-in-out 1; }
+}
 .fl-muted { margin: 0; color: var(--fl-muted); font-size: 0.875rem; }
 .fl-pagination { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 2px 0; color: var(--fl-muted); font-size: 0.875rem; }
 .fl-pagination > div { display: flex; align-items: center; gap: 6px; }
@@ -329,16 +339,14 @@ html.dark .fl-segmented label.is-selected { border-color: var(--fl-red); backgro
 .gear-loader svg { width: 64px; height: 48px; overflow: visible; }
 .gear-loader-sm svg { width: 36px; height: 27px; }
 .gear-loader-lg svg { width: 96px; height: 72px; }
-.gear-loader polygon { fill: var(--fl-ink-soft); }
-.gear-loader .gear-b polygon { fill: var(--fl-red); }
-.gear-loader .gear-hole { fill: var(--fl-paper); }
-.gear-loader .gear-a, .gear-loader .gear-b { transform-box: fill-box; transform-origin: center; }
+.gear-loader path { fill: var(--fl-ink-soft); }
+.gear-loader .is-accent path { fill: var(--fl-red); }
+/* Gira em torno do eixo da peça (origem local), não do centro da caixa: com
+   número ímpar de dentes a caixa não é simétrica e a engrenagem "bambearia". */
+.gear-loader-spin { transform-box: view-box; transform-origin: 0 0; }
 @media (prefers-reduced-motion: no-preference) {
-  .gear-loader .gear-a { animation: fl-gear-cw 4s linear infinite; }
-  .gear-loader .gear-b { animation: fl-gear-ccw 2.8s linear infinite; }
+  .gear-loader-spin { animation: fl-spin var(--gear-period) linear infinite var(--gear-direction); }
 }
-@keyframes fl-gear-cw { to { transform: rotate(360deg); } }
-@keyframes fl-gear-ccw { to { transform: rotate(-360deg); } }
 
 /* ------------------------------------------------------------------ */
 /* Logotipo Control Lab (manual de marca)                              */
@@ -373,7 +381,6 @@ html.dark span.brand-logo-default > span.brand-logo-lab { background: none; colo
 /* Login                                                               */
 /* ------------------------------------------------------------------ */
 .auth-screen { display: grid; min-height: 100dvh; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); background: var(--fl-paper); color: var(--fl-ink); }
-.auth-screen.is-checking { display: grid; place-items: center; grid-template-columns: 1fr; }
 .auth-brand-panel {
   position: relative;
   display: flex;
@@ -422,6 +429,30 @@ html.dark span.brand-logo-default > span.brand-logo-lab { background: none; colo
   .auth-gears-mesh { animation: auth-mesh-pulse 1.6s ease-in-out infinite; }
 }
 @keyframes auth-mesh-pulse { 50% { opacity: 0.1; } }
+/* Ícone de tema (ThemeSunMoon): sol no claro, lua no escuro; herda a cor do botão. */
+.theme-sunmoon { display: block; overflow: visible; }
+.theme-sunmoon-disc { fill: currentColor; transform-box: view-box; transform-origin: 0 0; }
+.theme-sunmoon-rays { transform-box: view-box; transform-origin: 0 0; }
+.theme-sunmoon-rays path { fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; }
+/* No sol a sombra fica fora do disco; na lua ela cobre o lado direito e sobra o crescente. */
+.theme-sunmoon-shadow { transform: translate(11px, -9px); }
+.theme-sunmoon.is-dark .theme-sunmoon-shadow { transform: translate(4.2px, -3.2px); }
+.theme-sunmoon.is-dark .theme-sunmoon-disc { transform: scale(1.45); }
+.theme-sunmoon.is-dark .theme-sunmoon-rays { transform: rotate(-90deg) scale(0.4); opacity: 0; }
+button:hover > .theme-sunmoon { color: var(--fl-red, #c4080c); }
+html.dark button:hover > .theme-sunmoon { color: #ff8a8e; }
+@media (prefers-reduced-motion: no-preference) {
+  .theme-sunmoon-shadow { transition: transform 460ms cubic-bezier(0.3, 0, 0.2, 1); }
+  .theme-sunmoon-disc { transition: transform 460ms cubic-bezier(0.3, 0, 0.2, 1); }
+  .theme-sunmoon-rays { transition: transform 460ms cubic-bezier(0.3, 0, 0.2, 1), opacity 260ms ease; }
+  /* Voltando ao sol, os raios surgem depois que a sombra sai do disco. */
+  .theme-sunmoon:not(.is-dark) .theme-sunmoon-rays { transition-delay: 140ms; }
+}
+
+/* Login aceito: o trem para, os pontos de contato acendem e as peças de destaque firmam o traço. */
+.auth-gears.is-locked .auth-gears-mesh { animation: none; opacity: 1; fill: #fff6f6; transition: fill 200ms ease; }
+.auth-gears.is-locked .auth-gear.is-accent path { stroke: #ff9ea1; transition: stroke 200ms ease; }
+.auth-gears.is-locked .auth-gears-shaft { fill: #c4080c; transition: fill 200ms ease; }
 .auth-brand-top, .auth-brand-copy, .auth-brand-spec { position: relative; z-index: 1; }
 .auth-brand-top { display: flex; align-items: center; gap: 12px; }
 .auth-brand-top b { display: block; font: 700 0.85rem var(--fl-display); letter-spacing: 0.16em; }
@@ -652,6 +683,38 @@ html.dark .fl-chip-group button.is-selected { border-color: var(--fl-red); backg
 .inventory-category-list strong { display: block; color: var(--fl-ink); }
 .inventory-category-list small { color: var(--fl-subtle); }
 
+/* Administração · usuários (reaproveita o layout do estoque) */
+.admin-user-list li > div:first-child { flex: 1 1 auto; min-width: 0; }
+.admin-user-list li > div:first-child small { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.admin-user-self { color: var(--fl-subtle); font-weight: 500; }
+.fl-chip.admin-role.is-student { background: var(--fl-surface-2); color: var(--fl-ink); }
+.fl-chip.admin-role.is-teacher { background: var(--fl-red-wash); color: var(--fl-red-deep); }
+.fl-chip.admin-role.is-admin { background: var(--fl-warn-wash); color: var(--fl-warn); }
+.fl-chip.admin-role.is-inactive { background: transparent; color: var(--fl-subtle); }
+.admin-user-active { align-self: end; min-height: 40px; }
+@media (max-width: 640px) { .admin-user-list li { flex-wrap: wrap; } .admin-user-list li > div:first-child { flex-basis: 100%; } }
+
+/* Administração · supervisão do estoque */
+.oversight-ok { display: flex; align-items: center; gap: 10px; padding: 14px 16px; border: 1px solid var(--theme-border, var(--fl-line)); border-radius: var(--fl-radius); background: var(--theme-surface, var(--fl-surface)); color: var(--fl-muted); }
+.oversight-alerts { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.oversight-alerts li { display: flex; align-items: flex-start; gap: 12px; padding: 14px 16px; border: 1px solid var(--theme-border, var(--fl-line)); border-left: 3px solid var(--fl-warn); border-radius: var(--fl-radius); background: var(--theme-surface, var(--fl-surface)); }
+.oversight-alerts li.is-alta { border-left-color: var(--fl-red); }
+.oversight-alerts li > svg { flex-shrink: 0; margin-top: 2px; color: var(--fl-warn); }
+.oversight-alerts li.is-alta > svg { color: var(--fl-red-deep); }
+.oversight-alerts li > div { flex: 1 1 auto; min-width: 0; }
+.oversight-alerts strong { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; color: var(--fl-ink); }
+.oversight-alerts p { margin: 4px 0; color: var(--fl-ink-soft); }
+.oversight-alerts small { color: var(--fl-subtle); }
+.oversight-alerts .fl-button { flex-shrink: 0; }
+.oversight-tag { padding: 1px 8px; border-radius: 999px; background: var(--fl-surface-2); color: var(--fl-muted); font-size: 0.75rem; font-weight: 600; }
+.oversight-bar { display: block; width: 100%; min-width: 60px; height: 4px; margin-top: 6px; border-radius: 2px; background: var(--fl-surface-2); }
+.oversight-bar i { display: block; height: 100%; border-radius: 2px; background: var(--fl-red); }
+.fl-table td.is-alert, .fl-table td.is-alert strong { color: var(--fl-red-deep); font-weight: 700; }
+.oversight-columns { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.6fr); gap: 20px; align-items: start; }
+.oversight-items li > strong { flex-shrink: 0; font-variant-numeric: tabular-nums; }
+@media (max-width: 1000px) { .oversight-columns { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 640px) { .oversight-alerts li { flex-wrap: wrap; } .oversight-alerts .fl-button { margin-left: 29px; } }
+
 /* Detalhe do item */
 .fl-detail { display: grid; gap: 20px; }
 .fl-detail-actions { display: flex; flex-wrap: wrap; gap: 8px; }
@@ -712,13 +775,15 @@ html.dark .fl-chip-group button.is-selected { border-color: var(--fl-red); backg
 .dev-badge.is-button:focus-visible { outline: 2px solid var(--fl-warn); outline-offset: 2px; }
 .dev-access-empty { margin: 0; color: var(--fl-muted); font-size: 0.9rem; line-height: 1.55; }
 .dev-access-empty code, .dev-access-fields code { padding: 1px 5px; border-radius: 3px; background: var(--fl-surface-2); font-size: 0.85em; }
-.dev-access-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin: 0; padding: 0; list-style: none; }
+.dev-access-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px; margin: 0; padding: 0; list-style: none; }
 .dev-access-card { display: flex; min-width: 0; flex-direction: column; gap: 14px; padding: 16px; border: 1px solid var(--fl-line); border-top: 3px solid var(--fl-red); border-radius: var(--fl-radius); background: var(--fl-surface); }
 .dev-access-card.is-student { border-top-color: var(--fl-ink); }
 .dev-access-head { display: flex; align-items: center; gap: 10px; }
 .dev-access-head b { display: block; color: var(--fl-ink); font: 700 0.95rem var(--fl-display); }
 .dev-access-icon { display: grid; width: 36px; height: 36px; flex-shrink: 0; place-items: center; border-radius: 50%; background: var(--fl-red-wash); color: var(--fl-red-deep); }
 .dev-access-card.is-student .dev-access-icon { background: var(--fl-surface-2); color: var(--fl-ink); }
+.dev-access-card.is-admin { border-top-color: var(--fl-warn); }
+.dev-access-card.is-admin .dev-access-icon { background: var(--fl-warn-wash); color: var(--fl-warn); }
 .dev-access-role { display: block; color: var(--fl-muted); font-size: 0.7rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; }
 .dev-access-fields { display: grid; gap: 8px; margin: 0; }
 .dev-access-fields dt { color: var(--fl-subtle); font-size: 0.7rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; }
@@ -727,3 +792,7 @@ html.dark .fl-chip-group button.is-selected { border-color: var(--fl-red); backg
 .dev-access-copy { width: 30px; height: 30px; flex-shrink: 0; }
 .dev-access-enter { width: 100%; margin-top: auto; }
 @media (max-width: 560px) { .dev-access-list { grid-template-columns: minmax(0, 1fr); } }
+
+/* Início da administração */
+.admin-home-missing { color: var(--fl-red-deep); font-weight: 600; }
+.admin-home .fl-table td small.admin-home-missing { display: block; }

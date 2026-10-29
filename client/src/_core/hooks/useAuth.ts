@@ -1,5 +1,6 @@
 import { trpc } from "@/lib/trpc";
 import { isStaffRole } from "@shared/roles";
+import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useMemo } from "react";
 
 /**
@@ -15,16 +16,18 @@ export function useAuth() {
   });
 
   const logoutMutation = trpc.auth.logout.useMutation();
+  const queryClient = useQueryClient();
 
   const logout = useCallback(async () => {
     try {
       await logoutMutation.mutateAsync();
     } finally {
-      // Remove dados da sessão anterior (inclusive estoque) antes de sair.
+      // Apaga todo o cache da sessão anterior (estoque, anotações, catálogo):
+      // a próxima conta nesta aba nunca vê nem edita dados de outra pessoa.
+      queryClient.removeQueries();
       utils.auth.me.setData(undefined, null);
-      await utils.invalidate();
     }
-  }, [logoutMutation, utils]);
+  }, [logoutMutation, queryClient, utils]);
 
   return useMemo(
     () => ({

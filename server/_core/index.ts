@@ -4,11 +4,24 @@ import { createServer } from "http";
 import net from "net";
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
 import { registerStorageProxy } from "./storageProxy";
+import { registerAttachmentUpload } from "../attachmentUpload";
 import { appRouter } from "../routers";
 import { checkDatabaseConnection } from "../db";
 import { createContext } from "./context";
 import { assertServerEnv, ENV } from "./env";
 import { serveStatic, setupVite } from "./vite";
+import { sdk } from "./sdk";
+
+const SMALL_BODY_LIMIT = "1mb";
+// Imagens enviadas no editor chegam em base64; o limite cobre capa + etapas.
+const LARGE_BODY_LIMIT = "25mb";
+const LARGE_UPLOAD_PROCEDURES = new Set(["learning.saveModule", "profile.uploadAvatar"]);
+
+/** `/learning.saveModule` ou um lote (`/a,b`) em que todas as chamadas aceitam corpo grande. */
+function isLargeUploadPath(path: string) {
+  const procedures = path.replace(/^\//, "").split(",");
+  return procedures.length > 0 && procedures.every(name => LARGE_UPLOAD_PROCEDURES.has(name));
+}
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
@@ -48,9 +61,13 @@ async function startServer() {
   } else {
     console.log(`[ControlLab] Banco ${database.provider === "postgres" ? "Postgres" : "SQLite"}: ${database.file}`);
   }
+  if (ENV.isProduction && ENV.databaseProvider === "postgres" && (process.env.DATABASE_SSL ?? "require").trim().toLowerCase() === "require") {
+    console.warn("[ControlLab] DATABASE_SSL=require criptografa a conexão, mas não confere o certificado do Postgres. Em produção prefira DATABASE_SSL=verify com DATABASE_SSL_CA.");
+  }
 
   const app = express();
   app.disable("x-powered-by");
+  if (ENV.trustProxy !== undefined) app.set("trust proxy", ENV.trustProxy);
   const server = createServer(app);
   app.use((_req, res, next) => {
     res.setHeader("X-Content-Type-Options", "nosniff");
@@ -58,8 +75,20 @@ async function startServer() {
     res.setHeader("X-Frame-Options", "SAMEORIGIN");
     next();
   });
-  // Imagens enviadas no editor chegam em base64; o limite cobre capa + etapas.
-  app.use(express.json({ limit: "25mb" }));
+  // Corpo pequeno por padrão. Só o editor e a foto de perfil (imagens em base64)
+  // aceitam corpos grandes, e apenas de quem apresenta uma sessão assinada: um
+  // visitante anônimo não consegue fazer o servidor ler 25 MB.
+  const smallJson = express.json({ limit: SMALL_BODY_LIMIT });
+  const largeJson = express.json({ limit: LARGE_BODY_LIMIT });
+  app.use("/api/trpc", (req, res, next) => {
+    if (!isLargeUploadPath(req.path)) return smallJson(req, res, next);
+    sdk.hasValidSignature(req).then(
+      signed => (signed ? largeJson : smallJson)(req, res, next),
+      next,
+    );
+  });
+  registerAttachmentUpload(app);
+  app.use(express.json({ limit: SMALL_BODY_LIMIT }));
   app.use(express.urlencoded({ limit: "1mb", extended: false }));
   registerStorageProxy(app);
   app.use(
@@ -67,6 +96,7 @@ async function startServer() {
     createExpressMiddleware({
       router: appRouter,
       createContext,
+      maxBodySize: 25 * 1024 * 1024,
       onError: ({ error, path }) => {
         if (error.code === "INTERNAL_SERVER_ERROR") console.error(`[tRPC] ${path ?? "?"}:`, error);
       },

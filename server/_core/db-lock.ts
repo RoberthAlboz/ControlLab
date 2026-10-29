@@ -19,10 +19,16 @@ export function isInsideTransaction() {
   return transactionContext.getStore() === true;
 }
 
-/** Fora de transação: espera a transação em curso terminar. */
-export async function waitOutsideTransaction() {
-  if (isInsideTransaction()) return;
-  while (activeTransaction) await activeTransaction;
+/**
+ * Transação que uma consulta avulsa precisa esperar (null = pode executar já).
+ *
+ * Quem chama deve repetir `while ((pending = pendingTransaction())) await pending;`
+ * e executar a consulta logo em seguida, SEM outro `await` no meio: entre a
+ * última checagem e a execução não pode haver uma volta do event loop, senão
+ * uma transação pode abrir (BEGIN) nesse intervalo e engolir a consulta avulsa.
+ */
+export function pendingTransaction(): Promise<void> | null {
+  return isInsideTransaction() ? null : activeTransaction;
 }
 
 /** Converte os parâmetros para os tipos gravados no banco (datas em ms, booleanos 0/1). */

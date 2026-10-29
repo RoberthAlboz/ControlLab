@@ -52,11 +52,24 @@ describe("learning permissions", () => {
     await expect(caller.profile.uploadAvatar({ dataUrl: "data:image/png;base64,ZmFrZQ==", mimeType: "image/png" })).rejects.toMatchObject({ code: "UNAUTHORIZED" });
   });
 
+  it("does not serve the module catalog to anonymous visitors", async () => {
+    const caller = appRouter.createCaller(context(null));
+    await expect(caller.learning.catalog()).rejects.toMatchObject({ code: "UNAUTHORIZED" });
+  });
+
   it("blocks module writes for regular students", async () => {
     const caller = appRouter.createCaller(context(student()));
     await expect(caller.learning.saveModule(moduleInput)).rejects.toMatchObject({ code: "FORBIDDEN" });
     await expect(caller.learning.deleteModule({ moduleId: "matriz" })).rejects.toMatchObject({ code: "FORBIDDEN" });
     await expect(caller.learning.resetStudentModule({ studentId: 8, moduleId: "matriz" })).rejects.toMatchObject({ code: "FORBIDDEN" });
+    await expect(caller.learning.saveSchedule([scheduleEntry])).rejects.toMatchObject({ code: "FORBIDDEN" });
+  });
+
+  it("blocks module writes for the admin account (admin only sees the overview)", async () => {
+    const caller = appRouter.createCaller(context(makeUser("admin")));
+    await expect(caller.learning.saveModule(moduleInput)).rejects.toMatchObject({ code: "FORBIDDEN" });
+    await expect(caller.learning.deleteModule({ moduleId: "matriz" })).rejects.toMatchObject({ code: "FORBIDDEN" });
+    // O calendário escolar é só para visualizar.
     await expect(caller.learning.saveSchedule([scheduleEntry])).rejects.toMatchObject({ code: "FORBIDDEN" });
   });
 

@@ -1,15 +1,67 @@
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 import { systemRouter } from "./_core/systemRouter";
-import { protectedProcedure, publicProcedure, router, studentProcedure, teacherProcedure } from "./_core/trpc";
-import { assignStudentBadge, deleteLearningModule, getCatalog, getStudentBadges, getTeacherBadgeData, LearningDomainError, removeStudentBadge, replaceLearningSchedule, resetStudentModuleProgress, saveLearningModule, setUserAvatar, startStudentStep, updateProgress } from "./db";
+import { moduleEditorProcedure, protectedProcedure, router, studentProcedure, teacherProcedure } from "./_core/trpc";
+import { assignStudentBadge, deleteLearningModule, getCatalog, getNotesOfStudent, getStudentBadges, getStudentNotes,getTeacherBadgeData, isUploadReferenced, LearningDomainError, removeStudentBadge, replaceLearningSchedule, resetStudentModuleProgress, saveLearningModule, saveStudentNotes, setUserAvatar, startStudentStep, updateProgress } from "./db";
 import { parseInlineImage, persistImageReference } from "./content-assets";
 import { isSupportedModelUrl } from "@shared/model-url";
-import { isLocalUploadUrl, storagePut } from "./storage";
+import { isAllowedAttachmentName, isHttpsUrl, isLinkAttachment, MAX_ATTACHMENT_BYTES, MAX_ATTACHMENT_NAME_LENGTH, MAX_ATTACHMENTS_PER_ITEM } from "@shared/attachments";
+import { isLocalUploadUrl, storageDeleteUrl, storagePut } from "./storage";
 import { CLASS_PERIOD_MS, createPeriodDate, isSchoolDate } from "@shared/class-schedule";
 import { MAX_ELAPSED_SECONDS } from "@shared/progress";
+import { parseStoredNotes } from "@shared/notes";
+import { dateKeyInZone } from "@shared/time-zone";
+import { isAdminRole } from "@shared/roles";
+import { ENV } from "./_core/env";
 import { authRouter } from "./auth";
 import { inventoryRouter } from "./inventoryRouter";
+import { adminRouter } from "./adminRouter";
+
+/** Converte erros de domínio do ensino em respostas tRPC legíveis. */
+async function runLearning<T>(operation: () => Promise<T>): Promise<T> {
+  try {
+    return await operation();
+  } catch (error) {
+    if (error instanceof LearningDomainError) throw new TRPCError({ code: error.code, message: error.message, cause: error });
+    throw error;
+  }
+}
+
+/** Apaga arquivos enviados que nenhum módulo, etapa ou perfil usa mais. Falhas só vão para o log. */
+async function deleteUnusedUploads(urls: Array<string | null | undefined>) {
+  for (const url of Array.from(new Set(urls))) {
+    if (!url || !isLocalUploadUrl(url)) continue;
+    try {
+      if (!(await isUploadReferenced(url))) await storageDeleteUrl(url);
+    } catch (error) {
+      console.warn("[Uploads] Não foi possível apagar", url, error instanceof Error ? error.message : error);
+    }
+  }
+}
+
+const MAX_NOTES_JSON_LENGTH = 900_000;
+
+const noteInput = z.object({
+  id: z.string().trim().min(1).max(64),
+  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+  periodId: z.number().int().min(1).max(12),
+  subject: z.string().max(120),
+  title: z.string().max(300),
+  body: z.string().max(20_000),
+  updatedAt: z.string().max(40),
+});
+
+/** Diário salvo → lista validada; `notes: null` quando nunca foi salvo. */
+function readSavedNotes(saved: { content: string; updatedAt: Date } | null) {
+  if (!saved) return { notes: null, updatedAt: null };
+  let raw: unknown = [];
+  try {
+    raw = JSON.parse(saved.content);
+  } catch {
+    raw = [];
+  }
+  return { notes: parseStoredNotes(raw, dateKeyInZone(new Date(), ENV.timeZone)), updatedAt: saved.updatedAt };
+}
 
 const imageReferenceInput = z.string().max(7_000_000).nullable().optional().refine((value) => {
   if (value == null) return true;
@@ -23,12 +75,24 @@ const imageReferenceInput = z.string().max(7_000_000).nullable().optional().refi
   }
 }, "Use uma imagem HTTPS ou um arquivo de imagem válido.");
 
+// Arquivos chegam já enviados (rota de upload); aqui só aceitamos URLs do próprio
+// servidor ou links HTTPS externos (ex.: pasta compartilhada no Drive).
+const attachmentInput = z.object({
+  id: z.string().trim().min(1).max(64),
+  name: z.string().trim().min(1).max(MAX_ATTACHMENT_NAME_LENGTH),
+  url: z.string().trim().max(2048).refine((value) => isLocalUploadUrl(value) || isHttpsUrl(value), "Anexo com endereço inválido."),
+  size: z.number().int().min(0).max(MAX_ATTACHMENT_BYTES),
+  mimeType: z.string().trim().max(160),
+}).refine((attachment) => isLinkAttachment(attachment) || isAllowedAttachmentName(attachment.name), "Tipo de arquivo não permitido.");
+const attachmentsInput = z.array(attachmentInput).max(MAX_ATTACHMENTS_PER_ITEM).default([]);
+
 const stepInput = z.object({
   id: z.string().trim().min(1).max(64),
   title: z.string().trim().min(1).max(180),
   description: z.string().trim().max(4000),
   tip: z.string().trim().max(2000),
   image: imageReferenceInput,
+  attachments: attachmentsInput,
 });
 const resourceInput = z.object({
   id: z.string().trim().min(1).max(64),
@@ -41,12 +105,13 @@ const resourceInput = z.object({
   modelUrl: z.string().trim().max(2048).refine((value) => value === "" || isSupportedModelUrl(value), "Informe uma URL HTTPS pública terminada em .glb ou .gltf, ou deixe o campo vazio."),
   color: z.string().trim().max(32),
   inventoryItemId: z.number().int().positive().nullable().optional(),
+  attachments: attachmentsInput,
 });
 const moduleInput = z.object({
   id: z.string().trim().min(1).max(64),
   code: z.string().trim().min(1).max(32),
   title: z.string().trim().min(1).max(180),
-  kind: z.enum(["Ferramenta", "Montagem", "Processo"]),
+  kind: z.string().trim().min(1, "Informe o tipo do módulo.").max(40),
   description: z.string().trim().max(4000),
   objective: z.string().trim().max(2000),
   cover: z.string().trim().max(32),
@@ -103,8 +168,9 @@ export const appRouter = router({
   system: systemRouter,
   auth: authRouter,
   learning: router({
-    catalog: publicProcedure.input(z.object({ period: z.enum(["all", "today", "week", "month"]).default("all"), identityKey: z.union([z.string(), z.number().int()]).optional() }).optional()).query(({ ctx, input }) => getCatalog(ctx.user?.id, input?.period ?? "all", ctx.user?.role ?? null)),
-    saveModule: teacherProcedure.input(moduleInput).mutation(async ({ ctx, input }) => {
+    // Exige sessão: módulos, etapas, anexos e agenda não ficam abertos a visitantes.
+    catalog: protectedProcedure.input(z.object({ period: z.enum(["all", "today", "week", "month"]).default("all"), identityKey: z.union([z.string(), z.number().int()]).optional() }).optional()).query(({ ctx, input }) => getCatalog(ctx.user?.id, input?.period ?? "all", ctx.user?.role ?? null)),
+    saveModule: moduleEditorProcedure.input(moduleInput).mutation(async ({ ctx, input }) => {
       const ownerPath = `learning-modules/${ctx.user.id}`;
       const moduleWithStoredImages = {
         ...input,
@@ -114,73 +180,78 @@ export const appRouter = router({
           image: await persistImageReference(step.image, `${ownerPath}/${crypto.randomUUID()}`),
         }))),
       };
-      await saveLearningModule(moduleWithStoredImages, ctx.user.id);
+      // Arquivos recém-gravados que não chegaram ao banco (erro no save) são apagados.
+      const inputImages = [input.coverImage, ...input.steps.map((step) => step.image)];
+      const uploadedNow = [moduleWithStoredImages.coverImage, ...moduleWithStoredImages.steps.map((step) => step.image)]
+        .filter((_url, index) => inputImages[index]?.startsWith("data:"));
+      let removedImages: string[];
+      try {
+        ({ removedImages } = await runLearning(() => saveLearningModule(moduleWithStoredImages, ctx.user)));
+      } catch (error) {
+        await deleteUnusedUploads(uploadedNow);
+        throw error;
+      }
+      await deleteUnusedUploads(removedImages);
       return { success: true } as const;
     }),
-    saveSchedule: teacherProcedure.input(scheduleInput).mutation(async ({ input }) => {
+    saveSchedule: teacherProcedure.input(scheduleInput).mutation(async ({ ctx, input }) => {
+      // A administração só visualiza o calendário escolar; quem agenda são os docentes.
+      if (isAdminRole(ctx.user.role)) {
+        throw new TRPCError({ code: "FORBIDDEN", message: "A administração só visualiza o calendário escolar." });
+      }
       const entries = input.map((entry) => {
         const startsAt = createPeriodDate(entry.date, entry.periodId);
         return { ...entry, startsAt, endsAt: new Date(startsAt.getTime() + CLASS_PERIOD_MS) };
       });
-      try {
-        await replaceLearningSchedule(entries);
-      } catch (error) {
-        if (error instanceof LearningDomainError) throw new TRPCError({ code: error.code, message: error.message });
-        throw error;
-      }
+      await runLearning(() => replaceLearningSchedule(entries, ctx.user));
       return { success: true } as const;
     }),
-    deleteModule: teacherProcedure.input(z.object({ moduleId: z.string().min(1).max(64) })).mutation(async ({ input }) => {
-      try {
-        await deleteLearningModule(input.moduleId);
-        return { success: true } as const;
-      } catch (error) {
-        if (error instanceof LearningDomainError) throw new TRPCError({ code: error.code, message: error.message });
-        throw error;
-      }
+    deleteModule: moduleEditorProcedure.input(z.object({ moduleId: z.string().min(1).max(64) })).mutation(async ({ ctx, input }) => {
+      await runLearning(() => deleteLearningModule(input.moduleId, ctx.user));
+      return { success: true } as const;
     }),
-    startStep: studentProcedure.input(z.object({ moduleId: z.string().min(1).max(64), stepIndex: z.number().int().min(0) })).mutation(async ({ ctx, input }) => {
-      try {
-        return await startStudentStep(ctx.user!.id, input.moduleId, input.stepIndex);
-      } catch (error) {
-        if (error instanceof LearningDomainError) throw new TRPCError({ code: error.code, message: error.message });
-        throw error;
-      }
+    startStep: studentProcedure.input(z.object({ moduleId: z.string().min(1).max(64), stepIndex: z.number().int().min(0) })).mutation(({ ctx, input }) =>
+      runLearning(() => startStudentStep(ctx.user.id, input.moduleId, input.stepIndex))),
+    updateProgress: studentProcedure.input(z.object({ moduleId: z.string().min(1).max(64), stepIndex: z.number().int().min(0), elapsedSeconds: z.number().int().min(0).max(MAX_ELAPSED_SECONDS).default(0) })).mutation(({ ctx, input }) =>
+      runLearning(() => updateProgress(ctx.user.id, input.moduleId, input.stepIndex, input.elapsedSeconds))),
+    resetStudentModule: teacherProcedure.input(z.object({ studentId: z.number().int().positive(), moduleId: z.string().min(1).max(64) })).mutation(({ ctx, input }) =>
+      runLearning(() => resetStudentModuleProgress(input.studentId, input.moduleId, ctx.user))),
+  }),
+  /** Diário de aula do aluno, guardado no banco (antes ficava só no navegador). */
+  notes: router({
+    mine: protectedProcedure.query(async ({ ctx }) => readSavedNotes(await getStudentNotes(ctx.user.id))),
+    /** Docente consulta o diário de um aluno das turmas dele (somente leitura). */
+    ofStudent: teacherProcedure.input(z.object({ studentId: z.number().int().positive() })).query(async ({ ctx, input }) => {
+      const found = await runLearning(() => getNotesOfStudent(input.studentId, ctx.user));
+      if (!found) throw new TRPCError({ code: "NOT_FOUND", message: "Aluno não encontrado." });
+      return { student: found.student, ...readSavedNotes(found.saved) };
     }),
-    updateProgress: studentProcedure.input(z.object({ moduleId: z.string().min(1).max(64), stepIndex: z.number().int().min(0), elapsedSeconds: z.number().int().min(0).max(MAX_ELAPSED_SECONDS).default(0) })).mutation(async ({ ctx, input }) => {
-      try {
-        return await updateProgress(ctx.user!.id, input.moduleId, input.stepIndex, input.elapsedSeconds);
-      } catch (error) {
-        if (error instanceof LearningDomainError) throw new TRPCError({ code: error.code, message: error.message });
-        throw error;
+    save: studentProcedure.input(z.object({ notes: z.array(noteInput).max(2_000) })).mutation(async ({ ctx, input }) => {
+      const content = JSON.stringify(input.notes);
+      if (content.length > MAX_NOTES_JSON_LENGTH) {
+        throw new TRPCError({ code: "PAYLOAD_TOO_LARGE", message: "As anotações passaram do limite de tamanho. Apague anotações antigas para continuar salvando." });
       }
-    }),
-    resetStudentModule: teacherProcedure.input(z.object({ studentId: z.number().int().positive(), moduleId: z.string().min(1).max(64) })).mutation(async ({ input }) => {
-      try {
-        return await resetStudentModuleProgress(input.studentId, input.moduleId);
-      } catch (error) {
-        if (error instanceof LearningDomainError) throw new TRPCError({ code: error.code, message: error.message });
-        throw error;
-      }
+      return saveStudentNotes(ctx.user.id, content);
     }),
   }),
   badges: router({
     mine: studentProcedure.input(z.object({ identityKey: z.union([z.string(), z.number().int()]).optional() }).optional()).query(({ ctx }) => getStudentBadges(ctx.user.id)),
-    adminData: teacherProcedure.input(z.object({ identityKey: z.union([z.string(), z.number().int()]).optional() }).optional()).query(() => getTeacherBadgeData()),
+    adminData: teacherProcedure.input(z.object({ identityKey: z.union([z.string(), z.number().int()]).optional() }).optional()).query(({ ctx }) => getTeacherBadgeData(ctx.user)),
     assign: teacherProcedure.input(z.object({
       studentId: z.number().int().positive(),
       label: z.string().trim().min(1).max(100),
       detail: z.string().trim().max(500).default(""),
     })).mutation(async ({ ctx, input }) => {
-      await assignStudentBadge(input, ctx.user.id);
+      await runLearning(() => assignStudentBadge(input, ctx.user));
       return { success: true } as const;
     }),
-    remove: teacherProcedure.input(z.object({ badgeId: z.number().int().positive() })).mutation(async ({ input }) => {
-      await removeStudentBadge(input.badgeId);
+    remove: teacherProcedure.input(z.object({ badgeId: z.number().int().positive() })).mutation(async ({ ctx, input }) => {
+      await runLearning(() => removeStudentBadge(input.badgeId, ctx.user));
       return { success: true } as const;
     }),
   }),
   inventory: inventoryRouter,
+  admin: adminRouter,
   profile: router({
     uploadAvatar: protectedProcedure.input(z.object({
       dataUrl: z.string().regex(/^data:image\/(jpeg|jpg|png|webp);base64,/).max(7_000_000),
@@ -189,7 +260,8 @@ export const appRouter = router({
       const parsed = parseInlineImage(input.dataUrl, input.mimeType);
       const extension = parsed.mimeType === "image/jpeg" ? "jpg" : parsed.mimeType.split("/")[1];
       const uploaded = await storagePut(`${ctx.user.id}-profile/avatar.${extension}`, parsed.bytes, parsed.mimeType);
-      await setUserAvatar(ctx.user.id, uploaded.url);
+      const { previousAvatarUrl } = await setUserAvatar(ctx.user.id, uploaded.url);
+      await deleteUnusedUploads([previousAvatarUrl]);
       return { avatarUrl: uploaded.url };
     }),
   }),

@@ -20,6 +20,7 @@ import { hashPassword } from "./_core/password";
 import { appRouter } from "./routers";
 import { INVALID_CREDENTIALS_MESSAGE } from "./auth";
 import { loginRateLimiter } from "./_core/rate-limit";
+import { DatabaseUnavailableError } from "./_core/db-errors";
 import { makeContext, makeUser } from "./test-utils";
 
 let teacherHash = "";
@@ -85,6 +86,15 @@ describe("auth.login", () => {
       await expect(caller.auth.login({ email: "bloqueio@forgelab.test", password: "errada-123" })).rejects.toMatchObject({ code: "UNAUTHORIZED" });
     }
     await expect(caller.auth.login({ email: "bloqueio@forgelab.test", password: "errada-123" })).rejects.toMatchObject({ code: "TOO_MANY_REQUESTS" });
+  });
+
+  it("banco fora do ar responde 503, não 'senha incorreta', e não conta como tentativa", async () => {
+    db.getUserByEmail.mockRejectedValue(new DatabaseUnavailableError());
+    const caller = appRouter.createCaller(makeContext(null).ctx);
+    for (let attempt = 0; attempt < 6; attempt += 1) {
+      await expect(caller.auth.login({ email: "docente@forgelab.test", password: "senha-correta-123" })).rejects.toMatchObject({ code: "SERVICE_UNAVAILABLE" });
+    }
+    expect(loginRateLimiter.retryAfterSeconds("docente@forgelab.test", "127.0.0.1")).toBe(0);
   });
 
   it("auth.me devolve null sem sessão e dados públicos com sessão", async () => {

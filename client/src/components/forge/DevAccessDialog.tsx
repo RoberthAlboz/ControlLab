@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Check, Copy, GraduationCap, LogIn, Wrench } from "lucide-react";
+import { Check, Copy, GraduationCap, LogIn, ShieldCheck, Wrench } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 import { Modal } from "@/components/inventory/InventoryUI";
 
@@ -15,7 +15,8 @@ type DevAccessDialogProps = {
   busy: boolean;
 };
 
-const ROLE_LABEL = { teacher: "Docente", student: "Aluno" } as const;
+const ROLE_LABEL = { admin: "Administração", teacher: "Docente", student: "Aluno" } as const;
+const ROLE_ICON = { admin: ShieldCheck, teacher: Wrench, student: GraduationCap } as const;
 
 function CopyButton({ value, label }: { value: string; label: string }) {
   const [copied, setCopied] = useState(false);
@@ -47,20 +48,23 @@ export default function DevAccessDialog({ open, onOpenChange, onUse, busy }: Dev
       title="Acessos de desenvolvimento"
       description="Contas de teste criadas pela seed a partir do .env. Só aparecem no ambiente de desenvolvimento."
       busy={busy}
+      size="lg"
     >
       {accountsQuery.isLoading ? (
         <p className="dev-access-empty">Carregando contas…</p>
       ) : accounts.length === 0 ? (
         <p className="dev-access-empty">
-          Nenhuma conta de teste configurada. Defina <code>SEED_TEACHER_*</code> e <code>SEED_STUDENT_*</code> no <code>.env</code> e rode <code>pnpm db:seed</code>.
+          Nenhuma conta de teste configurada. Defina <code>SEED_ADMIN_*</code>, <code>SEED_TEACHER_*</code> e <code>SEED_STUDENT_*</code> no <code>.env</code> e rode <code>pnpm db:seed</code>.
         </p>
       ) : (
         <ul className="dev-access-list">
-          {accounts.map(account => (
+          {accounts.map(account => {
+            const Icon = ROLE_ICON[account.role];
+            return (
             <li key={account.role} className={`dev-access-card is-${account.role}`}>
               <div className="dev-access-head">
                 <span className="dev-access-icon" aria-hidden="true">
-                  {account.role === "teacher" ? <Wrench size={18} /> : <GraduationCap size={18} />}
+                  <Icon size={18} />
                 </span>
                 <div>
                   <span className="dev-access-role">{ROLE_LABEL[account.role]}</span>
@@ -87,7 +91,8 @@ export default function DevAccessDialog({ open, onOpenChange, onUse, busy }: Dev
                 <LogIn size={16} aria-hidden="true" /> Entrar como {ROLE_LABEL[account.role].toLowerCase()}
               </button>
             </li>
-          ))}
+            );
+          })}
         </ul>
       )}
     </Modal>

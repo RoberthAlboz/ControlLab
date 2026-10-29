@@ -9,7 +9,7 @@ import { mkdirSync } from "node:fs";
 import { createRequire } from "node:module";
 import path from "node:path";
 import type { DatabaseSync, SQLInputValue } from "node:sqlite";
-import { normalizeParam, waitOutsideTransaction, type DriverMethod } from "./db-lock";
+import { normalizeParam, pendingTransaction, type DriverMethod } from "./db-lock";
 
 export { runExclusive } from "./db-lock";
 export type SqliteMethod = DriverMethod;
@@ -50,7 +50,9 @@ export async function openSqlite(file = resolveDatabaseFile()): Promise<Database
 
 /** Executa um SQL vindo do Drizzle no formato que o `sqlite-proxy` espera. */
 export async function executeProxy(database: DatabaseSync, sqlText: string, params: unknown[], method: SqliteMethod) {
-  await waitOutsideTransaction();
+  let pending: Promise<void> | null;
+  while ((pending = pendingTransaction())) await pending;
+  // Daqui em diante tudo é síncrono: nenhuma transação consegue começar no meio.
   const statement = database.prepare(sqlText);
   const values = params.map(normalizeParam) as SQLInputValue[];
   if (method === "run") {

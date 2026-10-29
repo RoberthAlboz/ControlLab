@@ -11,3 +11,4 @@ export type InventoryMovementRow = RouterOutputs["inventory"]["movements"]["list
 export type InventoryLoanRow = RouterOutputs["inventory"]["loans"]["list"]["loans"][number];
 export type InventoryOptions = RouterOutputs["inventory"]["options"];
 export type LinkableItem = RouterOutputs["inventory"]["items"]["linkable"][number];
+export type AdminUserRow = RouterOutputs["admin"]["users"]["list"][number];

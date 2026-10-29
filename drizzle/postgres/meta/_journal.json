@@ -8,6 +8,41 @@
       "when": 1792710000000,
       "tag": "0000_controllab_baseline",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1792800000000,
+      "tag": "0001_ownership_archive_notes",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1793000000000,
+      "tag": "0002_classrooms",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1793100000000,
+      "tag": "0003_module_attachments",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1793200000000,
+      "tag": "0004_inventory_item_icon",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1793300000000,
+      "tag": "0005_learning_foreign_keys",
+      "breakpoints": true
     }
   ]
 }

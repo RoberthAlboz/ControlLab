@@ -33,6 +33,7 @@ const APP_TABLES = [
   "learning_steps",
   "learning_modules",
   "student_badges",
+  "student_notes",
   "auth_sessions",
   "users",
   "__drizzle_migrations",
@@ -98,15 +99,27 @@ async function runSqliteMigrations(file: string) {
     for (const entry of journal.entries) {
       if (last && Number(last.created_at) >= entry.when) continue;
       const { content, statements } = readStatements(migrationsFolder, entry.tag);
+      // Migrations que recriam tabelas (padrão do drizzle-kit no SQLite) precisam das
+      // FKs desligadas: dentro de BEGIN o `PRAGMA foreign_keys=OFF` do arquivo é
+      // ignorado, e um DROP TABLE com FKs ligadas dispararia CASCADE/SET NULL nas
+      // tabelas que apontam para ela. A integridade é conferida antes do COMMIT.
+      database.exec("PRAGMA foreign_keys = OFF");
       database.exec("BEGIN");
       try {
         for (const statement of statements) database.exec(statement);
+        const violations = database.prepare("PRAGMA foreign_key_check").all() as Array<{ table: string; parent: string }>;
+        if (violations.length) {
+          const sample = violations.slice(0, 3).map(row => `${row.table} → ${row.parent}`).join(", ");
+          throw new Error(`${violations.length} linha(s) violam chaves estrangeiras (${sample}).`);
+        }
         database.prepare(`INSERT INTO "__drizzle_migrations" (hash, created_at) VALUES (?, ?)`).run(createHash("sha256").update(content).digest("hex"), entry.when);
         database.exec("COMMIT");
         applied += 1;
       } catch (error) {
         database.exec("ROLLBACK");
         throw new Error(`Falha na migration ${entry.tag}: ${error instanceof Error ? error.message : String(error)}`);
+      } finally {
+        database.exec("PRAGMA foreign_keys = ON");
       }
     }
     return applied;

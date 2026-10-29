@@ -15,6 +15,9 @@
 .clean-app .nt-header p.nt-lead { max-width: 58ch; margin: 0; color: var(--fl-muted); font-size: 0.95rem !important; line-height: 1.5; }
 .nt-header-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
 .nt-search { display: flex; width: 260px; max-width: 100%; align-items: center; gap: 8px; padding: 0 12px; border: 1px solid var(--fl-line); border-radius: 12px; background: var(--fl-surface); color: var(--fl-muted); transition: border-color 160ms, box-shadow 160ms; }
+.nt-student { display: flex; width: 220px; max-width: 100%; align-items: center; gap: 8px; padding: 0 12px; border: 1px solid var(--fl-line); border-radius: 12px; background: var(--fl-surface); color: var(--fl-muted); }
+.nt-student:focus-within { border-color: var(--fl-red); box-shadow: 0 0 0 4px rgba(196, 8, 12, 0.1); }
+.nt-student select { min-width: 0; height: 42px; flex: 1; border: 0; outline: 0; background: transparent; color: var(--fl-ink); font-weight: 600; cursor: pointer; }
 .nt-search:focus-within { border-color: var(--fl-red); box-shadow: 0 0 0 4px rgba(196, 8, 12, 0.1); }
 .nt-search input { min-width: 0; height: 42px; flex: 1; border: 0; outline: 0; background: transparent; color: var(--fl-ink); }
 .nt-search input::-webkit-search-cancel-button { display: none; }
@@ -106,8 +109,7 @@
 .clean-app .nt-sheet-foot p { display: inline-flex; align-items: center; gap: 6px; margin: 0; color: var(--fl-subtle); font-size: 0.76rem !important; }
 .clean-app .nt-sheet-foot p.nt-save.is-saved { color: var(--fl-ok); }
 .clean-app .nt-sheet-foot p.nt-save.is-error { color: var(--fl-red-deep); font-weight: 700; }
-.nt-spin { animation: nt-spin 900ms linear infinite; }
-@keyframes nt-spin { to { transform: rotate(360deg); } }
+.nt-spin { animation: fl-spin 900ms linear infinite; }
 
 .nt-empty { display: grid; justify-items: center; gap: 8px; padding: 56px 20px 60px; border: 1px dashed var(--fl-line-strong); border-radius: 14px; background: var(--fl-paper); text-align: center; }
 .nt-empty-icon { display: grid; width: 56px; height: 56px; place-items: center; margin-bottom: 6px; border-radius: 16px; background: var(--fl-red-wash); color: var(--fl-red-deep); }
@@ -130,7 +132,7 @@
   .nt-editor { padding: 18px 16px 14px; }
 }
 @media (max-width: 560px) {
-  .nt-header-actions, .nt-search { width: 100%; }
+  .nt-header-actions, .nt-search, .nt-student { width: 100%; }
   .nt-primary { flex: 1; justify-content: center; }
   .nt-days { gap: 4px; }
   .nt-day { border-radius: 10px; }

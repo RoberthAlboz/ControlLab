@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { check, foreignKey, index, integer, sqliteTable, text, uniqueIndex } from "drizzle-orm/sqlite-core";
+import { check, foreignKey, index, integer, sqliteTable, text, uniqueIndex, type AnySQLiteColumn } from "drizzle-orm/sqlite-core";
 
 /**
  * Banco SQLite (arquivo em data/forgelab.db). Convenções:
@@ -31,11 +31,27 @@ export const users = sqliteTable("users", {
   passwordHash: text("passwordHash"),
   role: text("role", { enum: ["student", "teacher", "admin"] }).default("student").notNull(),
   active: integer("active").default(1).notNull(),
+  /** Turma do aluno (null para docentes/admins ou aluno ainda sem turma). */
+  classroomId: integer("classroomId").references((): AnySQLiteColumn => classrooms.id, { onDelete: "set null" }),
   createdAt: createdAt("createdAt"),
   updatedAt: updatedAt("updatedAt"),
   lastSignedIn: createdAt("lastSignedIn"),
 }, (table) => ({
   emailUnique: uniqueIndex("users_email_unique").on(table.email),
+  classroomIdx: index("users_classroom_idx").on(table.classroomId),
+}));
+
+/** Turma (sala) com um docente responsável — é quem a administração aciona. */
+export const classrooms = sqliteTable("classrooms", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  name: text("name").notNull(),
+  teacherId: integer("teacherId").references((): AnySQLiteColumn => users.id, { onDelete: "set null" }),
+  archivedAt: timestamp("archivedAt"),
+  createdAt: createdAt("createdAt"),
+  updatedAt: updatedAt("updatedAt"),
+}, (table) => ({
+  nameUnique: uniqueIndex("classrooms_name_unique").on(table.name),
+  teacherIdx: index("classrooms_teacher_idx").on(table.teacherId),
 }));
 
 /** Registro server-side das sessões emitidas: permite expirar e revogar JWTs. */
@@ -61,13 +77,17 @@ export const studentBadges = sqliteTable("student_badges", {
   detail: text("detail").notNull(),
   awardedBy: integer("awardedBy").notNull(),
   awardedAt: createdAt("awardedAt"),
-}, (table) => ({ userIdx: index("student_badges_user_idx").on(table.userId) }));
+}, (table) => ({
+  userIdx: index("student_badges_user_idx").on(table.userId),
+  userFk: foreignKey({ name: "student_badges_user_fk", columns: [table.userId], foreignColumns: [users.id] }).onDelete("cascade"),
+}));
 
 export const learningModules = sqliteTable("learning_modules", {
   id: text("id").primaryKey(),
   code: text("code").notNull(),
   title: text("title").notNull(),
-  kind: text("kind", { enum: ["Ferramenta", "Montagem", "Processo"] }).notNull(),
+  /** Texto livre do docente (exemplos sugeridos: Ferramenta, Montagem, Processo). */
+  kind: text("kind").notNull(),
   description: text("description").notNull(),
   objective: text("objective").notNull(),
   cover: text("cover").notNull(),
@@ -76,9 +96,15 @@ export const learningModules = sqliteTable("learning_modules", {
   duration: text("duration").notNull(),
   published: integer("published").default(0).notNull(),
   createdBy: integer("createdBy"),
+  /** Módulo excluído pelo docente: some do catálogo, mas o progresso dos alunos é preservado. */
+  archivedAt: timestamp("archivedAt"),
   createdAt: createdAt("createdAt"),
   updatedAt: updatedAt("updatedAt"),
-}, (table) => ({ publishedIdx: index("learning_modules_published_idx").on(table.published) }));
+}, (table) => ({
+  publishedIdx: index("learning_modules_published_idx").on(table.published),
+  archivedIdx: index("learning_modules_archived_idx").on(table.archivedAt),
+  createdByFk: foreignKey({ name: "learning_modules_created_by_fk", columns: [table.createdBy], foreignColumns: [users.id] }).onDelete("set null"),
+}));
 
 export const learningSteps = sqliteTable("learning_steps", {
   id: text("id").primaryKey(),
@@ -88,7 +114,12 @@ export const learningSteps = sqliteTable("learning_steps", {
   description: text("description").notNull(),
   tip: text("tip").notNull(),
   imageUrl: text("imageUrl"),
-}, (table) => ({ moduleIdx: index("learning_steps_module_idx").on(table.moduleId) }));
+  /** JSON de `ContentAttachment[]` (shared/attachments.ts): arquivos e links de apoio. */
+  attachments: text("attachments").default("[]").notNull(),
+}, (table) => ({
+  moduleIdx: index("learning_steps_module_idx").on(table.moduleId),
+  moduleFk: foreignKey({ name: "learning_steps_module_fk", columns: [table.moduleId], foreignColumns: [learningModules.id] }).onDelete("cascade").onUpdate("cascade"),
+}));
 
 export const learningResources = sqliteTable("learning_resources", {
   id: text("id").primaryKey(),
@@ -100,6 +131,8 @@ export const learningResources = sqliteTable("learning_resources", {
   status: text("status").notNull(),
   progress: integer("progress").default(0).notNull(),
   modelUrl: text("modelUrl").notNull(),
+  /** JSON de `ContentAttachment[]` (shared/attachments.ts): fichas, desenhos, CAD, 3D… */
+  attachments: text("attachments").default("[]").notNull(),
   color: text("color").notNull(),
   /**
    * Vínculo opcional com um item do estoque. O título/descrição do recurso
@@ -109,6 +142,7 @@ export const learningResources = sqliteTable("learning_resources", {
   inventoryItemId: integer("inventoryItemId"),
 }, (table) => ({
   moduleIdx: index("learning_resources_module_idx").on(table.moduleId),
+  moduleFk: foreignKey({ name: "learning_resources_module_fk", columns: [table.moduleId], foreignColumns: [learningModules.id] }).onDelete("cascade").onUpdate("cascade"),
   inventoryIdx: index("learning_resources_inventory_idx").on(table.inventoryItemId),
   inventoryFk: foreignKey({
     name: "learning_resources_inventory_fk",
@@ -127,8 +161,9 @@ export const studentProgress = sqliteTable("student_progress", {
   streakDays: integer("streakDays").default(0).notNull(),
   updatedAt: updatedAt("updatedAt"),
 }, (table) => ({
-  userModuleIdx: index("student_progress_user_module_idx").on(table.userId, table.moduleId),
   userModuleUnique: uniqueIndex("student_progress_user_module_unique").on(table.userId, table.moduleId),
+  userFk: foreignKey({ name: "student_progress_user_fk", columns: [table.userId], foreignColumns: [users.id] }).onDelete("cascade"),
+  moduleFk: foreignKey({ name: "student_progress_module_fk", columns: [table.moduleId], foreignColumns: [learningModules.id] }).onDelete("cascade").onUpdate("cascade"),
 }));
 
 export const studentStepSessions = sqliteTable("student_step_sessions", {
@@ -142,6 +177,8 @@ export const studentStepSessions = sqliteTable("student_step_sessions", {
 }, (table) => ({
   userStepIdx: uniqueIndex("student_step_sessions_user_step_idx").on(table.userId, table.moduleId, table.stepIndex),
   moduleIdx: index("student_step_sessions_module_idx").on(table.userId, table.moduleId),
+  userFk: foreignKey({ name: "student_step_sessions_user_fk", columns: [table.userId], foreignColumns: [users.id] }).onDelete("cascade"),
+  moduleFk: foreignKey({ name: "student_step_sessions_module_fk", columns: [table.moduleId], foreignColumns: [learningModules.id] }).onDelete("cascade").onUpdate("cascade"),
 }));
 
 export const instructors = sqliteTable("instructors", {
@@ -164,7 +201,22 @@ export const learningActivities = sqliteTable("learning_activities", {
   startsAt: timestamp("startsAt").notNull(),
   endsAt: timestamp("endsAt").notNull(),
   color: text("color").notNull(),
-});
+  /** Docente que agendou; null = atividade antiga, editável por qualquer docente. */
+  createdBy: integer("createdBy"),
+}, (table) => ({
+  createdByIdx: index("learning_activities_created_by_idx").on(table.createdBy),
+  moduleFk: foreignKey({ name: "learning_activities_module_fk", columns: [table.moduleId], foreignColumns: [learningModules.id] }).onDelete("cascade").onUpdate("cascade"),
+  createdByFk: foreignKey({ name: "learning_activities_created_by_fk", columns: [table.createdBy], foreignColumns: [users.id] }).onDelete("set null"),
+}));
+
+/** Diário de aula do aluno (antes ficava só no navegador). Um documento JSON por aluno. */
+export const studentNotes = sqliteTable("student_notes", {
+  userId: integer("userId").primaryKey(),
+  content: text("content").default("[]").notNull(),
+  updatedAt: updatedAt("updatedAt"),
+}, (table) => ({
+  userFk: foreignKey({ name: "student_notes_user_fk", columns: [table.userId], foreignColumns: [users.id] }).onDelete("cascade"),
+}));
 
 /* ------------------------------------------------------------------------ */
 /* Estoque (exclusivo do papel docente)                                      */
@@ -207,6 +259,8 @@ export const inventoryItems = sqliteTable("inventory_items", {
   location: text("location").notNull(),
   conservation: text("conservation", { enum: ["novo", "bom", "regular", "ruim"] }).default("bom").notNull(),
   status: text("status", { enum: ["disponivel", "manutencao", "indisponivel"] }).default("disponivel").notNull(),
+  /** Figura escolhida no cadastro (ITEM_ICONS); null = automática. */
+  icon: text("icon"),
   /** Controle otimista de concorrência para edições de cadastro. */
   version: integer("version").default(0).notNull(),
   archivedAt: timestamp("archivedAt"),
@@ -241,6 +295,8 @@ export const inventoryLoans = sqliteTable("inventory_loans", {
   borrowerUserId: integer("borrowerUserId"),
   /** Nome de quem recebe (aluno, turma ou docente) — snapshot para o histórico. */
   borrowerName: text("borrowerName").notNull(),
+  /** Turma no momento do empréstimo (snapshot: trocar o aluno de turma não muda o histórico). */
+  classroomId: integer("classroomId").references((): AnySQLiteColumn => classrooms.id, { onDelete: "set null" }),
   quantity: integer("quantity").notNull(),
   returnedQuantity: integer("returnedQuantity").default(0).notNull(),
   damagedQuantity: integer("damagedQuantity").default(0).notNull(),
@@ -307,6 +363,8 @@ export const inventoryMovements = sqliteTable("inventory_movements", {
   reference: text("reference"),
   note: text("note"),
   loanId: integer("loanId"),
+  /** Turma atendida (saída para aula ou movimento de um empréstimo da turma). */
+  classroomId: integer("classroomId").references((): AnySQLiteColumn => classrooms.id, { onDelete: "set null" }),
   moduleId: text("moduleId"),
   moduleTitleSnapshot: text("moduleTitleSnapshot"),
   itemCodeSnapshot: text("itemCodeSnapshot").notNull(),
@@ -346,6 +404,7 @@ export const inventoryAuditLog = sqliteTable("inventory_audit_log", {
 export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;
 export type AuthSession = typeof authSessions.$inferSelect;
+export type Classroom = typeof classrooms.$inferSelect;
 export type StudentBadge = typeof studentBadges.$inferSelect;
 export type LearningModule = typeof learningModules.$inferSelect;
 export type LearningStep = typeof learningSteps.$inferSelect;

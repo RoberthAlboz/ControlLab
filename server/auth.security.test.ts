@@ -66,6 +66,15 @@ describe("papéis e rotas", () => {
     expect(safeRedirectPath("/biblioteca", "student")).toBe("/biblioteca");
   });
 
+  it("admin não volta para rotas de módulos, mas mantém estoque e administração", () => {
+    expect(safeRedirectPath("/biblioteca", "admin")).toBe("/");
+    expect(safeRedirectPath("/leitor", "admin")).toBe("/");
+    expect(safeRedirectPath("/editor", "admin")).toBe("/");
+    expect(safeRedirectPath("/estoque", "admin")).toBe("/estoque");
+    expect(safeRedirectPath("/admin/usuarios", "admin")).toBe("/admin/usuarios");
+    expect(safeRedirectPath("/editor", "teacher")).toBe("/editor");
+  });
+
   it("não aceita redirecionamentos externos ou de volta ao login", () => {
     expect(safeRedirectPath("https://malicioso.example", "teacher")).toBe("/");
     expect(safeRedirectPath("//malicioso.example", "teacher")).toBe("/");

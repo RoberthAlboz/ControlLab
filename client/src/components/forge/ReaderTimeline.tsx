@@ -1,4 +1,5 @@
 import { Check, CircleDot, LockKeyhole } from "lucide-react";
+import MachinedPart from "./MachinedPart";
 
 type ReaderTimelineStep = {
   id: string;
@@ -6,6 +7,8 @@ type ReaderTimelineStep = {
 };
 
 type ReaderTimelineProps = {
+  /** Identifica o módulo: define o perfil da peça usinada ao longo das etapas. */
+  moduleId: string;
   steps: ReaderTimelineStep[];
   activeIndex: number;
   canVisitThrough: number;
@@ -16,6 +19,7 @@ type ReaderTimelineProps = {
 };
 
 export default function ReaderTimeline({
+  moduleId,
   steps,
   activeIndex,
   canVisitThrough,
@@ -49,6 +53,8 @@ export default function ReaderTimeline({
       >
         <span style={{ width: `${steps.length ? (completedCount / steps.length) * 100 : 0}%` }} />
       </div>
+
+      {steps.length > 0 && <MachinedPart seed={moduleId} total={steps.length} completed={completedCount} />}
 
       {steps.length > 0 ? (
         <ol className="reader-timeline-list">

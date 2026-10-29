@@ -3,9 +3,10 @@ import { useEffect, useRef, useState } from "react";
 type NumberTickerProps = {
   value: number;
   ready: boolean;
+  unit?: "h" | "min";
 };
 
-export default function NumberTicker({ value, ready }: NumberTickerProps) {
+export default function NumberTicker({ value, ready, unit = "h" }: NumberTickerProps) {
   const confirmedValue = Number.isFinite(value) ? Math.max(0, Math.floor(value)) : 0;
   const [displayValue, setDisplayValue] = useState(confirmedValue);
   const displayedValue = useRef(confirmedValue);
@@ -83,10 +84,13 @@ export default function NumberTicker({ value, ready }: NumberTickerProps) {
     <>
       <span className="study-hours-ticker" aria-hidden="true">
         <span>{displayedText}</span>
-        <span className="study-hours-ticker-unit">h</span>
+        <span className="study-hours-ticker-unit">{unit}</span>
       </span>
       <span className="sr-only">
-        {confirmedText} {confirmedValue === 1 ? "hora estudada" : "horas estudadas"}
+        {confirmedText}{" "}
+        {unit === "h"
+          ? confirmedValue === 1 ? "hora estudada" : "horas estudadas"
+          : confirmedValue === 1 ? "minuto estudado" : "minutos estudados"}
       </span>
     </>
   );

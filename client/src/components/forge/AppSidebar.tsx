@@ -1,6 +1,6 @@
 import { useEffect, useState, type CSSProperties, type ReactNode } from "react";
 import { LayoutGroup, MotionConfig, motion } from "framer-motion";
-import { ArrowRight, BookOpen, Edit3, Grid2X2, LayoutDashboard, LogOut, PanelLeftClose, PanelLeftOpen, Warehouse, X } from "lucide-react";
+import { ArrowRight, BookOpen, Grid2X2, LayoutDashboard, LogOut, PanelLeftClose, PanelLeftOpen, School, ShieldCheck, Users, Warehouse, X } from "lucide-react";
 import BrandLogo from "@/components/forge/BrandLogo";
 import BrandMark from "@/components/forge/BrandMark";
 
@@ -9,15 +9,16 @@ import BrandMark from "@/components/forge/BrandMark";
  * - Desktop: trilho de ícones que se expande ao passar o mouse ou focar pelo
  *   teclado; o botão de fixar mantém aberto (lembrado no navegador) e empurra o conteúdo.
  * - Celular: gaveta com fundo escurecido, controlada pelo botão de menu do header.
- * - Alt+1…5 navega entre os itens visíveis.
+ * - Alt+1…8 navega entre os itens visíveis.
  */
-export type SidebarView = "dashboard" | "library" | "reader" | "editor" | "inventory";
+export type SidebarView = "dashboard" | "library" | "reader" | "editor" | "inventory" | "oversight" | "classrooms" | "users";
 
 type NavItem = { view: SidebarView; label: string; hint: string; icon: ReactNode; badge?: number; activeAlso?: string[] };
 
 type AppSidebarProps = {
   view: string;
   isTeacher: boolean;
+  isAdmin: boolean;
   open: boolean;
   onClose: () => void;
   onNavigate: (view: SidebarView) => void;
@@ -38,21 +39,33 @@ function readPinned() {
   }
 }
 
-export default function AppSidebar({ view, isTeacher, open, onClose, onNavigate, lowStock, catalog, user, onLogout, loggingOut }: AppSidebarProps) {
+export default function AppSidebar({ view, isTeacher, isAdmin, open, onClose, onNavigate, lowStock, catalog, user, onLogout, loggingOut }: AppSidebarProps) {
   const [pinned, setPinned] = useState(readPinned);
 
+  // A administração não acessa módulos: só a visão geral, o estoque e a gestão.
   const learning: NavItem[] = [
-    { view: "dashboard", label: "Início", hint: "Visão geral e anotações", icon: <LayoutDashboard size={18} />, activeAlso: ["notes"] },
-    { view: "library", label: "Biblioteca", hint: "Todos os módulos", icon: <BookOpen size={18} /> },
-    { view: "reader", label: "Leitor", hint: "Continuar estudando", icon: <Grid2X2 size={18} /> },
+    { view: "dashboard", label: "Início", hint: isAdmin ? "Pendências, turmas e calendário" : "Visão geral e anotações", icon: <LayoutDashboard size={18} />, activeAlso: ["notes"] },
+    ...(isAdmin
+      ? []
+      : [
+          // A biblioteca é também o editor do docente: criar, editar e excluir ficam nos cartões.
+          { view: "library" as const, label: "Biblioteca", hint: isTeacher ? "Criar e editar módulos" : "Todos os módulos", icon: <BookOpen size={18} />, activeAlso: ["editor"] },
+          { view: "reader" as const, label: "Leitor", hint: "Continuar estudando", icon: <Grid2X2 size={18} /> },
+        ]),
   ];
   const teaching: NavItem[] = isTeacher
     ? [
-        { view: "editor", label: "Editor", hint: "Criar e editar módulos", icon: <Edit3 size={18} /> },
         { view: "inventory", label: "Estoque", hint: "Ferramentaria", icon: <Warehouse size={18} />, badge: lowStock },
       ]
     : [];
-  const shortcuts = [...learning, ...teaching];
+  const admin: NavItem[] = isAdmin
+    ? [
+        { view: "oversight", label: "Supervisão", hint: "Estoque por turma e docente", icon: <ShieldCheck size={18} /> },
+        { view: "classrooms", label: "Turmas", hint: "Turmas e responsáveis", icon: <School size={18} /> },
+        { view: "users", label: "Usuários", hint: "Logins e acessos", icon: <Users size={18} /> },
+      ]
+    : [];
+  const shortcuts = [...learning, ...teaching, ...admin];
 
   // O conteúdo principal só abre espaço para o menu quando ele está fixado.
   useEffect(() => {
@@ -147,31 +160,39 @@ export default function AppSidebar({ view, isTeacher, open, onClose, onNavigate,
 
         <nav id="primary-navigation" className="cl-nav-sections" aria-label="Navegação principal">
           <LayoutGroup id="cl-nav">
-            <p className="cl-nav-label">Aprendizagem</p>
+            <p className="cl-nav-label">{isAdmin ? "Geral" : "Aprendizagem"}</p>
             <ul>{learning.map(renderItem)}</ul>
             {teaching.length > 0 && (
               <>
-                <p className="cl-nav-label">Modo docente</p>
+                <p className="cl-nav-label">Estoque</p>
                 <ul>{teaching.map(renderItem)}</ul>
+              </>
+            )}
+            {admin.length > 0 && (
+              <>
+                <p className="cl-nav-label">Administração</p>
+                <ul>{admin.map(renderItem)}</ul>
               </>
             )}
           </LayoutGroup>
         </nav>
 
-        <button type="button" className="cl-nav-catalog" onClick={() => onNavigate("library")}>
-          <span className="cl-nav-ring" style={{ "--p": progress } as CSSProperties} aria-hidden="true">
-            <b>{progress}%</b>
-          </span>
-          <span className="cl-nav-text">
-            <b>
-              {catalog.total} {catalog.total === 1 ? "módulo" : "módulos"}
-            </b>
-            <small>
-              {catalog.published} publicados · progresso médio
-            </small>
-          </span>
-          <ArrowRight size={15} className="cl-nav-catalog-arrow" aria-hidden="true" />
-        </button>
+        {!isAdmin && (
+          <button type="button" className="cl-nav-catalog" onClick={() => onNavigate("library")}>
+            <span className="cl-nav-ring" style={{ "--p": progress } as CSSProperties} aria-hidden="true">
+              <b>{progress}%</b>
+            </span>
+            <span className="cl-nav-text">
+              <b>
+                {catalog.total} {catalog.total === 1 ? "módulo" : "módulos"}
+              </b>
+              <small>
+                {catalog.published} publicados · progresso médio
+              </small>
+            </span>
+            <ArrowRight size={15} className="cl-nav-catalog-arrow" aria-hidden="true" />
+          </button>
+        )}
 
         <div className="cl-nav-user">
           <span className="cl-nav-avatar">{user.avatarUrl ? <img src={user.avatarUrl} alt="" /> : user.initials}</span>

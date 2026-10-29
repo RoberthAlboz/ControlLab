@@ -1,5 +1,7 @@
-import { useEffect, useMemo, useRef, useState } from "react";
-import { ArrowLeft, CalendarDays, Check, ChevronLeft, ChevronRight, CloudOff, FileText, LoaderCircle, Lock, Plus, Search, Trash2, X } from "lucide-react";
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { ArrowLeft, CalendarDays, Check, ChevronLeft, ChevronRight, CloudOff, FileText, LoaderCircle, Lock, Plus, RotateCcw, Search, Trash2, Users, X } from "lucide-react";
+import { trpc } from "@/lib/trpc";
+import GearLoader from "@/components/forge/GearLoader";
 import {
   addCalendarDays,
   classSchedule,
@@ -24,8 +26,10 @@ import {
 
 /**
  * Diário de aula: uma anotação (ou mais) por período de 45 min de cada dia letivo.
- * As anotações ficam no navegador (localStorage, chave por usuário); a gravação é
- * agrupada para não regravar tudo a cada tecla. Docentes abrem em modo leitura.
+ * As anotações ficam no servidor (uma por aluno), então acompanham o aluno em
+ * qualquer computador e não ficam expostas no navegador de uma máquina
+ * compartilhada do laboratório. A gravação é agrupada para não enviar tudo a
+ * cada tecla. Docentes escolhem um aluno e leem o diário dele, sem editar.
  */
 type NotesActivity = { id: string; title: string; startsAt: string | Date };
 
@@ -34,12 +38,15 @@ type NotesPageProps = {
   onNotify: (message: string) => void;
   teacherMode?: boolean;
   activities: NotesActivity[];
-  storageKey: string;
+  /** Chave antiga do localStorage: as notas que estiverem lá são enviadas uma vez e apagadas. */
+  legacyStorageKey: string;
+  /** Modo docente: alunos cujo diário pode ser consultado (`undefined` enquanto carrega). */
+  students?: Array<{ id: number; name: string | null }>;
 };
 
 const SUBJECTS = ["Ferramentaria", "Metrologia", "CNC", "Montagem", "Processos", "Segurança"];
 const PROMPTS = ["Procedimento", "Medida", "Dúvida para revisar"];
-const SAVE_DELAY_MS = 500;
+const SAVE_DELAY_MS = 800;
 
 type SaveState = "saved" | "pending" | "error";
 
@@ -75,12 +82,21 @@ function activityPeriodId(activity: NotesActivity) {
   return (findClassPeriodForDate(activity.startsAt) || nearestClassPeriod(scheduleClock(activity.startsAt))).id;
 }
 
-function readNotes(storageKey: string, fallbackDate: string) {
+/** Notas que versões anteriores gravavam só no navegador. */
+function readLegacyNotes(storageKey: string, fallbackDate: string): StudentNote[] {
   try {
     const saved = localStorage.getItem(storageKey);
-    return { notes: parseStoredNotes(saved ? JSON.parse(saved) : [], fallbackDate), state: "saved" as SaveState };
+    return parseStoredNotes(saved ? JSON.parse(saved) : [], fallbackDate);
   } catch {
-    return { notes: [] as StudentNote[], state: "error" as SaveState };
+    return [];
+  }
+}
+
+function forgetLegacyNotes(storageKey: string) {
+  try {
+    localStorage.removeItem(storageKey);
+  } catch {
+    /* navegador sem localStorage: nada a limpar */
   }
 }
 
@@ -89,13 +105,128 @@ function wordCount(text: string) {
   return trimmed ? trimmed.split(/\s+/).length : 0;
 }
 
-export default function NotesPage({ onBack, onNotify, teacherMode = false, activities, storageKey }: NotesPageProps) {
-  const todayKey = localDateKey(new Date());
-  const initialDate = isSchoolDate(todayKey) ? todayKey : nextSchoolDateKey(new Date());
-  const initial = useMemo(() => readNotes(storageKey, initialDate), [storageKey, initialDate]);
+/** Envio feito ao sair da página; a próxima abertura espera por ele antes de ler. */
+let pendingFlush: Promise<unknown> | null = null;
 
-  const [notes, setNotes] = useState<StudentNote[]>(initial.notes);
-  const [saveState, setSaveState] = useState<SaveState>(initial.state);
+export default function NotesPage(props: NotesPageProps) {
+  return props.teacherMode ? <TeacherNotesPage {...props} /> : <StudentNotesPage {...props} />;
+}
+
+/** Docente escolhe um aluno e lê o diário dele; nada é gravado. */
+function TeacherNotesPage(props: NotesPageProps) {
+  const [chosenId, setChosenId] = useState<number | null>(null);
+  const students = props.students;
+  const studentId = chosenId ?? students?.[0]?.id ?? null;
+  const notesQuery = trpc.notes.ofStudent.useQuery(
+    { studentId: studentId ?? 0 },
+    { enabled: studentId !== null, staleTime: 0, refetchOnMount: "always", refetchOnWindowFocus: false },
+  );
+
+  if (!students || (studentId !== null && notesQuery.isPending)) {
+    return (
+      <main className="nt-page">
+        <GearLoader label="Carregando anotações…" size="lg" />
+      </main>
+    );
+  }
+  if (studentId === null || notesQuery.isError || !notesQuery.data) {
+    return (
+      <main className="nt-page" role="alert">
+        <button type="button" className="nt-back" onClick={props.onBack}>
+          <ArrowLeft size={15} aria-hidden="true" /> Voltar ao início
+        </button>
+        <p className="nt-side-empty">
+          {studentId === null ? "Nenhum aluno cadastrado ainda." : "Não foi possível carregar as anotações deste aluno."}
+        </p>
+        {studentId !== null && (
+          <button type="button" className="nt-primary" onClick={() => void notesQuery.refetch()}>
+            <RotateCcw size={16} aria-hidden="true" /> Tentar novamente
+          </button>
+        )}
+      </main>
+    );
+  }
+
+  const picker = (
+    <label className="nt-student">
+      <Users size={16} aria-hidden="true" />
+      <select aria-label="Aluno" value={studentId} onChange={event => setChosenId(Number(event.target.value))}>
+        {students.map(student => (
+          <option key={student.id} value={student.id}>
+            {student.name || `Aluno #${student.id}`}
+          </option>
+        ))}
+      </select>
+    </label>
+  );
+  return (
+    <NotesWorkspace
+      key={studentId}
+      {...props}
+      initialNotes={notesQuery.data.notes ?? []}
+      uploadInitial={false}
+      studentName={notesQuery.data.student.name || `Aluno #${studentId}`}
+      studentPicker={picker}
+    />
+  );
+}
+
+function StudentNotesPage(props: NotesPageProps) {
+  const [flushDone, setFlushDone] = useState(!pendingFlush);
+  useEffect(() => {
+    if (!pendingFlush) return;
+    void pendingFlush.finally(() => setFlushDone(true));
+  }, []);
+  // Sempre lê do servidor ao abrir: nunca edita uma cópia antiga em cache.
+  const notesQuery = trpc.notes.mine.useQuery(undefined, { enabled: flushDone, staleTime: 0, refetchOnMount: "always", refetchOnWindowFocus: false });
+  const todayKey = localDateKey(new Date());
+
+  if (!flushDone || !notesQuery.isFetchedAfterMount) {
+    return (
+      <main className="nt-page">
+        <GearLoader label="Carregando anotações…" size="lg" />
+      </main>
+    );
+  }
+  if (notesQuery.isError || !notesQuery.data) {
+    return (
+      <main className="nt-page" role="alert">
+        <button type="button" className="nt-back" onClick={props.onBack}>
+          <ArrowLeft size={15} aria-hidden="true" /> Voltar ao início
+        </button>
+        <p className="nt-side-empty">Não foi possível carregar suas anotações. Nada foi perdido: elas continuam no servidor.</p>
+        <button type="button" className="nt-primary" onClick={() => void notesQuery.refetch()}>
+          <RotateCcw size={16} aria-hidden="true" /> Tentar novamente
+        </button>
+      </main>
+    );
+  }
+
+  // Nunca salvou no servidor? Traz o que estiver no navegador (versão antiga) e envia.
+  const legacy = notesQuery.data.notes === null ? readLegacyNotes(props.legacyStorageKey, todayKey) : [];
+  return <NotesWorkspace {...props} initialNotes={notesQuery.data.notes ?? legacy} uploadInitial={legacy.length > 0} />;
+}
+
+function NotesWorkspace({
+  onBack,
+  onNotify,
+  teacherMode = false,
+  activities,
+  legacyStorageKey,
+  initialNotes,
+  uploadInitial,
+  studentName,
+  studentPicker,
+}: NotesPageProps & { initialNotes: StudentNote[]; uploadInitial: boolean; studentName?: string; studentPicker?: ReactNode }) {
+  const todayKey = localDateKey(new Date());
+  const schoolToday = isSchoolDate(todayKey) ? todayKey : nextSchoolDateKey(new Date());
+  // O docente abre no dia mais recente com registro, se hoje o aluno ainda não anotou nada.
+  const initialDate = teacherMode && initialNotes.length && !initialNotes.some(note => note.date === schoolToday)
+    ? initialNotes.reduce((latest, note) => (note.date > latest ? note.date : latest), initialNotes[0].date)
+    : schoolToday;
+
+  const [notes, setNotes] = useState<StudentNote[]>(initialNotes);
+  const [saveState, setSaveState] = useState<SaveState>(uploadInitial ? "pending" : "saved");
   const [selectedDate, setSelectedDate] = useState(initialDate);
   const [selectedPeriod, setSelectedPeriod] = useState(() =>
     initialDate === todayKey ? (currentLocalPeriodId() ?? 1) : 1,
@@ -115,41 +246,72 @@ export default function NotesPage({ onBack, onNotify, teacherMode = false, activ
     }
   }, [selectedPeriod, query]);
 
-  // Gravação agrupada: escreve no navegador meio segundo depois da última alteração
-  // e garante a gravação ao sair da página.
-  const dirty = useRef(false);
+  // Gravação agrupada no servidor: envia a lista inteira um pouco depois da
+  // última alteração. Um envio por vez; o que mudar durante o envio vai no seguinte.
+  const utils = trpc.useUtils();
+  const dirty = useRef(uploadInitial);
+  const inFlight = useRef(false);
   const latest = useRef(notes);
   latest.current = notes;
+  const persist = useCallback(async () => {
+    if (teacherMode || inFlight.current || !dirty.current) return;
+    inFlight.current = true;
+    dirty.current = false;
+    const snapshot = latest.current;
+    try {
+      const { updatedAt } = await utils.client.notes.save.mutate({ notes: snapshot });
+      utils.notes.mine.setData(undefined, { notes: snapshot, updatedAt });
+      forgetLegacyNotes(legacyStorageKey);
+      setSaveState(dirty.current ? "pending" : "saved");
+    } catch {
+      dirty.current = true;
+      setSaveState("error");
+    } finally {
+      inFlight.current = false;
+    }
+    // Alterações feitas enquanto o envio acontecia.
+    if (dirty.current && latest.current !== snapshot) void persistRef.current();
+  }, [legacyStorageKey, teacherMode, utils]);
+  const persistRef = useRef(persist);
+  persistRef.current = persist;
+
   useEffect(() => {
-    if (!dirty.current) return;
+    if (uploadInitial) {
+      void persistRef.current();
+      onNotify("Suas anotações deste navegador foram enviadas para a sua conta.");
+    } else {
+      forgetLegacyNotes(legacyStorageKey);
+    }
+    // Só na abertura da página.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  useEffect(() => {
+    if (!dirty.current || teacherMode) return;
     setSaveState("pending");
-    const timer = window.setTimeout(() => {
-      try {
-        localStorage.setItem(storageKey, JSON.stringify(latest.current));
-        dirty.current = false;
-        setSaveState("saved");
-      } catch {
-        setSaveState("error");
-      }
-    }, SAVE_DELAY_MS);
+    const timer = window.setTimeout(() => void persistRef.current(), SAVE_DELAY_MS);
     return () => window.clearTimeout(timer);
-  }, [notes, storageKey]);
+  }, [notes, teacherMode]);
   useEffect(() => {
-    const flush = () => {
-      if (!dirty.current) return;
-      try {
-        localStorage.setItem(storageKey, JSON.stringify(latest.current));
-        dirty.current = false;
-      } catch {
-        /* o aviso de erro já aparece no editor */
+    // Fechar a aba com algo ainda não enviado: o navegador pede confirmação.
+    const warn = (event: BeforeUnloadEvent) => {
+      if (!dirty.current && !inFlight.current) return;
+      event.preventDefault();
+      event.returnValue = "";
+    };
+    window.addEventListener("beforeunload", warn);
+    return () => {
+      window.removeEventListener("beforeunload", warn);
+      // Saiu da página de anotações pelo app: envia o que faltou.
+      if (dirty.current && !teacherMode) {
+        pendingFlush = utils.client.notes.save
+          .mutate({ notes: latest.current })
+          .catch(() => undefined)
+          .finally(() => {
+            pendingFlush = null;
+          });
       }
     };
-    window.addEventListener("beforeunload", flush);
-    return () => {
-      window.removeEventListener("beforeunload", flush);
-      flush();
-    };
-  }, [storageKey]);
+  }, [teacherMode, utils]);
 
   useEffect(() => {
     if (!confirmDelete) return;
@@ -238,14 +400,15 @@ export default function NotesPage({ onBack, onNotify, teacherMode = false, activ
       <header className="nt-header">
         <div>
           <p className="nt-eyebrow">{teacherMode ? "Consulta" : "Área do aluno"}</p>
-          <h1>{teacherMode ? "Anotações locais" : "Diário de aula"}</h1>
+          <h1>Diário de aula</h1>
           <p className="nt-lead">
             {teacherMode
-              ? "Somente leitura: mostra as anotações salvas neste navegador. Elas ainda não são enviadas ao servidor."
-              : "Registre o que aprendeu em cada aula. Tudo fica salvo automaticamente neste navegador."}
+              ? `Somente leitura: diário de ${studentName ?? "aluno"}, preenchido pelo próprio aluno na conta dele.`
+              : "Registre o que aprendeu em cada aula. Tudo é salvo automaticamente na sua conta e aparece em qualquer computador."}
           </p>
         </div>
         <div className="nt-header-actions">
+          {studentPicker}
           <label className="nt-search">
             <Search size={16} aria-hidden="true" />
             <input
@@ -503,7 +666,10 @@ export default function NotesPage({ onBack, onNotify, teacherMode = false, activ
                     </>
                   ) : saveState === "error" ? (
                     <>
-                      <CloudOff size={13} aria-hidden="true" /> Não foi possível salvar neste navegador
+                      <CloudOff size={13} aria-hidden="true" /> Não foi possível salvar.{" "}
+                      <button type="button" className="nt-ghost" onClick={() => void persist()}>
+                        Tentar de novo
+                      </button>
                     </>
                   ) : (
                     <>

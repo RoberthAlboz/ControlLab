@@ -14,6 +14,7 @@ export function makeUser(role: User["role"], overrides: Partial<User> = {}): Use
     passwordHash: null,
     role,
     active: 1,
+    classroomId: null,
     createdAt: now,
     updatedAt: now,
     lastSignedIn: now,

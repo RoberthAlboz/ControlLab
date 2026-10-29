@@ -1,0 +1,323 @@
+/* Control Lab — instrumentos da oficina: painel de sombras (estoque), paquímetro
+   (progresso do módulo) e peça usinada (etapas do leitor). Tokens --fl-* (claro/escuro).
+   Com "reduzir movimento", index.css encurta animações e transições: tudo
+   aparece direto no estado final. */
+
+/* ------------------------------------------------------------------ */
+/* Painel de sombras                                                   */
+/* ------------------------------------------------------------------ */
+/* Figura avulsa do item (lista, detalhe, seletor do cadastro) */
+.tool-glyph { display: block; overflow: visible; }
+.tool-glyph-body path { fill: #6d7378; stroke: #33383c; stroke-width: 0.9; }
+.tool-glyph-body path[fill="none"] { fill: none; stroke: #6d7378; }
+.tool-glyph-body .shadow-board-detail { fill: none; stroke: rgba(255, 255, 255, 0.45); stroke-width: 0.8; }
+html.dark .tool-glyph-body path { fill: #a7adb2; stroke: #1b1d1f; }
+html.dark .tool-glyph-body path[fill="none"] { stroke: #a7adb2; }
+
+.inventory-item-cell { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.inventory-item-cell > div { min-width: 0; }
+.inventory-item-glyph { flex: none; width: 34px; height: 46px; padding: 3px 0; border: 1px solid var(--fl-line); border-radius: 6px; background: var(--fl-surface-2); }
+.inventory-detail-head { display: flex; flex-wrap: wrap; align-items: stretch; gap: 14px; }
+.inventory-detail-head .fl-facts { min-width: min(100%, 300px); }
+
+/* Manômetro do saldo disponível (detalhe do item) */
+.stock-gauge { display: grid; flex: none; align-content: center; justify-items: center; gap: 2px; width: 96px; margin: 0; }
+.stock-gauge svg { display: block; width: 100%; height: auto; overflow: visible; }
+.stock-gauge figcaption { color: var(--fl-muted); font-size: 0.7rem; font-weight: 600; font-variant-numeric: tabular-nums; }
+.stock-gauge-bezel { fill: #b8bec3; stroke: #6d7378; stroke-width: 0.8; }
+.stock-gauge-face { fill: #fbfbfa; stroke: #8b9196; stroke-width: 0.4; }
+.stock-gauge-track { fill: none; stroke: #2f6b4f; stroke-width: 2.6; opacity: 0.35; }
+.stock-gauge-zone { fill: none; stroke: var(--fl-red); stroke-width: 2.6; }
+.stock-gauge-ticks { fill: none; stroke: #2b2f33; stroke-width: 0.8; }
+.stock-gauge-ticks.is-minor { stroke-width: 0.4; opacity: 0.6; }
+.stock-gauge-scale { fill: #3c4246; font: 600 5.5px var(--fl-body); text-anchor: middle; }
+.stock-gauge-value { fill: #2b2f33; font: 700 10px var(--fl-display); text-anchor: middle; font-variant-numeric: tabular-nums; }
+.stock-gauge-needle { transform-box: view-box; transform-origin: 0 0; transform: rotate(var(--needle)); }
+.stock-gauge-needle path { fill: #2b2f33; }
+.stock-gauge-hub { fill: #2b2f33; stroke: #b8bec3; stroke-width: 0.8; }
+.stock-gauge.is-alert .stock-gauge-needle path, .stock-gauge.is-alert .stock-gauge-hub, .stock-gauge.is-alert .stock-gauge-value { fill: var(--fl-red); }
+.stock-gauge.is-offline svg { opacity: 0.45; filter: grayscale(1); }
+html.dark .stock-gauge-bezel { fill: #5b6166; stroke: #2c3033; }
+html.dark .stock-gauge-face { fill: #1d2023; stroke: #2c3033; }
+html.dark .stock-gauge-ticks { stroke: #f1f3f4; }
+html.dark .stock-gauge-hub { stroke: #5b6166; }
+html.dark .stock-gauge-needle path, html.dark .stock-gauge-hub, html.dark .stock-gauge-value { fill: #f1f3f4; }
+html.dark .stock-gauge-scale { fill: #e5e8ea; }
+html.dark .stock-gauge-track { stroke: #6fbf95; }
+@media (prefers-reduced-motion: no-preference) {
+  /* Ao abrir o item a agulha sobe do zero e assenta, como ao abrir a válvula. */
+  .stock-gauge-needle { animation: stock-gauge-needle 900ms cubic-bezier(0.34, 1.4, 0.64, 1) both; }
+}
+@keyframes stock-gauge-needle { from { transform: rotate(-120deg); } }
+.inventory-detail-head .fl-facts { flex: 1; }
+.inventory-detail-glyph { flex: none; width: 64px; height: auto; max-height: 96px; padding: 6px 4px; border: 1px solid var(--fl-line); border-radius: var(--fl-radius, 8px); background: var(--fl-surface-2); }
+
+.inventory-view-toggle { display: inline-flex; padding: 3px; border: 1px solid var(--fl-line-strong); border-radius: 999px; }
+.inventory-view-toggle button { display: inline-flex; align-items: center; gap: 6px; min-height: 30px; padding: 0 12px; border: 0; border-radius: 999px; background: transparent; color: var(--fl-muted); font-weight: 600; }
+.inventory-view-toggle button:hover { color: var(--fl-ink); }
+.inventory-view-toggle button.is-selected { background: var(--fl-ink); color: var(--fl-paper); }
+html.dark .inventory-view-toggle button.is-selected { background: var(--fl-red-wash); color: var(--fl-ink); }
+
+.icon-picker { margin: 0; padding: 0; border: 0; }
+.icon-picker legend { margin-bottom: 6px; padding: 0; color: var(--fl-ink-soft); font: 600 0.8125rem/1.3 var(--fl-body); }
+.icon-picker-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(78px, 1fr)); gap: 6px; }
+.icon-picker-option { display: grid; justify-items: center; gap: 4px; padding: 8px 4px 6px; border: 1px solid var(--fl-line); border-radius: 8px; background: transparent; color: var(--fl-muted); font-size: 0.7rem; font-weight: 600; line-height: 1.2; text-align: center; cursor: pointer; }
+.icon-picker-option .tool-glyph { width: 26px; height: 52px; }
+.icon-picker-option:hover { border-color: var(--fl-red); color: var(--fl-ink); }
+.icon-picker-option:focus-visible { outline: 2px solid rgba(var(--fl-red-rgb), 0.72); outline-offset: 2px; }
+.icon-picker-option.is-selected { border-color: var(--fl-red); background: var(--fl-red-wash); color: var(--fl-red-deep); box-shadow: inset 0 0 0 1px var(--fl-red); }
+.icon-picker-option:first-child { border-style: dashed; }
+
+.shadow-board-count { padding: 4px 12px; border-radius: 999px; background: var(--fl-red-wash); color: var(--fl-red-deep); font-weight: 700; font-variant-numeric: tabular-nums; }
+.clean-app .shadow-board-intro { margin: 0; max-width: 72ch; font-size: 0.85rem !important; }
+
+.shadow-board {
+  --peg: rgba(0, 0, 0, 0.16);
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(128px, 1fr));
+  gap: 18px 14px;
+  padding: 22px 18px 18px;
+  border: 1px solid var(--fl-line-strong);
+  border-radius: 10px;
+  background-color: var(--fl-surface-2);
+  background-image: radial-gradient(circle, var(--peg) 1.6px, transparent 2.2px);
+  background-size: 22px 22px;
+  box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.5), inset 0 -3px 0 rgba(0, 0, 0, 0.05);
+}
+html.dark .shadow-board { --peg: rgba(0, 0, 0, 0.5); box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.04); }
+
+.shadow-station { display: grid; justify-items: center; gap: 6px; min-width: 0; }
+.shadow-station-hook { display: grid; width: 100%; padding: 0; border: 0; border-radius: 8px; background: transparent; cursor: pointer; }
+.shadow-station-hook:focus-visible { outline: 2px solid var(--fl-red); outline-offset: 2px; }
+.shadow-station-hook svg { display: block; width: 64px; height: 130px; margin: 0 auto; overflow: visible; }
+
+.shadow-board-peg { fill: var(--fl-line-strong); stroke: var(--fl-muted); stroke-width: 0.8; }
+
+/* A sombra pintada: sempre no painel, aparece quando a ferramenta sai */
+.shadow-board-outline path { fill: rgba(var(--fl-red-rgb), 0.08); stroke: rgba(var(--fl-red-rgb), 0.55); stroke-width: 1.1; stroke-dasharray: 3 2; }
+.shadow-board-outline path[fill="none"] { fill: none; stroke: rgba(var(--fl-red-rgb), 0.18); }
+.shadow-board-outline .shadow-board-detail { display: none; }
+
+/* A ferramenta: aço, pendurada no gancho */
+.shadow-board-tool { transform-box: view-box; transform-origin: 30px 7px; transition: transform 620ms cubic-bezier(0.34, 1.56, 0.64, 1), opacity 320ms ease; }
+.shadow-board-tool-body path { fill: #6d7378; stroke: #33383c; stroke-width: 0.9; }
+.shadow-board-tool-body path[fill="none"] { fill: none; stroke: #6d7378; }
+.shadow-board-tool-body .shadow-board-detail { fill: none; stroke: rgba(255, 255, 255, 0.45); stroke-width: 0.8; }
+html.dark .shadow-board-tool-body path { fill: #a7adb2; stroke: #1b1d1f; }
+html.dark .shadow-board-tool-body path[fill="none"] { stroke: #a7adb2; }
+.shadow-station-hook svg { filter: drop-shadow(0 3px 2px rgba(0, 0, 0, 0.18)); }
+
+.shadow-station.is-out .shadow-board-tool { opacity: 0; transform: translateY(-22px) rotate(-10deg); }
+
+@media (prefers-reduced-motion: no-preference) {
+  /* Primeira carga: as ferramentas são penduradas uma a uma */
+  .shadow-board.is-mounting .shadow-station:not(.is-out) .shadow-board-tool { animation: shadow-hang 760ms cubic-bezier(0.34, 1.56, 0.64, 1) both; animation-delay: calc(var(--i, 0) * 55ms); }
+  .shadow-station-hook:hover .shadow-board-tool,
+  .shadow-station-hook:focus-visible .shadow-board-tool { animation: shadow-swing 900ms ease-in-out; }
+  .shadow-station.is-back .shadow-board-tool { animation: shadow-return 1.2s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+}
+@keyframes shadow-hang {
+  0% { opacity: 0; transform: translateY(-26px) rotate(-14deg); }
+  60% { opacity: 1; transform: translateY(0) rotate(7deg); }
+  100% { transform: rotate(0); }
+}
+@keyframes shadow-swing {
+  0%, 100% { transform: rotate(0); }
+  25% { transform: rotate(5deg); }
+  60% { transform: rotate(-3deg); }
+  85% { transform: rotate(1deg); }
+}
+@keyframes shadow-return {
+  0% { opacity: 0; transform: translateY(-40px) rotate(-18deg); }
+  35% { opacity: 1; transform: translateY(2px) rotate(12deg); }
+  55% { transform: rotate(-8deg); }
+  75% { transform: rotate(4deg); }
+  100% { transform: rotate(0); }
+}
+
+.shadow-station-plate { display: grid; width: 100%; justify-items: center; padding: 4px 6px; border: 1px solid var(--fl-line-strong); border-radius: 3px; background: var(--fl-surface); text-align: center; }
+.shadow-station-plate strong { color: var(--fl-ink); font: 700 0.68rem/1.2 var(--fl-body); letter-spacing: 0.06em; }
+.clean-app .shadow-station-plate small { display: block; max-width: 100%; overflow: hidden; color: var(--fl-muted); font-size: 0.68rem !important; text-overflow: ellipsis; white-space: nowrap; }
+
+/* Etiqueta pendurada: quem está com a ferramenta */
+.shadow-station-tag { position: relative; display: grid; justify-items: center; gap: 2px; max-width: 100%; padding: 5px 9px 6px; border-radius: 3px 3px 8px 8px; background: #f3d36b; color: #3a2c00; font-size: 0.72rem; font-weight: 700; text-align: center; transform: rotate(-2deg); box-shadow: 0 2px 4px rgba(0, 0, 0, 0.12); }
+.shadow-station-tag::before { position: absolute; top: -6px; left: 50%; width: 1px; height: 6px; background: #8a7a40; content: ""; }
+.shadow-station-tag span { max-width: 112px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.clean-app .shadow-station-tag small { color: #5a4a10; font-size: 0.64rem !important; font-weight: 600; }
+.shadow-station-tag button { display: inline-flex; align-items: center; gap: 3px; margin-top: 2px; padding: 1px 7px; border: 1px solid currentColor; border-radius: 999px; background: transparent; color: inherit; font-size: 0.66rem; font-weight: 700; }
+.shadow-station-tag button:hover { background: rgba(0, 0, 0, 0.08); }
+.shadow-station-tag.is-quiet { background: var(--fl-surface); color: var(--fl-muted); transform: none; box-shadow: none; border: 1px dashed var(--fl-line-strong); }
+.shadow-station-tag.is-quiet::before { display: none; }
+.shadow-station.is-overdue .shadow-station-tag { background: var(--fl-red); color: #fff6f6; }
+.clean-app .shadow-station.is-overdue .shadow-station-tag small { color: #ffe1e1; }
+
+/* ------------------------------------------------------------------ */
+/* Paquímetro (progresso do módulo)                                    */
+/* ------------------------------------------------------------------ */
+@media (min-width: 641px) { .clean-app .rd .reader-overview { grid-template-columns: minmax(0, 1fr) minmax(260px, 360px); } }
+.caliper-gauge { display: grid; gap: 2px; }
+.caliper-gauge svg { display: block; width: 100%; height: auto; overflow: visible; }
+
+.caliper-body { fill: #d9dde0; stroke: #8b9196; stroke-width: 0.8; }
+html.dark .caliper-body { fill: #5b6166; stroke: #2c3033; }
+.caliper-ticks { fill: none; stroke: #2b2f33; stroke-width: 0.6; }
+html.dark .caliper-ticks { stroke: #f1f3f4; }
+.caliper-ticks.caliper-match { opacity: 0; }
+.caliper-number { fill: #2b2f33; font: 700 6.5px var(--fl-body); text-anchor: middle; }
+html.dark .caliper-number { fill: #f1f3f4; }
+
+.caliper-slider-body { fill: #b8bec3; stroke: #6d7378; stroke-width: 0.8; }
+html.dark .caliper-slider-body { fill: #7b8287; stroke: #2c3033; }
+.caliper-window { fill: rgba(196, 220, 235, 0.22); stroke: #6d7378; stroke-width: 0.6; }
+.caliper-screw { fill: #6d7378; }
+.caliper-vernier { fill: none; stroke: #2b2f33; stroke-width: 0.6; }
+html.dark .caliper-vernier { stroke: #f1f3f4; }
+/* Coincidência escala × nônio: só com o cursor parado (durante o deslize ela pula de traço em traço). */
+.caliper-gauge.is-settled .caliper-match { opacity: 1; stroke: var(--fl-red); stroke-width: 1.4; transition: opacity 200ms ease; }
+
+/* Trava: o parafuso desce e volta, como quem aperta o cursor na haste. */
+.caliper-screw { transform-box: fill-box; transform-origin: center; }
+@media (prefers-reduced-motion: no-preference) {
+  .caliper-gauge.is-settled .caliper-screw { animation: caliper-lock 380ms cubic-bezier(0.34, 1.56, 0.64, 1); }
+}
+@keyframes caliper-lock {
+  0% { transform: translateY(0) scaleX(1); }
+  45% { transform: translateY(1.6px) scaleX(0.82); }
+  100% { transform: translateY(0) scaleX(1); }
+}
+.caliper-vernier-label { fill: #3c4246; font: 600 5px var(--fl-body); text-anchor: middle; }
+html.dark .caliper-vernier-label { fill: #e5e8ea; }
+
+.caliper-dimension path { fill: none; stroke: var(--fl-red); stroke-width: 0.8; transition: stroke 300ms ease; }
+.caliper-dimension { transition: opacity 300ms ease; }
+.caliper-dimension.is-hidden { opacity: 0; }
+.caliper-gauge.is-complete .caliper-dimension path { stroke: var(--fl-ok); }
+
+.caliper-reading { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; margin-top: 2px; }
+.caliper-reading-meta { display: grid; gap: 3px; min-width: 0; }
+.clean-app .caliper-caption { color: var(--fl-ink-soft); font-size: 0.78rem !important; font-weight: 600; }
+.clean-app .caliper-breakdown { color: var(--fl-subtle); font-size: 0.7rem !important; }
+.caliper-reading b { color: var(--fl-ink-soft); font-variant-numeric: tabular-nums; }
+.clean-app .caliper-reading strong { flex: none; color: var(--fl-ink); font: 700 1.35rem/1 var(--fl-display) !important; font-variant-numeric: tabular-nums; transition: color 300ms ease; }
+.clean-app .caliper-gauge.is-complete .caliper-reading strong { color: var(--fl-ok); }
+@media (prefers-reduced-motion: reduce) {
+  .caliper-dimension, .caliper-dimension path, .clean-app .caliper-reading strong { transition: none; }
+}
+
+/* ------------------------------------------------------------------ */
+/* Punção (módulo concluído)                                           */
+/* ------------------------------------------------------------------ */
+/* Linha do tempo: matriz desce (0–360 ms), crava, segura, sobe (460–800 ms);
+   o selo e os cavacos nascem no impacto. */
+.stamp-mark { position: relative; z-index: 1; width: 92px; height: 83px; margin-bottom: 14px; }
+.stamp-mark svg { display: block; width: 100%; height: 100%; overflow: visible; }
+
+.stamp-plate { fill: #d9dde0; stroke: #8b9196; stroke-width: 0.8; }
+.stamp-plate-grain { fill: none; stroke: rgba(255, 255, 255, 0.55); stroke-width: 0.6; }
+.stamp-plate-bolt { fill: #9aa0a5; stroke: #6d7378; stroke-width: 0.5; }
+html.dark .stamp-plate { fill: #5b6166; stroke: #2c3033; }
+html.dark .stamp-plate-grain { stroke: rgba(255, 255, 255, 0.08); }
+html.dark .stamp-plate-bolt { fill: #3c4246; stroke: #2c3033; }
+
+/* Selo cravado: baixo-relevo vermelho com uma sombra interna clara. */
+.stamp-imprint { transform-box: view-box; transform-origin: 0 0; }
+.stamp-imprint-ring { fill: rgba(var(--fl-red-rgb), 0.08); stroke: var(--fl-red); stroke-width: 1.6; }
+.stamp-imprint-ring.is-inner { fill: none; stroke-width: 0.8; }
+.stamp-imprint-serration { fill: none; stroke: var(--fl-red); stroke-width: 0.9; }
+.stamp-imprint-check { fill: none; stroke: var(--fl-red); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+
+.stamp-die, .stamp-die-shadow { transform-box: view-box; transform-origin: 0 0; opacity: 0; }
+.stamp-die-body { fill: #6d7378; stroke: #33383c; stroke-width: 0.8; }
+.stamp-die-chamfer { fill: #8b9196; }
+.stamp-die-core { fill: #4b5054; }
+.stamp-die-shadow { fill: rgba(0, 0, 0, 0.35); filter: blur(2px); }
+
+.stamp-chips { position: absolute; inset: 0; pointer-events: none; }
+.stamp-chips i { position: absolute; top: 50%; left: 50%; width: 3px; height: 7px; border-radius: 1px; background: #8b9196; opacity: 0; }
+.stamp-chips i:nth-child(odd) { background: #c98a2a; }
+.stamp-chips i:nth-child(1) { --cx: -54px; --cy: -26px; --cr: -50deg; }
+.stamp-chips i:nth-child(2) { --cx: 52px; --cy: -30px; --cr: 44deg; }
+.stamp-chips i:nth-child(3) { --cx: -60px; --cy: 14px; --cr: -100deg; }
+.stamp-chips i:nth-child(4) { --cx: 58px; --cy: 18px; --cr: 96deg; }
+.stamp-chips i:nth-child(5) { --cx: -30px; --cy: 44px; --cr: -160deg; }
+.stamp-chips i:nth-child(6) { --cx: 34px; --cy: 42px; --cr: 150deg; }
+.stamp-chips i:nth-child(7) { --cx: -16px; --cy: -48px; --cr: -15deg; }
+.stamp-chips i:nth-child(8) { --cx: 18px; --cy: -46px; --cr: 20deg; }
+
+@media (prefers-reduced-motion: no-preference) {
+  .stamp-die { animation: stamp-die 820ms cubic-bezier(0.55, 0, 0.45, 1) both; }
+  .stamp-die-shadow { animation: stamp-shadow 820ms cubic-bezier(0.55, 0, 0.45, 1) both; }
+  .stamp-imprint { animation: stamp-imprint 520ms 340ms cubic-bezier(0.22, 1, 0.36, 1) both; }
+  .stamp-plate, .stamp-plate-grain, .stamp-plate-bolt { transform-box: view-box; transform-origin: 0 0; animation: stamp-plate 260ms 340ms ease-out; }
+  .stamp-chips i { animation: stamp-chip 620ms 350ms cubic-bezier(0.22, 1, 0.36, 1) both; }
+}
+@keyframes stamp-die {
+  0% { opacity: 0; transform: scale(1.6); }
+  12% { opacity: 1; }
+  44% { opacity: 1; transform: scale(1); }
+  56% { opacity: 1; transform: scale(1); }
+  100% { opacity: 0; transform: scale(1.55); }
+}
+@keyframes stamp-shadow {
+  0% { opacity: 0; transform: translate(6px, 7px) scale(1.5); }
+  44% { opacity: 1; transform: translate(1px, 1px) scale(1.02); }
+  56% { opacity: 1; transform: translate(1px, 1px) scale(1.02); }
+  100% { opacity: 0; transform: translate(6px, 7px) scale(1.45); }
+}
+@keyframes stamp-imprint {
+  0% { opacity: 0; transform: scale(1.1); }
+  100% { opacity: 1; transform: scale(1); }
+}
+@keyframes stamp-plate {
+  40% { transform: scale(0.975); }
+}
+@keyframes stamp-chip {
+  0% { opacity: 1; transform: translate(-50%, -50%) rotate(var(--cr)) scale(0.6); }
+  100% { opacity: 0; transform: translate(calc(-50% + var(--cx)), calc(-50% + var(--cy))) rotate(calc(var(--cr) * 2)) scale(1); }
+}
+
+/* ------------------------------------------------------------------ */
+/* Peça usinada (lista de etapas)                                      */
+/* ------------------------------------------------------------------ */
+.machined-part { display: grid; gap: 4px; margin: 0 2px; padding: 8px 8px 6px; border: 1px dashed var(--fl-line-strong); border-radius: 12px; background: var(--fl-paper); }
+.machined-part svg { display: block; width: 100%; height: auto; overflow: visible; }
+.machined-part figcaption { display: flex; align-items: baseline; justify-content: space-between; padding: 0 2px; }
+.clean-app .machined-part figcaption span { display: inline-flex; align-items: center; gap: 5px; color: var(--fl-red-deep); font-size: 0.62rem !important; font-weight: 700; letter-spacing: 0.12em; }
+.machined-part figcaption span svg { width: 12px; height: 12px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.clean-app .machined-part figcaption small { color: var(--fl-subtle); font-size: 0.7rem !important; font-variant-numeric: tabular-nums; }
+
+.machined-chuck { fill: var(--fl-line-strong); stroke: var(--fl-muted); stroke-width: 0.6; }
+.machined-shade-edge { stop-color: #6f767b; }
+.machined-shade-light { stop-color: #dfe3e6; }
+.machined-shade-mid { stop-color: #a3aaaf; }
+html.dark .machined-shade-edge { stop-color: #6b7277; }
+html.dark .machined-shade-light { stop-color: #e4e7e9; }
+html.dark .machined-shade-mid { stop-color: #aab0b5; }
+.machined-shoulders { fill: none; stroke: #3c4246; stroke-width: 0.6; }
+html.dark .machined-shoulders { stroke: #1b1d1f; }
+.machined-profile { fill: none; stroke: #3c4246; stroke-width: 0.8; stroke-linejoin: round; }
+html.dark .machined-profile { stroke: #1b1d1f; }
+.machined-part.is-done { border-style: solid; border-color: color-mix(in srgb, var(--fl-ok) 45%, transparent); background: color-mix(in srgb, var(--fl-ok-wash) 55%, var(--fl-paper)); }
+.clean-app .machined-part.is-done figcaption span { color: var(--fl-ok); }
+.machined-stock rect { stroke: var(--fl-muted); stroke-width: 0.5; }
+.machined-hatch-line { stroke: rgba(var(--fl-red-rgb), 0.45); stroke-width: 1; }
+.machined-axis { fill: none; stroke: var(--fl-red); stroke-width: 0.6; stroke-dasharray: 10 3 2 3; }
+
+.machined-stock { transform-box: fill-box; transform-origin: left center; }
+.machined-stock.is-cutting { animation: machined-cut 1.2s linear forwards; }
+@keyframes machined-cut { from { transform: scaleX(1); } to { transform: scaleX(0); } }
+
+.machined-tool { animation: machined-feed 1.2s linear forwards; }
+@keyframes machined-feed { from { transform: translateX(var(--from)); } to { transform: translateX(var(--to)); } }
+.machined-insert { fill: #d4a52a; stroke: #5a4100; stroke-width: 0.6; }
+.machined-chip { fill: none; stroke: #c98a2a; stroke-width: 0.9; opacity: 0; animation: machined-chip 0.7s ease-out infinite; }
+@keyframes machined-chip {
+  0% { opacity: 1; transform: translate(0, 0) rotate(0); }
+  100% { opacity: 0; transform: translate(10px, -16px) rotate(140deg); }
+}
+
+.machined-dims { opacity: 0; transition: opacity 600ms ease 300ms; }
+.machined-part.is-done .machined-dims { opacity: 1; }
+.machined-dims path { fill: none; stroke: var(--fl-red-deep); stroke-width: 0.6; stroke-linejoin: round; }
+.machined-dims text { fill: var(--fl-red-deep); font: 700 6px var(--fl-body); text-anchor: middle; paint-order: stroke; stroke: var(--fl-paper); stroke-width: 2px; }
+.machined-dims text.is-left { text-anchor: start; }

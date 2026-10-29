@@ -187,6 +187,14 @@ export function ErrorBlock({ message, onRetry }: { message?: string; onRetry: ()
 export function EmptyBlock({ title, description, action }: { title: string; description: string; action?: ReactNode }) {
   return (
     <div className="fl-state is-empty" role="status">
+      {/* Gancho vazio no painel: só a sombra pintada da ferramenta, como no ShadowBoard. */}
+      <svg className="empty-hook" viewBox="0 0 64 72" aria-hidden="true" focusable="false">
+        <path className="empty-hook-pegs" d="M8 8h.01M24 8h.01M40 8h.01M56 8h.01M8 64h.01M56 64h.01" />
+        <path className="empty-hook-shadow" d="M27 20h10v8l-2 4v28a3 3 0 0 1-6 0V32l-2-4Z" />
+        <g className="empty-hook-arm">
+          <path d="M32 6v9a4 4 0 0 1-8 0" />
+        </g>
+      </svg>
       <strong>{title}</strong>
       <span>{description}</span>
       {action}
