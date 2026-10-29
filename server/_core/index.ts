@@ -17,6 +17,25 @@ const SMALL_BODY_LIMIT = "1mb";
 const LARGE_BODY_LIMIT = "25mb";
 const LARGE_UPLOAD_PROCEDURES = new Set(["learning.saveModule", "profile.uploadAvatar"]);
 
+/**
+ * Só executa scripts do próprio servidor (nenhum inline: o tema inicial vem de
+ * /theme-init.js). Estilos inline ficam liberados porque o React e as animações
+ * usam `style=`. Imagens e modelos 3D podem vir de links HTTPS que o docente cadastra.
+ */
+const CONTENT_SECURITY_POLICY = [
+  "default-src 'self'",
+  "script-src 'self'",
+  "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+  "font-src 'self' data: https://fonts.gstatic.com",
+  "img-src 'self' data: blob: https:",
+  "connect-src 'self' https:",
+  "media-src 'self' blob: https:",
+  "object-src 'none'",
+  "base-uri 'self'",
+  "form-action 'self'",
+  "frame-ancestors 'self'",
+].join("; ");
+
 /** `/learning.saveModule` ou um lote (`/a,b`) em que todas as chamadas aceitam corpo grande. */
 function isLargeUploadPath(path: string) {
   const procedures = path.replace(/^\//, "").split(",");
@@ -73,6 +92,8 @@ async function startServer() {
     res.setHeader("X-Content-Type-Options", "nosniff");
     res.setHeader("Referrer-Policy", "same-origin");
     res.setHeader("X-Frame-Options", "SAMEORIGIN");
+    // Em desenvolvimento o Vite injeta scripts inline (HMR); a CSP vale no build de produção.
+    if (ENV.isProduction) res.setHeader("Content-Security-Policy", CONTENT_SECURITY_POLICY);
     next();
   });
   // Corpo pequeno por padrão. Só o editor e a foto de perfil (imagens em base64)
@@ -111,8 +132,16 @@ async function startServer() {
   }
 
   const preferredPort = parseInt(process.env.PORT || "3000", 10);
-  const port = await findAvailablePort(preferredPort);
-  if (port !== preferredPort) console.log(`Porta ${preferredPort} ocupada; usando ${port}.`);
+  // Porta ocupada quase sempre é outro `pnpm dev` aberto. Subir em outra porta
+  // deixaria dois servidores gravando no mesmo banco (e travando o db:reset).
+  if (!(await isPortAvailable(preferredPort))) {
+    const free = await findAvailablePort(preferredPort + 1).catch(() => null);
+    throw new Error(
+      `Porta ${preferredPort} ocupada — provavelmente outro Control Lab já está rodando. ` +
+        `Feche-o (Ctrl+C no terminal dele) ou escolha outra porta: PORT=${free ?? preferredPort + 1} pnpm dev`,
+    );
+  }
+  const port = preferredPort;
   server.listen(port, () => {
     console.log(`Control Lab em http://localhost:${port}/`);
   });

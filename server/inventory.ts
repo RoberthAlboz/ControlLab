@@ -57,6 +57,7 @@ import type {
   MovementListInput,
 } from "@shared/inventory-schemas";
 import { requireDb, type Database } from "./db";
+import { BORROWER_ROLES, canBorrowTools } from "@shared/roles";
 
 type Tx = Parameters<Parameters<Database["transaction"]>[0]>[0];
 
@@ -739,6 +740,9 @@ export async function createLoan(input: LoanCreateInput, userId: number) {
       if (input.borrowerUserId) {
         const [borrower] = await tx.select({ id: users.id, name: users.name, role: users.role, active: users.active, classroomId: users.classroomId }).from(users).where(eq(users.id, input.borrowerUserId)).limit(1);
         if (!borrower || !borrower.active) throw new InventoryServiceError("BAD_REQUEST", "A pessoa selecionada não existe ou está desativada.");
+        if (!canBorrowTools(borrower.role)) {
+          throw new InventoryServiceError("BAD_REQUEST", "Somente contas de aluno ou docente recebem empréstimo vinculado. Para outra pessoa, use \"Turma / outra pessoa\".");
+        }
         borrowerName = borrower.name || borrowerName;
         classroomId = borrower.classroomId ?? classroomId;
       }
@@ -1000,15 +1004,71 @@ export async function getInventorySummary() {
   };
 }
 
-/** Pessoas que podem receber empréstimos (alunos ativos). */
+/** Pessoas que podem receber empréstimos vinculados à conta (alunos e docentes ativos). */
 export async function listBorrowers() {
   const db = await requireDb();
   return db
-    .select({ id: users.id, name: users.name, email: users.email, classroomId: users.classroomId, classroomName: classrooms.name })
+    .select({ id: users.id, name: users.name, email: users.email, role: users.role, classroomId: users.classroomId, classroomName: classrooms.name })
     .from(users)
     .leftJoin(classrooms, eq(classrooms.id, users.classroomId))
-    .where(and(eq(users.role, "student"), eq(users.active, 1)))
+    .where(and(inArray(users.role, [...BORROWER_ROLES]), eq(users.active, 1)))
     .orderBy(asc(users.name));
+}
+
+/** Empréstimos abertos (reservados ou retirados) em nome de uma conta. */
+export async function countOpenLoansOf(userId: number) {
+  const db = await requireDb();
+  const [{ total }] = await db
+    .select({ total: count() })
+    .from(inventoryLoans)
+    .where(and(eq(inventoryLoans.borrowerUserId, userId), inArray(inventoryLoans.status, ["reservado", "retirado"])));
+  return Number(total);
+}
+
+/** Quanto tempo um empréstimo encerrado continua visível para quem o recebeu. */
+const CLOSED_LOAN_VISIBLE_MS = 30 * 24 * 60 * 60 * 1000;
+
+/**
+ * O que a própria conta vê dos seus empréstimos: abertos e os encerrados nos
+ * últimos 30 dias. Sem dados internos do estoque (quem registrou, chaves, saldo).
+ */
+export async function listBorrowerLoans(userId: number) {
+  const db = await requireDb();
+  const rows = await db
+    .select({
+      loan: inventoryLoans,
+      itemCode: inventoryItems.code,
+      itemName: inventoryItems.name,
+      itemUnit: inventoryItems.unit,
+      moduleTitle: learningModules.title,
+    })
+    .from(inventoryLoans)
+    .innerJoin(inventoryItems, eq(inventoryItems.id, inventoryLoans.itemId))
+    .leftJoin(learningModules, eq(learningModules.id, inventoryLoans.moduleId))
+    .where(eq(inventoryLoans.borrowerUserId, userId))
+    .orderBy(desc(inventoryLoans.createdAt), desc(inventoryLoans.id))
+    .limit(50);
+  const now = Date.now();
+  return rows
+    .filter(({ loan }) => loan.status === "reservado" || loan.status === "retirado" || (loan.closedAt != null && now - new Date(loan.closedAt).getTime() <= CLOSED_LOAN_VISIBLE_MS))
+    .map(({ loan, ...item }) => ({
+      id: loan.id,
+      itemCode: item.itemCode,
+      itemName: item.itemName,
+      itemUnit: item.itemUnit,
+      moduleTitle: item.moduleTitle,
+      quantity: loan.quantity,
+      returnedQuantity: loan.returnedQuantity,
+      damagedQuantity: loan.damagedQuantity,
+      outstanding: Math.max(0, loan.quantity - loan.returnedQuantity - loan.damagedQuantity),
+      status: loan.status,
+      purpose: loan.purpose,
+      dueAt: loan.dueAt,
+      overdue: isLoanOverdue(loan, now),
+      createdAt: loan.createdAt,
+      deliveredAt: loan.deliveredAt,
+      closedAt: loan.closedAt,
+    }));
 }
 
 /** Turmas ativas para associar a saídas e empréstimos. */

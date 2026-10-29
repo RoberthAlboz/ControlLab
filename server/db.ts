@@ -18,13 +18,15 @@ import {
   learningSteps,
   studentBadges,
   studentNotes,
+  studentQuizAttempts,
   studentStepSessions,
   studentProgress,
   users,
 } from "../drizzle/schema";
 import { availableQuantity, isLowStock, stockHealth } from "@shared/inventory";
 import { isLinkAttachment, parseStoredAttachments, type ContentAttachment } from "@shared/attachments";
-import { getElapsedStudySeconds, getFirstChangedStepIndex, isStepCompleted, isValidStoredElapsedSeconds, MAX_ELAPSED_SECONDS, normalizeElapsedSeconds, normalizeProgressRowsWithStepCounts, resolveProgressUpdate, sanitizeStoredElapsedSeconds, selectCanonicalProgressRows, summarizeCompletedStudyTime, filterStudySessionsByVisibleModules, hasSequentialStepPositions } from "@shared/progress";
+import { creditedStepSeconds, getElapsedStudySeconds, getFirstChangedStepIndex, MIN_STEP_SECONDS, stepTimeCapSeconds, isStepCompleted, isValidStoredElapsedSeconds, MAX_ELAPSED_SECONDS, normalizeElapsedSeconds, normalizeProgressRowsWithStepCounts, resolveProgressUpdate, sanitizeStoredElapsedSeconds, selectCanonicalProgressRows, summarizeCompletedStudyTime, filterStudySessionsByVisibleModules, hasSequentialStepPositions } from "@shared/progress";
+import { parseStoredQuiz, QUIZ_FIRST_TRY_XP, serializeQuiz, summarizeQuizAttempts, toPublicQuiz, type StepQuiz } from "@shared/quiz";
 import { normalizeBadgeContent, type AwardStudentBadgeInput } from "@shared/competencies";
 import { getStudentModulesByUser, summarizeStudentStudyTime } from "@shared/supervision";
 import { periodStartInZone, studyStreakDays } from "@shared/time-zone";
@@ -295,7 +297,7 @@ export async function getTeacherBadgeData(actor: ContentActor) {
   const db = await requireDb();
   const scope = await studentIdsInScope(db, actor);
   const inScope = (userId: number) => !scope || scope.has(userId);
-  const [allStudents, allBadges, allProgressRows, allStepSessionRows, stepRows] = await Promise.all([
+  const [allStudents, allBadges, allProgressRows, allStepSessionRows, stepRows, quizStepRows, allQuizAttempts] = await Promise.all([
     db.select({ id: users.id, name: users.name }).from(users).where(eq(users.role, "student")).orderBy(asc(users.name)),
     db.select({
       id: studentBadges.id,
@@ -330,6 +332,13 @@ export async function getTeacherBadgeData(actor: ContentActor) {
       .innerJoin(learningSteps, and(eq(learningSteps.moduleId, studentStepSessions.moduleId), eq(learningSteps.position, studentStepSessions.stepIndex)))
       .where(and(eq(users.role, "student"), isNotNull(studentStepSessions.completedAt), isNull(learningModules.archivedAt))),
     db.select({ moduleId: learningSteps.moduleId, position: learningSteps.position }).from(learningSteps),
+    db.select({ stepId: learningSteps.id, moduleId: learningSteps.moduleId, position: learningSteps.position, stepTitle: learningSteps.title, quiz: learningSteps.quiz, moduleTitle: learningModules.title })
+      .from(learningSteps)
+      .innerJoin(learningModules, eq(learningModules.id, learningSteps.moduleId))
+      .where(and(isNotNull(learningSteps.quiz), isNull(learningModules.archivedAt)))
+      .orderBy(asc(learningModules.title), asc(learningSteps.position)),
+    db.select({ userId: studentQuizAttempts.userId, stepId: studentQuizAttempts.stepId, correct: studentQuizAttempts.correct, createdAt: studentQuizAttempts.createdAt })
+      .from(studentQuizAttempts),
   ]);
   // Docente só vê os alunos das próprias turmas; a administração vê todos.
   const students = allStudents.filter((row) => inScope(row.id));
@@ -340,6 +349,26 @@ export async function getTeacherBadgeData(actor: ContentActor) {
   const progressRows = normalizeProgressRowsWithStepCounts(rawProgressRows, stepCounts);
   const validStepSessionRows = stepSessionRows.filter((row) => positionsByModule.get(row.moduleId)?.has(row.stepIndex));
   const modulesByUser = getStudentModulesByUser(progressRows, validStepSessionRows);
+  const quizSummary = summarizeQuizAttempts(
+    allQuizAttempts.filter((row) => inScope(row.userId)).map((row) => ({ ...row, correct: Boolean(row.correct) })),
+  );
+  // Etapas com verificação: onde a turma acerta de primeira e onde ela trava.
+  const quizSteps = quizStepRows.flatMap((row) => {
+    const quiz = parseStoredQuiz(row.quiz);
+    if (!quiz) return [];
+    const stats = quizSummary.byStep.get(row.stepId) ?? { answered: 0, firstTry: 0, solved: 0, attemptsUntilSolved: 0 };
+    return [{
+      stepId: row.stepId,
+      moduleId: row.moduleId,
+      moduleTitle: row.moduleTitle,
+      stepNumber: row.position + 1,
+      stepTitle: row.stepTitle,
+      question: quiz.question,
+      answered: stats.answered,
+      firstTry: stats.firstTry,
+      averageAttempts: stats.solved ? Math.round((stats.attemptsUntilSolved / stats.solved) * 10) / 10 : null,
+    }];
+  });
   const supervision = students.map((student) => {
     const rows = progressRows.filter((row) => row.userId === student.id).map((row) => ({
       moduleId: row.moduleId,
@@ -361,9 +390,10 @@ export async function getTeacherBadgeData(actor: ContentActor) {
       modulesCompleted: rows.filter((row) => row.progress >= 100).length,
       lastActivityAt,
       modules,
+      quiz: quizSummary.byStudent.get(student.id) ?? { answered: 0, firstTry: 0 },
     };
   });
-  return { students, badges, supervision };
+  return { students, badges, supervision, quizSteps };
 }
 
 export async function assignStudentBadge(input: AwardStudentBadgeInput, actor: ContentActor) {
@@ -431,13 +461,33 @@ export function presentCatalogResource(resource: ResourceRow, inventoryById: Map
   };
 }
 
+type InstructorCard = Pick<typeof instructors.$inferSelect, "id" | "name" | "role" | "badge" | "initials" | "avatarUrl">;
+
+/** Docente responsável pela turma do aluno, no formato do cartão "Seu docente" (null sem turma ou sem responsável ativo). */
+async function getClassroomTeacherCard(db: Awaited<ReturnType<typeof requireDb>>, studentId: number): Promise<InstructorCard | null> {
+  const [student] = await db.select({ classroomId: users.classroomId }).from(users).where(eq(users.id, studentId)).limit(1);
+  if (!student?.classroomId) return null;
+  const [classroom] = await db.select({ name: classrooms.name, teacherId: classrooms.teacherId, archivedAt: classrooms.archivedAt })
+    .from(classrooms).where(eq(classrooms.id, student.classroomId)).limit(1);
+  if (!classroom?.teacherId || classroom.archivedAt) return null;
+  const [teacher] = await db.select({ id: users.id, name: users.name, email: users.email, avatarUrl: users.avatarUrl, active: users.active })
+    .from(users).where(eq(users.id, classroom.teacherId)).limit(1);
+  if (!teacher || !teacher.active) return null;
+  const name = teacher.name?.trim() || teacher.email || "Docente";
+  const parts = name.split(/\s+/).filter(Boolean);
+  const initials = `${parts[0]?.[0] ?? ""}${parts.length > 1 ? parts[parts.length - 1][0] : ""}`.toUpperCase() || "DO";
+  // id negativo: o cartão vem de `users`, não da tabela `instructors`, e não pode colidir com ela.
+  return { id: -teacher.id, name, role: `Responsável · ${classroom.name}`, badge: "Docente", initials, avatarUrl: teacher.avatarUrl };
+}
+
 export async function getCatalog(userId?: number, period: "all" | "today" | "week" | "month" = "all", viewerRole: CatalogViewerRole = null) {
   const db = await requireDb();
+  const classroomTeacher = userId && viewerRole === "student" ? await getClassroomTeacherCard(db, userId) : null;
   // Docentes e administração veem rascunhos e a disponibilidade do estoque;
   // alunos e visitantes recebem apenas conteúdo publicado, sem dados internos.
   const includeUnpublished = viewerRole === "teacher" || viewerRole === "admin";
   const activeSessionCutoff = new Date(Date.now() - MAX_ELAPSED_SECONDS * 1000);
-  const [moduleRows, stepRows, resourceRows, instructorRows, activityRows, progressRows, sessionRows, activeSessionRows] = await Promise.all([
+  const [moduleRows, stepRows, resourceRows, instructorRows, activityRows, progressRows, sessionRows, activeSessionRows, quizAttemptRows] = await Promise.all([
     // Módulos arquivados ("excluídos") somem do catálogo; o progresso fica guardado no banco.
     db.select().from(learningModules).where(isNull(learningModules.archivedAt)),
     db.select().from(learningSteps).orderBy(asc(learningSteps.position)),
@@ -448,6 +498,9 @@ export async function getCatalog(userId?: number, period: "all" | "today" | "wee
     userId ? db.select({ moduleId: studentStepSessions.moduleId, stepIndex: studentStepSessions.stepIndex, startedAt: studentStepSessions.startedAt, elapsedSeconds: studentStepSessions.elapsedSeconds, completedAt: studentStepSessions.completedAt }).from(studentStepSessions).where(and(eq(studentStepSessions.userId, userId), isNotNull(studentStepSessions.completedAt))) : Promise.resolve([]),
     // A mesma consulta de catálogo permite retomar somente uma sessão recente do usuário autenticado.
     userId ? db.select({ moduleId: studentStepSessions.moduleId, stepIndex: studentStepSessions.stepIndex, startedAt: studentStepSessions.startedAt, elapsedSeconds: studentStepSessions.elapsedSeconds, completedAt: studentStepSessions.completedAt }).from(studentStepSessions).where(and(eq(studentStepSessions.userId, userId), isNull(studentStepSessions.completedAt), gte(studentStepSessions.startedAt, activeSessionCutoff))) : Promise.resolve([]),
+    userId && viewerRole === "student"
+      ? db.select({ userId: studentQuizAttempts.userId, stepId: studentQuizAttempts.stepId, correct: studentQuizAttempts.correct, createdAt: studentQuizAttempts.createdAt }).from(studentQuizAttempts).where(eq(studentQuizAttempts.userId, userId))
+      : Promise.resolve([]),
   ]);
   const visibleModules = includeUnpublished ? moduleRows : moduleRows.filter((module) => Boolean(module.published));
   const linkedItemIds = Array.from(new Set(resourceRows.map((resource) => resource.inventoryItemId).filter((id): id is number => typeof id === "number")));
@@ -485,11 +538,28 @@ export async function getCatalog(userId?: number, period: "all" | "today" | "wee
     period === "all" ? undefined : periodStart,
   );
   const lifetimeStudy = summarizeCompletedStudyTime(completedSessionRows);
-  const gamification = calculateGamification(lifetimeStudy.studiedMinutes, lifetimeCompletedSteps);
-  const usesCatalogBaseline = !userId && includeUnpublished;
-  const currentProgress = visibleModules.map((module) => usesCatalogBaseline
-    ? module.progress
-    : (progressMap.get(module.id)?.progress ?? 0));
+  const quizAttempts = quizAttemptRows.map((row) => ({ ...row, correct: Boolean(row.correct) }));
+  const quizFirstTry = summarizeQuizAttempts(quizAttempts).byStudent.get(userId ?? 0)?.firstTry ?? 0;
+  const gamification = calculateGamification(lifetimeStudy.studiedMinutes, lifetimeCompletedSteps, quizFirstTry);
+  const currentProgress = visibleModules.map((module) => progressMap.get(module.id)?.progress ?? 0);
+  // Uma etapa só conta o quiz como respondido se o acerto veio depois de a sessão atual começar.
+  const activeStartByStep = new Map(activeSessionRows.map((row) => [`${row.moduleId}:${row.stepIndex}`, row.startedAt] as const));
+  const quizPassedFor = (step: { id: string; moduleId: string; position: number }) => {
+    const startedAt = activeStartByStep.get(`${step.moduleId}:${step.position}`);
+    return quizAttempts.some((attempt) => attempt.stepId === step.id && attempt.correct && (!startedAt || attempt.createdAt >= startedAt));
+  };
+  const presentStep = ({ quiz: storedQuiz, imageUrl, attachments, ...step }: typeof stepRows[number]) => {
+    const quiz = parseStoredQuiz(storedQuiz);
+    return {
+      ...step,
+      imageUrl,
+      image: imageUrl ?? undefined,
+      attachments: parseStoredAttachments(attachments),
+      // Docentes recebem o gabarito para editar; o aluno, só pergunta e alternativas.
+      quiz: includeUnpublished ? quiz : toPublicQuiz(quiz),
+      quizPassed: viewerRole === "student" && quiz ? quizPassedFor(step) : false,
+    };
+  };
   return {
     viewerId: userId ?? null,
     viewerRole: userId == null ? null : viewerRole,
@@ -500,9 +570,9 @@ export async function getCatalog(userId?: number, period: "all" | "today" | "wee
       return {
         ...module,
         published: Boolean(module.published),
-        // O progresso do aluno nunca herda o valor editorial do catálogo.
-        progress: usesCatalogBaseline ? module.progress : (progress?.progress ?? 0),
-        steps: stepRows.filter((step) => step.moduleId === module.id).map((step) => ({ ...step, image: step.imageUrl ?? undefined, attachments: parseStoredAttachments(step.attachments) })),
+        // O progresso exibido é sempre o do usuário, nunca o valor editorial gravado no módulo.
+        progress: progress?.progress ?? 0,
+        steps: stepRows.filter((step) => step.moduleId === module.id).map(presentStep),
         resources: resourceRows
           .filter((resource) => resource.moduleId === module.id)
           .map((resource) => presentCatalogResource(resource, includeUnpublished ? inventoryById : null)),
@@ -522,7 +592,8 @@ export async function getCatalog(userId?: number, period: "all" | "today" | "wee
         })),
       };
     }),
-    instructors: instructorRows,
+    // O aluno vê primeiro quem responde pela turma dele; os instrutores do catálogo ficam como alternativa.
+    instructors: classroomTeacher ? [classroomTeacher, ...instructorRows] : instructorRows,
     activities: activityRows.filter((activity) => visibleModuleIds.has(activity.moduleId)),
     stats: {
       averageProgress: currentProgress.length ? Math.round(currentProgress.reduce((sum, progress) => sum + progress, 0) / currentProgress.length) : 0,
@@ -535,16 +606,16 @@ export async function getCatalog(userId?: number, period: "all" | "today" | "wee
   };
 }
 
-export function calculateGamification(studiedMinutes: number, completedSteps: number) {
-  const xp = Math.max(0, studiedMinutes) + Math.max(0, completedSteps) * 30;
+export function calculateGamification(studiedMinutes: number, completedSteps: number, quizFirstTry = 0) {
+  const xp = Math.max(0, studiedMinutes) + Math.max(0, completedSteps) * 30 + Math.max(0, quizFirstTry) * QUIZ_FIRST_TRY_XP;
   const level = Math.floor(xp / 120) + 1;
   const levelProgress = Math.floor(((xp % 120) / 120) * 100);
   return { level, levelProgress, xp };
 }
 
 export type SaveModuleInput = {
-  id: string; code: string; title: string; kind: string; description: string; objective: string; cover: string; coverImage?: string | null; progress: number; duration: string; published: boolean;
-  steps: Array<{ id: string; title: string; description: string; tip: string; image?: string | null; attachments?: ContentAttachment[] }>;
+  id: string; code: string; title: string; kind: string; description: string; objective: string; cover: string; coverImage?: string | null; duration: string; published: boolean;
+  steps: Array<{ id: string; title: string; description: string; tip: string; image?: string | null; attachments?: ContentAttachment[]; quiz?: StepQuiz | null }>;
   confirmStepStructureReset?: boolean;
   resources: Array<{ id: string; category: "materials" | "machines" | "tools" | "parts"; label: string; title: string; detail: string; status: string; progress: number; modelUrl: string; color: string; inventoryItemId?: number | null; attachments?: ContentAttachment[] }>;
 };
@@ -653,10 +724,10 @@ export async function saveLearningModule(input: SaveModuleInput, actor: ContentA
         if (item.archivedAt && !previousLinks.has(id)) throw new LearningDomainError("BAD_REQUEST", "Não é possível vincular um item de estoque arquivado.");
       }
     }
-    await tx.insert(learningModules).values({ id: input.id, code: input.code, title: input.title, kind: input.kind, description: input.description, objective: input.objective, cover: input.cover, coverImage: input.coverImage ?? null, progress: input.progress, duration: input.duration, published: input.published ? 1 : 0, createdBy: actor.id }).onConflictDoUpdate({ target: learningModules.id, set: { code: input.code, title: input.title, kind: input.kind, description: input.description, objective: input.objective, cover: input.cover, coverImage: input.coverImage ?? null, progress: input.progress, duration: input.duration, published: input.published ? 1 : 0 } });
+    await tx.insert(learningModules).values({ id: input.id, code: input.code, title: input.title, kind: input.kind, description: input.description, objective: input.objective, cover: input.cover, coverImage: input.coverImage ?? null, duration: input.duration, published: input.published ? 1 : 0, createdBy: actor.id }).onConflictDoUpdate({ target: learningModules.id, set: { code: input.code, title: input.title, kind: input.kind, description: input.description, objective: input.objective, cover: input.cover, coverImage: input.coverImage ?? null, duration: input.duration, published: input.published ? 1 : 0 } });
     await tx.delete(learningSteps).where(eq(learningSteps.moduleId, input.id));
     await tx.delete(learningResources).where(eq(learningResources.moduleId, input.id));
-    if (input.steps.length) await tx.insert(learningSteps).values(input.steps.map((step, position) => ({ id: step.id, moduleId: input.id, position, title: step.title, description: step.description, tip: step.tip, imageUrl: step.image ?? null, attachments: JSON.stringify(step.attachments ?? []) })));
+    if (input.steps.length) await tx.insert(learningSteps).values(input.steps.map((step, position) => ({ id: step.id, moduleId: input.id, position, title: step.title, description: step.description, tip: step.tip, imageUrl: step.image ?? null, attachments: JSON.stringify(step.attachments ?? []), quiz: serializeQuiz(step.quiz) })));
     if (input.resources.length) await tx.insert(learningResources).values(input.resources.map((resource) => ({ id: resource.id, moduleId: input.id, category: resource.category, label: resource.label, title: resource.title, detail: resource.detail, status: resource.status, progress: resource.progress, modelUrl: resource.modelUrl, attachments: JSON.stringify(resource.attachments ?? []), color: resource.color, inventoryItemId: resource.inventoryItemId ?? null })));
     return { removedImages: previousImages.filter((url) => !nextImages.has(url)) };
   });
@@ -819,14 +890,14 @@ export async function updateProgress(userId: number, moduleId: string, stepIndex
     throw new LearningDomainError("BAD_REQUEST", error instanceof Error ? error.message : "Tempo de estudo inválido.");
   }
   const savedElapsedSeconds = await db.transaction(async (tx) => {
-    const [module] = await tx.select({ id: learningModules.id, published: learningModules.published, archivedAt: learningModules.archivedAt })
+    const [module] = await tx.select({ id: learningModules.id, published: learningModules.published, archivedAt: learningModules.archivedAt, duration: learningModules.duration })
       .from(learningModules)
       .where(eq(learningModules.id, moduleId))
       .limit(1);
     if (!module || !module.published || module.archivedAt) {
       throw new LearningDomainError("NOT_FOUND", "Módulo não encontrado ou ainda não publicado.");
     }
-    const moduleSteps = await tx.select({ position: learningSteps.position }).from(learningSteps).where(eq(learningSteps.moduleId, moduleId));
+    const moduleSteps = await tx.select({ id: learningSteps.id, position: learningSteps.position, quiz: learningSteps.quiz }).from(learningSteps).where(eq(learningSteps.moduleId, moduleId));
     if (!hasSequentialStepPositions(moduleSteps.map(({ position }) => position))
       || !Number.isInteger(stepIndex) || stepIndex < 1 || stepIndex > moduleSteps.length
       || !moduleSteps.some(({ position }) => position === stepIndex - 1)) {
@@ -852,7 +923,24 @@ export async function updateProgress(userId: number, moduleId: string, stepIndex
     if (stepIndex > completedStepCount + 1) throw new LearningDomainError("BAD_REQUEST", "Conclua as etapas em sequência.");
     if (!session || session.completedAt) throw new LearningDomainError("BAD_REQUEST", "Inicie a etapa antes de concluí-la.");
 
-    const serverElapsedSeconds = getElapsedStudySeconds(session.startedAt.getTime(), Date.now());
+    const measuredSeconds = getElapsedStudySeconds(session.startedAt.getTime(), Date.now());
+    if (measuredSeconds < MIN_STEP_SECONDS) {
+      throw new LearningDomainError("BAD_REQUEST", `Leia a etapa com atenção: é possível concluí-la depois de ${MIN_STEP_SECONDS} segundos.`);
+    }
+    const step = moduleSteps.find(({ position }) => position === stepIndex - 1)!;
+    if (parseStoredQuiz(step.quiz)) {
+      const [passed] = await tx.select({ id: studentQuizAttempts.id }).from(studentQuizAttempts)
+        .where(and(
+          eq(studentQuizAttempts.userId, userId),
+          eq(studentQuizAttempts.stepId, step.id),
+          eq(studentQuizAttempts.correct, 1),
+          gte(studentQuizAttempts.createdAt, session.startedAt),
+        ))
+        .limit(1);
+      if (!passed) throw new LearningDomainError("BAD_REQUEST", "Responda corretamente à verificação da etapa antes de concluí-la.");
+    }
+    // Só o tempo plausível conta: uma aba esquecida aberta não vira horas de estudo nem XP.
+    const serverElapsedSeconds = creditedStepSeconds(measuredSeconds, stepTimeCapSeconds(module.duration, moduleSteps.length));
     await tx.update(studentStepSessions).set({ completedAt: new Date(), elapsedSeconds: serverElapsedSeconds }).where(eq(studentStepSessions.id, session.id));
     const resolved = resolveProgressUpdate(moduleSteps.length, completedStepCount, stepIndex);
     const moduleSessions = await tx.select({ elapsedSeconds: studentStepSessions.elapsedSeconds, completedAt: studentStepSessions.completedAt })
@@ -867,6 +955,37 @@ export async function updateProgress(userId: number, moduleId: string, stepIndex
     return serverElapsedSeconds;
   });
   return { success: true, elapsedSeconds: savedElapsedSeconds } as const;
+}
+
+/**
+ * Registra a resposta do aluno ao quiz da etapa em andamento. Todas as
+ * tentativas ficam guardadas (métricas do docente); a explicação só é
+ * devolvida no acerto, e o gabarito nunca vai para o aluno.
+ */
+export async function answerStepQuiz(userId: number, moduleId: string, stepIndex: number, selectedIndex: number) {
+  const db = await requireDb();
+  return db.transaction(async (tx) => {
+    const [module] = await tx.select({ published: learningModules.published, archivedAt: learningModules.archivedAt })
+      .from(learningModules).where(eq(learningModules.id, moduleId)).limit(1);
+    if (!module || !module.published || module.archivedAt) throw new LearningDomainError("NOT_FOUND", "Módulo não encontrado ou ainda não publicado.");
+    const [step] = await tx.select({ id: learningSteps.id, quiz: learningSteps.quiz }).from(learningSteps)
+      .where(and(eq(learningSteps.moduleId, moduleId), eq(learningSteps.position, stepIndex))).limit(1);
+    const quiz = parseStoredQuiz(step?.quiz);
+    if (!step || !quiz) throw new LearningDomainError("NOT_FOUND", "Esta etapa não tem verificação.");
+    if (!Number.isInteger(selectedIndex) || selectedIndex < 0 || selectedIndex >= quiz.options.length) {
+      throw new LearningDomainError("BAD_REQUEST", "Escolha uma das alternativas.");
+    }
+    const [session] = await tx.select({ completedAt: studentStepSessions.completedAt }).from(studentStepSessions)
+      .where(and(eq(studentStepSessions.userId, userId), eq(studentStepSessions.moduleId, moduleId), eq(studentStepSessions.stepIndex, stepIndex)))
+      .limit(1);
+    if (!session) throw new LearningDomainError("BAD_REQUEST", "Inicie a etapa antes de responder à verificação.");
+    if (session.completedAt) throw new LearningDomainError("BAD_REQUEST", "Esta etapa já foi concluída.");
+    const correct = selectedIndex === quiz.correctIndex;
+    await tx.insert(studentQuizAttempts).values({ userId, moduleId, stepId: step.id, selectedIndex, correct: correct ? 1 : 0 });
+    return correct
+      ? { correct: true as const, explanation: quiz.explanation }
+      : { correct: false as const, explanation: "" };
+  });
 }
 
 export async function resetStudentModuleProgress(studentId: number, moduleId: string, actor: ContentActor) {

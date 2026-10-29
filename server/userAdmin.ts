@@ -14,9 +14,10 @@ import { randomUUID } from "node:crypto";
 import { and, asc, count, eq, isNull } from "drizzle-orm";
 import { classrooms, users, type User } from "../drizzle/schema";
 import type { ClassroomInput, UserCreateInput, UserUpdateInput } from "@shared/user-admin";
-import { isStaffRole } from "@shared/roles";
+import { canBorrowTools, isStaffRole } from "@shared/roles";
 import { hashPassword } from "./_core/password";
 import { requireDb, revokeUserSessions } from "./db";
+import { countOpenLoansOf } from "./inventory";
 
 export class UserAdminError extends Error {
   constructor(public readonly code: "NOT_FOUND" | "CONFLICT" | "BAD_REQUEST", message: string) {
@@ -115,6 +116,17 @@ export async function updateUser(input: UserUpdateInput, actorId: number) {
   if (!current) throw new UserAdminError("NOT_FOUND", "Conta não encontrada.");
   if (input.id === actorId && (input.role !== current.role || !input.active)) {
     throw new UserAdminError("BAD_REQUEST", "Você não pode alterar o tipo de acesso nem desativar a sua própria conta.");
+  }
+  // Ferramenta emprestada precisa de um dono que ainda entre no sistema e possa recebê-la.
+  const losesLoans = (Boolean(current.active) && !input.active) || (canBorrowTools(current.role) && !canBorrowTools(input.role));
+  if (losesLoans) {
+    const open = await countOpenLoansOf(input.id);
+    if (open > 0) {
+      throw new UserAdminError(
+        "BAD_REQUEST",
+        `Esta conta tem ${open} empréstimo(s) em aberto. Registre a devolução ou cancele a reserva no Estoque antes de ${input.active ? "mudar o tipo de acesso" : "desativá-la"}.`
+      );
+    }
   }
   if (input.email !== current.email) {
     const other = await findByEmail(input.email);

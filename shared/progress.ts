@@ -96,6 +96,43 @@ export function getElapsedStudySeconds(startedAtMs: number, nowMs: number): numb
   return Math.min(MAX_ELAPSED_SECONDS, Math.max(0, Math.floor((nowMs - startedAtMs) / 1000)));
 }
 
+/** Tempo mínimo numa etapa antes de concluí-la: impede "passar direto" clicando. */
+export const MIN_STEP_SECONDS = 20;
+/** Teto de tempo creditado por etapa quando o módulo não informa a duração. */
+export const DEFAULT_STEP_CAP_SECONDS = 30 * 60;
+const MIN_STEP_CAP_SECONDS = 10 * 60;
+const MAX_STEP_CAP_SECONDS = 2 * 60 * 60;
+
+/** Minutos de um texto livre de duração ("45 min", "1h 30min", "2 h"); null se não houver número. */
+export function parseDurationMinutes(duration: string | null | undefined): number | null {
+  const text = (duration ?? "").toLowerCase();
+  const hours = text.match(/(\d+(?:[.,]\d+)?)\s*h/);
+  const minutes = text.match(/(\d+)\s*m/);
+  let total = 0;
+  if (hours) total += Number(hours[1].replace(",", ".")) * 60;
+  if (minutes) total += Number(minutes[1]);
+  if (!hours && !minutes) {
+    const bare = text.match(/\d+/);
+    if (bare) total = Number(bare[0]);
+  }
+  return total > 0 ? Math.round(total) : null;
+}
+
+/**
+ * Tempo máximo que uma etapa credita: 3× o tempo previsto por etapa (duração do
+ * módulo ÷ etapas), entre 10 min e 2 h. Uma aba esquecida aberta não vira horas de estudo.
+ */
+export function stepTimeCapSeconds(moduleDuration: string | null | undefined, stepCount: number): number {
+  const minutes = parseDurationMinutes(moduleDuration);
+  if (!minutes || !Number.isInteger(stepCount) || stepCount <= 0) return DEFAULT_STEP_CAP_SECONDS;
+  const perStepSeconds = (minutes * 60) / stepCount;
+  return Math.round(Math.min(MAX_STEP_CAP_SECONDS, Math.max(MIN_STEP_CAP_SECONDS, perStepSeconds * 3)));
+}
+
+export function creditedStepSeconds(measuredSeconds: number, capSeconds: number): number {
+  return Math.max(0, Math.min(Math.floor(measuredSeconds), capSeconds));
+}
+
 export type CompletedStudySession = { elapsedSeconds: number; completedAt: Date | null };
 
 export function summarizeCompletedStudyTime(sessions: CompletedStudySession[], periodStart?: Date) {
