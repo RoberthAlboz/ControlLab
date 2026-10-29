@@ -36,6 +36,7 @@ export function CreateLoanDialog({
   const [borrowerMode, setBorrowerMode] = useState<"student" | "other">("student");
   const [borrowerUserId, setBorrowerUserId] = useState("");
   const [borrowerName, setBorrowerName] = useState("");
+  const [classroomId, setClassroomId] = useState("");
   const [purpose, setPurpose] = useState("");
   const [moduleId, setModuleId] = useState("");
   const [dueAt, setDueAt] = useState("");
@@ -49,6 +50,7 @@ export function CreateLoanDialog({
     setBorrowerMode(options.borrowers.length ? "student" : "other");
     setBorrowerUserId("");
     setBorrowerName("");
+    setClassroomId("");
     setPurpose("");
     setModuleId("");
     setDueAt("");
@@ -71,6 +73,8 @@ export function CreateLoanDialog({
       borrowerName: borrowerMode === "student" ? (student?.name ?? "") : borrowerName,
       purpose,
       moduleId: moduleId || null,
+      // Aluno cadastrado usa a turma do cadastro (definida pelo servidor).
+      classroomId: borrowerMode === "other" && classroomId ? Number(classroomId) : null,
       dueAt: dueAt ? new Date(`${dueAt}T23:59:00`) : null,
       requestKey,
     });
@@ -153,15 +157,30 @@ export function CreateLoanDialog({
                 {options.borrowers.map(student => (
                   <option key={student.id} value={student.id}>
                     {student.name ?? student.email}
+                    {student.classroomName ? ` — ${student.classroomName}` : " — sem turma"}
                   </option>
                 ))}
               </select>
             )}
           </Field>
         ) : (
-          <Field label="Nome da turma ou pessoa" required error={errors.borrowerName} className="span-2">
-            {props => <input {...props} value={borrowerName} onChange={e => setBorrowerName(e.target.value)} maxLength={160} placeholder="Ex.: Turma 2B — bancada 3" />}
-          </Field>
+          <>
+            <Field label="Nome da turma ou pessoa" required error={errors.borrowerName}>
+              {props => <input {...props} value={borrowerName} onChange={e => setBorrowerName(e.target.value)} maxLength={160} placeholder="Ex.: Turma 2B — bancada 3" />}
+            </Field>
+            <Field label="Turma" error={errors.classroomId} hint="Opcional. Conta o empréstimo para a turma.">
+              {props => (
+                <select {...props} value={classroomId} onChange={e => setClassroomId(e.target.value)}>
+                  <option value="">Nenhuma</option>
+                  {options.classrooms.map(classroom => (
+                    <option key={classroom.id} value={classroom.id}>
+                      {classroom.name}
+                    </option>
+                  ))}
+                </select>
+              )}
+            </Field>
+          </>
         )}
         <Field label="Finalidade" required error={errors.purpose} className="span-2">
           {props => <input {...props} value={purpose} onChange={e => setPurpose(e.target.value)} maxLength={255} placeholder="Ex.: medição das peças da matriz" />}

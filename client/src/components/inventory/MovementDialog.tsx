@@ -28,12 +28,14 @@ export default function MovementDialog({
   onOpenChange,
   presetItemId,
   modules,
+  classrooms,
   onSaved,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   presetItemId: number | null;
   modules: InventoryOptions["modules"];
+  classrooms: InventoryOptions["classrooms"];
   onSaved: (message: string) => void;
 }) {
   const utils = trpc.useUtils();
@@ -45,6 +47,7 @@ export default function MovementDialog({
   const [quantity, setQuantity] = useState("1");
   const [reason, setReason] = useState<MovementReason>("compra");
   const [moduleId, setModuleId] = useState("");
+  const [classroomId, setClassroomId] = useState("");
   const [reference, setReference] = useState("");
   const [note, setNote] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -57,6 +60,7 @@ export default function MovementDialog({
     setQuantity("1");
     setReason("compra");
     setModuleId("");
+    setClassroomId("");
     setReference("");
     setNote("");
     setErrors({});
@@ -69,6 +73,7 @@ export default function MovementDialog({
 
   const item = useMemo(() => itemsQuery.data?.find(entry => String(entry.id) === itemId) ?? null, [itemsQuery.data, itemId]);
   const qty = Number(quantity);
+  const isOutflow = type === "saida" || type === "ajuste_saida";
   const needsJustification = type === "ajuste_entrada" || type === "ajuste_saida" || reason === "outro" || reason === "perda" || reason === "avaria";
 
   // Prévia calculada com as MESMAS regras que o servidor aplica.
@@ -101,6 +106,7 @@ export default function MovementDialog({
       reference,
       note,
       moduleId: moduleId || null,
+      classroomId: isOutflow && classroomId ? Number(classroomId) : null,
       requestKey,
     });
     const nextErrors = parsed.success ? {} : zodFieldErrors(parsed.error.issues);
@@ -192,6 +198,20 @@ export default function MovementDialog({
             </select>
           )}
         </Field>
+        {isOutflow && (
+          <Field label="Turma atendida" error={errors.classroomId} hint="Opcional. A administração acompanha o consumo por turma.">
+            {props => (
+              <select {...props} value={classroomId} onChange={e => setClassroomId(e.target.value)}>
+                <option value="">Nenhuma / uso geral</option>
+                {classrooms.map(classroom => (
+                  <option key={classroom.id} value={classroom.id}>
+                    {classroom.name}
+                  </option>
+                ))}
+              </select>
+            )}
+          </Field>
+        )}
         <Field label="Referência" error={errors.reference} hint="Nota fiscal, pedido, turma…">
           {props => <input {...props} value={reference} onChange={e => setReference(e.target.value)} maxLength={120} />}
         </Field>

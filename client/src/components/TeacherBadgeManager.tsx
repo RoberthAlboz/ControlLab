@@ -6,6 +6,14 @@ import type {
   AwardStudentBadgeInput,
 } from "@shared/competencies";
 
+const STRENGTH_SUGGESTIONS = [
+  "Metrologia de precisão",
+  "Segurança no laboratório",
+  "Organização da bancada",
+  "Leitura de desenho técnico",
+  "Trabalho em equipe",
+];
+
 type TeacherBadgeManagerProps = {
   students: BadgeStudent[];
   badges: AssignedStudentBadge[];
@@ -50,12 +58,14 @@ export default function TeacherBadgeManager({
           <h2 id="teacher-badge-title">Pontos fortes dos alunos</h2>
           <p>Registre em que cada aluno se destaca.</p>
         </div>
-        <span className="teacher-badge-total" aria-label={`${badges.length} badges atribuídas`}>{badges.length}</span>
+        <span className="teacher-badge-total" aria-label={`${badges.length} pontos fortes registrados`}>
+          <strong>{badges.length}</strong> {badges.length === 1 ? "registrado" : "registrados"}
+        </span>
       </div>
 
       <form className="teacher-badge-form" onSubmit={submit}>
-        <label>
-          Aluno
+        <label className="teacher-badge-field">
+          <span className="teacher-badge-label">Aluno</span>
           <select
             value={selectedStudentId}
             onChange={event => setStudentId(event.target.value ? Number(event.target.value) : "")}
@@ -67,8 +77,8 @@ export default function TeacherBadgeManager({
             ))}
           </select>
         </label>
-        <label>
-          O que o aluno faz bem?
+        <label className="teacher-badge-field">
+          <span className="teacher-badge-label">O que o aluno faz bem?</span>
           <input
             value={label}
             onChange={event => setLabel(event.target.value)}
@@ -77,8 +87,25 @@ export default function TeacherBadgeManager({
             required
           />
         </label>
-        <label className="teacher-badge-detail-field">
-          Observação do docente <span>(opcional)</span>
+        <div className="teacher-badge-suggestions" role="group" aria-label="Sugestões de ponto forte">
+          {STRENGTH_SUGGESTIONS.map(suggestion => (
+            <button
+              key={suggestion}
+              type="button"
+              className={label.trim().toLowerCase() === suggestion.toLowerCase() ? "is-active" : undefined}
+              aria-pressed={label.trim().toLowerCase() === suggestion.toLowerCase()}
+              onClick={() => setLabel(suggestion)}
+              disabled={loading || saving}
+            >
+              {suggestion}
+            </button>
+          ))}
+        </div>
+        <label className="teacher-badge-field teacher-badge-detail-field">
+          <span className="teacher-badge-label">
+            Observação do docente <em>opcional</em>
+            <small aria-hidden="true">{detail.length}/500</small>
+          </span>
           <textarea
             value={detail}
             onChange={event => setDetail(event.target.value)}
@@ -87,16 +114,28 @@ export default function TeacherBadgeManager({
             rows={2}
           />
         </label>
-        <button className="new-module-button teacher-badge-submit" type="submit" disabled={loading || saving || students.length === 0 || !label.trim()}>
-          <Plus size={14} aria-hidden="true" /> {saving ? "Salvando..." : "Registrar ponto forte"}
-        </button>
+        <div className="teacher-badge-form-footer">
+          <p className="teacher-badge-preview" aria-live="polite">
+            <Award size={14} aria-hidden="true" />
+            {label.trim() ? <>Aparecerá como <strong>Bom em {label.trim()}</strong></> : "Escolha uma sugestão ou descreva a habilidade observada."}
+          </p>
+          <button className="new-module-button teacher-badge-submit" type="submit" disabled={loading || saving || students.length === 0 || !label.trim()}>
+            <Plus size={14} aria-hidden="true" /> {saving ? "Salvando..." : "Registrar ponto forte"}
+          </button>
+        </div>
       </form>
 
       <div className="teacher-badge-list" aria-live="polite">
         {loading ? <p className="teacher-badge-empty">Carregando badges e alunos...</p> : error ? (
           <p className="teacher-badge-empty" role="alert">Não foi possível carregar os pontos fortes do banco. <button type="button" onClick={onRetry}>Tentar novamente</button></p>
         ) : badges.length === 0 ? (
-          <p className="teacher-badge-empty">Nenhum ponto forte registrado. Use o formulário para reconhecer uma habilidade observada.</p>
+          <div className="teacher-badge-empty teacher-badge-empty-state">
+            <Award size={20} aria-hidden="true" />
+            <div>
+              <strong>Nenhum ponto forte registrado ainda</strong>
+              <span>Quando notar um aluno se destacando, registre aqui. Os reconhecimentos aparecem nesta lista.</span>
+            </div>
+          </div>
         ) : badges.map(badge => (
           <article className="teacher-badge-row" key={badge.id}>
             <Award size={16} aria-hidden="true" />

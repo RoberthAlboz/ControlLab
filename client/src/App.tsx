@@ -1,12 +1,15 @@
+import { lazy, Suspense } from "react";
 import { Redirect, Route, Switch } from "wouter";
 import { RotateCcw } from "lucide-react";
 import ErrorBoundary from "./components/ErrorBoundary";
-import GearLoader from "./components/forge/GearLoader";
+import BootScreen from "./components/forge/BootScreen";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { useAuth } from "./_core/hooks/useAuth";
 import { loginUrl } from "./const";
-import Home from "./pages/Home";
 import LoginPage from "./pages/LoginPage";
+
+// A tela de login não espera o código do sistema inteiro.
+const Home = lazy(() => import("./pages/Home"));
 
 /**
  * Toda rota além de /login exige sessão. A verificação real acontece no
@@ -16,11 +19,7 @@ function ProtectedApp() {
   const auth = useAuth();
 
   if (auth.loading) {
-    return (
-      <div className="auth-screen is-checking">
-        <GearLoader label="Verificando sessão…" size="lg" />
-      </div>
-    );
+    return <BootScreen label="Verificando sessão…" onRetry={() => void auth.refresh()} />;
   }
 
   if (auth.error && !auth.user) {
@@ -40,7 +39,11 @@ function ProtectedApp() {
   if (!auth.user) return <Redirect to={loginUrl()} replace />;
 
   // A chave por usuário garante que nenhum estado de outra sessão seja reaproveitado.
-  return <Home key={`${auth.user.id}:${auth.user.role}`} user={auth.user} onLogout={auth.logout} loggingOut={auth.loggingOut} />;
+  return (
+    <Suspense fallback={<BootScreen label="Abrindo o Control Lab…" />}>
+      <Home key={`${auth.user.id}:${auth.user.role}`} user={auth.user} onLogout={auth.logout} loggingOut={auth.loggingOut} />
+    </Suspense>
+  );
 }
 
 export default function App() {
