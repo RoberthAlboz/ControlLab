@@ -14,6 +14,7 @@ import { users } from "../drizzle/schema";
 import { isUserRole } from "../shared/roles";
 import { hashPassword, MIN_PASSWORD_LENGTH } from "../server/_core/password";
 import { closeDb, requireDb } from "../server/db";
+import { localOpenId } from "../server/userAdmin";
 import { describeConnectionError } from "./lib/database";
 
 function arg(name: string) {
@@ -41,7 +42,7 @@ async function main() {
     await db.update(users).set({ name, role, passwordHash, active: 1 }).where(eq(users.id, existing.id));
     console.log(`[user:create] Conta atualizada: ${email} (${role}).`);
   } else {
-    await db.insert(users).values({ openId: `local:${email}`.slice(0, 64), email, name, role, passwordHash, loginMethod: "password", active: 1 });
+    await db.insert(users).values({ openId: localOpenId(), email, name, role, passwordHash, loginMethod: "password", active: 1 });
     console.log(`[user:create] Conta criada: ${email} (${role}).`);
   }
 }
