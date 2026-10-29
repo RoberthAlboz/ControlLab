@@ -129,7 +129,8 @@ pnpm start     # executa o build de produção (o bundle do servidor já roda em
 
 ```bash
 pnpm db:reset            # recria banco + seed (pergunta antes)
-rm -rf uploads           # opcional: remove imagens enviadas (Windows: rmdir /s uploads)
+pnpm uploads:clean       # lista imagens/anexos que nenhum registro usa mais
+pnpm uploads:clean -- --yes  # apaga esses arquivos
 ```
 
 Ou, para começar do zero sem a seed, apague a pasta `data/` e rode `pnpm db:setup -- --no-seed`.
