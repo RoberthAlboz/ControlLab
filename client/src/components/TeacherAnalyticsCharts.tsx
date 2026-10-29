@@ -19,6 +19,8 @@ type ChartRow = { label: string; detail: string; count: number; color: string };
 type TeacherAnalyticsChartsProps = {
   students: Array<{ averageProgress: number }>;
   activities: Array<{ activityType: ActivityType }>;
+  /** Cada aba mostra só o gráfico do seu assunto. */
+  focus: "progress" | "agenda";
 };
 
 type FloatingTooltipProps = TooltipProps<number, string>;
@@ -77,32 +79,37 @@ function DistributionChartCard({
   initialView: ChartView;
   tableCaption: string;
 }) {
-  const [view, setView] = useState<ChartView>(initialView);
+  // Cada gráfico tem a forma que melhor lê seus dados; trocar de forma só somava botões.
+  const view = initialView;
   const reducedMotion = useReducedMotion();
   const total = rows.reduce((sum, row) => sum + row.count, 0);
   const maxCount = Math.max(1, ...rows.map((row) => row.count));
   const pieRows = rows.filter((row) => row.count > 0);
 
+  // O sr-only fica no invólucro: `overflow` não se aplica a tabelas, que
+  // cresceriam até o conteúdo e criariam rolagem horizontal no celular.
   const accessibleTable = (
-    <table className="sr-only">
-      <caption>{tableCaption}</caption>
-      <thead>
-        <tr>
-          <th scope="col">Categoria</th>
-          <th scope="col">Detalhe</th>
-          <th scope="col">Quantidade</th>
-        </tr>
-      </thead>
-      <tbody>
-        {rows.map((row) => (
-          <tr key={row.label}>
-            <td>{row.label}</td>
-            <td>{row.detail}</td>
-            <td>{row.count}</td>
+    <div className="sr-only">
+      <table>
+        <caption>{tableCaption}</caption>
+        <thead>
+          <tr>
+            <th scope="col">Categoria</th>
+            <th scope="col">Detalhe</th>
+            <th scope="col">Quantidade</th>
           </tr>
-        ))}
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          {rows.map((row) => (
+            <tr key={row.label}>
+              <td>{row.label}</td>
+              <td>{row.detail}</td>
+              <td>{row.count}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
   );
 
   return (
@@ -115,14 +122,6 @@ function DistributionChartCard({
         <span className="teacher-chart-badge">{totalBadge}</span>
       </div>
       <p className="teacher-chart-insight">{insight}</p>
-
-      <div className="teacher-chart-toolbar">
-        <span>Visualização</span>
-        <div className="teacher-chart-view-switch" role="group" aria-label={`Visualização de ${title}`}>
-          <button type="button" aria-pressed={view === "bars"} onClick={() => setView("bars")}>Barras</button>
-          <button type="button" aria-pressed={view === "pie"} onClick={() => setView("pie")}>Pizza</button>
-        </div>
-      </div>
 
       {view === "bars" ? (
         <div className="teacher-chart-stage" role="img" aria-label={`${title}: ${rows.map((row) => `${row.label}, ${row.count}`).join("; ")}`}>
@@ -179,7 +178,7 @@ function DistributionChartCard({
   );
 }
 
-export default function TeacherAnalyticsCharts({ students, activities }: TeacherAnalyticsChartsProps) {
+export default function TeacherAnalyticsCharts({ students, activities, focus }: TeacherAnalyticsChartsProps) {
   const notStarted = students.filter((student) => student.averageProgress === 0).length;
   const inProgress = students.filter((student) => student.averageProgress > 0 && student.averageProgress < 100).length;
   const completed = students.filter((student) => student.averageProgress >= 100).length;
@@ -213,16 +212,9 @@ export default function TeacherAnalyticsCharts({ students, activities }: Teacher
       : `${plural(exams, "avaliação planejada", "avaliações planejadas")} entre ${plural(activities.length, "atividade", "atividades")}.`;
 
   return (
-    <section className="teacher-analytics" aria-labelledby="teacher-analytics-title">
-      <div className="teacher-section-head teacher-analytics-head">
-        <div>
-          <span className="eyebrow">LEITURA RÁPIDA</span>
-          <h2 id="teacher-analytics-title">Panorama da turma</h2>
-          <p>Gráficos de apoio para decidir onde observar e qual aula preparar.</p>
-        </div>
-        <span className="teacher-analytics-note">Dados confirmados no banco</span>
-      </div>
+    <section className="teacher-analytics is-single" aria-label={focus === "progress" ? "Panorama da turma" : "Panorama da agenda"}>
       <div className="teacher-chart-grid">
+        {focus === "progress" ? (
         <DistributionChartCard
           title="Progresso dos alunos"
           description="Distribuição por estado atual"
@@ -233,6 +225,7 @@ export default function TeacherAnalyticsCharts({ students, activities }: Teacher
           initialView="bars"
           tableCaption="Tabela de distribuição do progresso dos alunos"
         />
+        ) : (
         <DistributionChartCard
           title="Agenda planejada"
           description="Atividades por finalidade"
@@ -243,6 +236,7 @@ export default function TeacherAnalyticsCharts({ students, activities }: Teacher
           initialView="pie"
           tableCaption="Tabela de atividades planejadas por finalidade"
         />
+        )}
       </div>
     </section>
   );

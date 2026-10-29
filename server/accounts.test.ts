@@ -88,4 +88,11 @@ describe("docente só acessa alunos das próprias turmas", () => {
     const data = await db.getTeacherBadgeData({ id: 1, role: "admin" });
     expect(data.students.map((row) => row.id)).toContain(studentId);
   });
+
+  it("o cartão 'Seu docente' do aluno mostra o responsável pela turma, e só para o aluno", async () => {
+    const asStudent = await db.getCatalog(studentId, "all", "student");
+    expect(asStudent.instructors[0]).toMatchObject({ name: "Docente Dono", role: "Responsável · Turma Escopo", initials: "DD" });
+    const asTeacher = await db.getCatalog(owner.id, "all", "teacher");
+    expect(asTeacher.instructors.map((row) => row.name)).not.toContain("Docente Dono");
+  });
 });

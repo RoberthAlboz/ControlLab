@@ -38,6 +38,13 @@ export function isAdminRole(role: unknown): role is "admin" {
   return role === "admin";
 }
 
+/** Quem pode receber empréstimo vinculado à própria conta (a administração só registra). */
+export const BORROWER_ROLES = ["student", "teacher"] as const;
+
+export function canBorrowTools(role: unknown): role is (typeof BORROWER_ROLES)[number] {
+  return (BORROWER_ROLES as readonly unknown[]).includes(role);
+}
+
 export function canAccessInventory(role: unknown) {
   return isStaffRole(role);
 }

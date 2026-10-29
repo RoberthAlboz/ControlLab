@@ -36,6 +36,8 @@ const service = vi.hoisted(() => {
     cancelLoan: ok(),
     returnLoan: ok(),
     listLoans: ok(),
+    listBorrowerLoans: vi.fn(async (..._args: unknown[]) => []),
+    countOpenLoansOf: vi.fn(async (..._args: unknown[]) => 0),
   };
 });
 

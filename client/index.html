@@ -10,12 +10,7 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="description" content="Control Lab — livro didático digital de ferramentaria com módulos guiados para alunos e controle de estoque para docentes." />
     <title>Control Lab — Ferramentaria</title>
-    <script>
-      // Aplica o tema salvo antes da primeira pintura (o ThemeProvider repete isso depois).
-      try {
-        if (localStorage.getItem("theme") === "dark") document.documentElement.classList.add("dark");
-      } catch (e) {}
-    </script>
+    <script src="/theme-init.js"></script>
     <style>
       /* Tela de carregamento: usada pelo splash abaixo (antes do JS) e pelo componente
          BootScreen, com a mesma marcação — a troca do HTML para o React não pisca. */

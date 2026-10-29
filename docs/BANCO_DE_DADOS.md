@@ -81,10 +81,11 @@ Dados de demonstração — a interface mostra o selo **DEV** fora de produção
 | Tabela | Finalidade |
 |---|---|
 | `learning_modules` | Módulos (código, título, tipo, objetivo, capa, publicação). |
-| `learning_steps` | Etapas ordenadas (`position`) com dica e imagem. |
+| `learning_steps` | Etapas ordenadas (`position`) com dica e imagem. `quiz`: JSON opcional da verificação da etapa (pergunta, 2–4 alternativas, gabarito e explicação; ver `shared/quiz.ts`). |
 | `learning_resources` | Recursos técnicos do módulo. **Novo:** `inventoryItemId` → `inventory_items.id` (`ON DELETE SET NULL`). |
 | `student_progress` | Progresso por aluno/módulo (único por par). |
-| `student_step_sessions` | Cronômetro por etapa (início, conclusão, segundos). |
+| `student_step_sessions` | Cronômetro por etapa (início, conclusão, segundos). O tempo gravado é o creditado: mínimo de 20 s para concluir e teto de 3× o tempo previsto por etapa (10 min a 2 h). |
+| `student_quiz_attempts` | Cada resposta do aluno ao quiz de uma etapa (`stepId`, alternativa, acerto). Alimenta "acerto de primeira" no painel docente e o bônus de XP. |
 | `student_badges` | Competências atribuídas pelo docente. |
 | `instructors` | Docentes exibidos no painel do aluno. |
 | `learning_activities` | Agenda de aulas por período letivo. |

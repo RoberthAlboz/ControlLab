@@ -32,7 +32,7 @@ function errorOf(action: () => unknown) {
 
 describe("SQLite · migrations", () => {
   it("aplica as migrations uma única vez (idempotente)", async () => {
-    expect(await runMigrations(file)).toBe(6);
+    expect(await runMigrations(file)).toBe(7);
     expect(await runMigrations(file)).toBe(0);
     const db = await openSqlite(file);
     const tables = (db.prepare("select name from sqlite_master where type = 'table' order by name").all() as Array<{ name: string }>).map(row => row.name);

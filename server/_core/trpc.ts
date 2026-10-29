@@ -32,11 +32,11 @@ const requireUser = t.middleware(async ({ ctx, next }) => {
 
 export const protectedProcedure = publicProcedure.use(requireUser);
 
-/** Somente alunos registram progresso e tempo de estudo. */
+/** Área do aluno: progresso, tempo de estudo, quiz, diário e pontos fortes próprios. */
 export const studentProcedure = protectedProcedure.use(
   t.middleware(async ({ ctx, next }) => {
     if (ctx.user?.role !== "student") {
-      throw new TRPCError({ code: "FORBIDDEN", message: "Somente contas de aluno podem registrar progresso." });
+      throw new TRPCError({ code: "FORBIDDEN", message: "Recurso disponível somente para contas de aluno." });
     }
     return next();
   }),

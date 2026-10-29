@@ -43,6 +43,13 @@
       "when": 1793156948749,
       "tag": "0005_learning_foreign_keys",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1793285110295,
+      "tag": "0006_step_quiz",
+      "breakpoints": true
     }
   ]
 }

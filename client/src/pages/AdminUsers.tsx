@@ -161,7 +161,7 @@ export default function AdminUsersPage({ currentUserId, onNotify }: { currentUse
             <br />
             <em>acessos.</em>
           </h1>
-          <p>Crie as contas de alunos e docentes, defina o tipo de acesso e desative quem não usa mais o sistema — visível somente para a administração.</p>
+          <p>Crie contas, defina o tipo de acesso e desative quem saiu.</p>
         </div>
         <div className="inventory-hero-actions">
           <button type="button" className="fl-button fl-button-primary" onClick={() => setForm({ ...EMPTY_FORM })}>
@@ -170,19 +170,12 @@ export default function AdminUsersPage({ currentUserId, onNotify }: { currentUse
         </div>
       </header>
 
-      <section className="inventory-metrics" aria-label="Resumo das contas" aria-busy={listQuery.isLoading}>
-        <Metric label="Contas" value={listQuery.data ? counts.total : undefined} detail="cadastradas no sistema" />
-        <Metric label="Alunos" value={listQuery.data ? counts.student : undefined} detail="ativos" />
-        <Metric label="Docentes" value={listQuery.data ? counts.teacher : undefined} detail="ativos" />
-        <Metric label="Administração" value={listQuery.data ? counts.admin : undefined} detail="ativos" />
-        <Metric label="Desativadas" value={listQuery.data ? counts.inactive : undefined} detail="sem acesso ao login" />
-      </section>
-
       <section className="inventory-panel" aria-labelledby="admin-users-title">
         <nav className="inventory-tabs" aria-label="Filtrar contas">
           {FILTERS.map(entry => (
             <button key={entry.id} type="button" className={filter === entry.id ? "is-active" : ""} aria-pressed={filter === entry.id} onClick={() => setFilter(entry.id)}>
               {entry.label}
+              {listQuery.data && <span className="admin-users-count">{entry.id === "all" ? counts.total : counts[entry.id]}</span>}
             </button>
           ))}
         </nav>
@@ -353,12 +346,4 @@ export default function AdminUsersPage({ currentUserId, onNotify }: { currentUse
   );
 }
 
-function Metric({ label, value, detail }: { label: string; value: number | undefined; detail: string }) {
-  return (
-    <div className="inventory-metric">
-      <span>{label}</span>
-      <strong>{value ?? "—"}</strong>
-      <small>{detail}</small>
-    </div>
-  );
-}
+

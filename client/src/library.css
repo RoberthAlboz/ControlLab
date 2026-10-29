@@ -91,3 +91,4 @@ html.dark .clean-app .library-content .module-cover-icon { background: #211e1b; 
   .clean-app .library-content .module-card,
   .clean-app .library-content .module-card * { transition: none !important; transform: none !important; }
 }
+.clean-app .library-content .library-results-bar:has(> span:empty:only-child) { display: none; }

@@ -2,7 +2,9 @@ import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 import { systemRouter } from "./_core/systemRouter";
 import { moduleEditorProcedure, protectedProcedure, router, studentProcedure, teacherProcedure } from "./_core/trpc";
-import { assignStudentBadge, deleteLearningModule, getCatalog, getNotesOfStudent, getStudentBadges, getStudentNotes,getTeacherBadgeData, isUploadReferenced, LearningDomainError, removeStudentBadge, replaceLearningSchedule, resetStudentModuleProgress, saveLearningModule, saveStudentNotes, setUserAvatar, startStudentStep, updateProgress } from "./db";
+import { QUIZ_EXPLANATION_MAX, QUIZ_MAX_OPTIONS, QUIZ_OPTION_MAX, QUIZ_QUESTION_MAX, quizProblem } from "@shared/quiz";
+import { listBorrowerLoans } from "./inventory";
+import { answerStepQuiz, assignStudentBadge, deleteLearningModule, getCatalog, getNotesOfStudent, getStudentBadges, getStudentNotes,getTeacherBadgeData, isUploadReferenced, LearningDomainError, removeStudentBadge, replaceLearningSchedule, resetStudentModuleProgress, saveLearningModule, saveStudentNotes, setUserAvatar, startStudentStep, updateProgress } from "./db";
 import { parseInlineImage, persistImageReference } from "./content-assets";
 import { isSupportedModelUrl } from "@shared/model-url";
 import { isAllowedAttachmentName, isHttpsUrl, isLinkAttachment, MAX_ATTACHMENT_BYTES, MAX_ATTACHMENT_NAME_LENGTH, MAX_ATTACHMENTS_PER_ITEM } from "@shared/attachments";
@@ -86,6 +88,16 @@ const attachmentInput = z.object({
 }).refine((attachment) => isLinkAttachment(attachment) || isAllowedAttachmentName(attachment.name), "Tipo de arquivo não permitido.");
 const attachmentsInput = z.array(attachmentInput).max(MAX_ATTACHMENTS_PER_ITEM).default([]);
 
+const quizInput = z.object({
+  question: z.string().max(QUIZ_QUESTION_MAX),
+  options: z.array(z.string().max(QUIZ_OPTION_MAX)).max(QUIZ_MAX_OPTIONS),
+  correctIndex: z.number().int(),
+  explanation: z.string().max(QUIZ_EXPLANATION_MAX).default(""),
+}).superRefine((quiz, ctx) => {
+  const problem = quizProblem(quiz);
+  if (problem) ctx.addIssue({ code: "custom", message: problem });
+});
+
 const stepInput = z.object({
   id: z.string().trim().min(1).max(64),
   title: z.string().trim().min(1).max(180),
@@ -93,6 +105,7 @@ const stepInput = z.object({
   tip: z.string().trim().max(2000),
   image: imageReferenceInput,
   attachments: attachmentsInput,
+  quiz: quizInput.nullable().optional(),
 });
 const resourceInput = z.object({
   id: z.string().trim().min(1).max(64),
@@ -116,7 +129,8 @@ const moduleInput = z.object({
   objective: z.string().trim().max(2000),
   cover: z.string().trim().max(32),
   coverImage: imageReferenceInput,
-  progress: z.number().int().min(0).max(100),
+  /** Ignorado: o progresso exibido é sempre o do aluno. Aceito para não quebrar clientes antigos. */
+  progress: z.number().int().min(0).max(100).optional(),
   duration: z.string().trim().max(32),
   published: z.boolean(),
   confirmStepStructureReset: z.boolean().optional(),
@@ -214,6 +228,10 @@ export const appRouter = router({
       runLearning(() => startStudentStep(ctx.user.id, input.moduleId, input.stepIndex))),
     updateProgress: studentProcedure.input(z.object({ moduleId: z.string().min(1).max(64), stepIndex: z.number().int().min(0), elapsedSeconds: z.number().int().min(0).max(MAX_ELAPSED_SECONDS).default(0) })).mutation(({ ctx, input }) =>
       runLearning(() => updateProgress(ctx.user.id, input.moduleId, input.stepIndex, input.elapsedSeconds))),
+    /** Ferramentas que o próprio aluno tem emprestadas ou reservadas (somente leitura). */
+    myLoans: studentProcedure.query(({ ctx }) => listBorrowerLoans(ctx.user.id)),
+    answerQuiz: studentProcedure.input(z.object({ moduleId: z.string().min(1).max(64), stepIndex: z.number().int().min(0), selectedIndex: z.number().int().min(0).max(QUIZ_MAX_OPTIONS - 1) })).mutation(({ ctx, input }) =>
+      runLearning(() => answerStepQuiz(ctx.user.id, input.moduleId, input.stepIndex, input.selectedIndex))),
     resetStudentModule: teacherProcedure.input(z.object({ studentId: z.number().int().positive(), moduleId: z.string().min(1).max(64) })).mutation(({ ctx, input }) =>
       runLearning(() => resetStudentModuleProgress(input.studentId, input.moduleId, ctx.user))),
   }),

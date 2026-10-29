@@ -1886,7 +1886,8 @@ html.dark .module-status.is-progress { border-color: #733d43; background: #40272
 .teacher-student-progress i { display: block; height: 4px; overflow: hidden; border-radius: 99px; background: var(--theme-border); }
 .teacher-student-progress i em { display: block; height: 100%; border-radius: inherit; background: var(--forge-red); }
 .teacher-student-meta { display: grid; gap: 3px; min-width: 0; }
-.teacher-student-meta small { white-space: nowrap; }
+/* Quebra em vez de nowrap: a coluna tem 135px e "Última atividade: sem atividade registrada" vazava do cartão. */
+.teacher-student-meta small { line-height: 1.35; overflow-wrap: anywhere; }
 .teacher-student-action { display: grid; width: 32px; height: 32px; place-items: center; border: 1px solid var(--theme-border-strong); border-radius: 50%; background: transparent; color: var(--forge-red); }
 .teacher-student-action:hover { border-color: var(--forge-red); background: var(--forge-red-wash); }
 .teacher-supervision-empty { display: grid; justify-items: center; gap: 8px; padding: 28px 16px; border-bottom: 1px solid var(--theme-border); color: var(--theme-muted); text-align: center; }
@@ -2800,3 +2801,4 @@ html.dark .me-tip input { color: #f1d49a; }
 .att-viewer > .eyebrow { display: inline-flex; align-items: center; gap: 5px; }
 .resource-card-light .att-viewer { margin-top: 10px; }
 @media (max-width: 600px) { .att-link-form { grid-template-columns: minmax(0, 1fr); } }
+.teacher-analytics.is-single .teacher-chart-grid { grid-template-columns: minmax(0, 1fr); }

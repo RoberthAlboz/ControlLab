@@ -116,6 +116,8 @@ export const learningSteps = sqliteTable("learning_steps", {
   imageUrl: text("imageUrl"),
   /** JSON de `ContentAttachment[]` (shared/attachments.ts): arquivos e links de apoio. */
   attachments: text("attachments").default("[]").notNull(),
+  /** JSON de `StepQuiz` (shared/quiz.ts) ou null: verificação que o aluno responde para concluir a etapa. */
+  quiz: text("quiz"),
 }, (table) => ({
   moduleIdx: index("learning_steps_module_idx").on(table.moduleId),
   moduleFk: foreignKey({ name: "learning_steps_module_fk", columns: [table.moduleId], foreignColumns: [learningModules.id] }).onDelete("cascade").onUpdate("cascade"),
@@ -179,6 +181,22 @@ export const studentStepSessions = sqliteTable("student_step_sessions", {
   moduleIdx: index("student_step_sessions_module_idx").on(table.userId, table.moduleId),
   userFk: foreignKey({ name: "student_step_sessions_user_fk", columns: [table.userId], foreignColumns: [users.id] }).onDelete("cascade"),
   moduleFk: foreignKey({ name: "student_step_sessions_module_fk", columns: [table.moduleId], foreignColumns: [learningModules.id] }).onDelete("cascade").onUpdate("cascade"),
+}));
+
+/** Cada resposta do aluno ao quiz de uma etapa (acertos e erros), para as métricas do docente. */
+export const studentQuizAttempts = sqliteTable("student_quiz_attempts", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  userId: integer("userId").notNull(),
+  moduleId: text("moduleId").notNull(),
+  stepId: text("stepId").notNull(),
+  selectedIndex: integer("selectedIndex").notNull(),
+  correct: integer("correct").notNull(),
+  createdAt: createdAt("createdAt"),
+}, (table) => ({
+  userStepIdx: index("student_quiz_attempts_user_step_idx").on(table.userId, table.stepId),
+  moduleIdx: index("student_quiz_attempts_module_idx").on(table.moduleId),
+  userFk: foreignKey({ name: "student_quiz_attempts_user_fk", columns: [table.userId], foreignColumns: [users.id] }).onDelete("cascade"),
+  moduleFk: foreignKey({ name: "student_quiz_attempts_module_fk", columns: [table.moduleId], foreignColumns: [learningModules.id] }).onDelete("cascade").onUpdate("cascade"),
 }));
 
 export const instructors = sqliteTable("instructors", {

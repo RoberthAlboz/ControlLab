@@ -68,8 +68,28 @@ html.dark .inventory-view-toggle button.is-selected { background: var(--fl-red-w
 .icon-picker-option.is-selected { border-color: var(--fl-red); background: var(--fl-red-wash); color: var(--fl-red-deep); box-shadow: inset 0 0 0 1px var(--fl-red); }
 .icon-picker-option:first-child { border-style: dashed; }
 
-.shadow-board-count { padding: 4px 12px; border-radius: 999px; background: var(--fl-red-wash); color: var(--fl-red-deep); font-weight: 700; font-variant-numeric: tabular-nums; }
-.clean-app .shadow-board-intro { margin: 0; max-width: 72ch; font-size: 0.85rem !important; }
+/* Uma cor por situação, usada no chip, na sombra, nas bolinhas e na etiqueta: dá para ler o painel sem ler texto. */
+.shadow-board-summary, .shadow-station, .shadow-detail { --st-complete: #2f8a57; --st-out: #c98a0b; --st-overdue: var(--fl-red); --st-maintenance: #6b7280; }
+html.dark :is(.shadow-board-summary, .shadow-station, .shadow-detail) { --st-complete: #5cc28a; --st-out: #e6b04a; --st-maintenance: #9aa1ab; }
+.shadow-station.is-complete, .shadow-detail.is-complete { --st: var(--st-complete); }
+.shadow-station:is(.is-partial, .is-away), .shadow-detail:is(.is-partial, .is-away) { --st: var(--st-out); }
+.shadow-station.is-overdue, .shadow-detail.is-overdue { --st: var(--st-overdue); }
+.shadow-station.is-maintenance, .shadow-detail.is-maintenance { --st: var(--st-maintenance); }
+
+/* Resumo no topo: também é a legenda e o filtro */
+.shadow-board-summary { display: flex; flex-wrap: wrap; gap: 8px; }
+.shadow-chip { display: inline-flex; align-items: center; gap: 7px; min-height: 34px; padding: 0 14px; border: 1px solid var(--fl-line-strong); border-radius: 999px; background: var(--fl-surface); color: var(--fl-ink-soft); font: 600 0.8rem var(--fl-body); cursor: pointer; }
+.shadow-chip b { font-variant-numeric: tabular-nums; color: var(--fl-ink); }
+.shadow-chip i { width: 10px; height: 10px; border-radius: 50%; background: var(--chip); }
+.shadow-chip.is-complete { --chip: var(--st-complete); }
+.shadow-chip.is-out { --chip: var(--st-out); }
+.shadow-chip.is-overdue { --chip: var(--st-overdue); }
+.shadow-chip.is-maintenance { --chip: var(--st-maintenance); }
+.shadow-chip:hover:not(:disabled) { border-color: var(--chip, var(--fl-ink-soft)); }
+.shadow-chip.is-active { border-color: var(--chip, var(--fl-ink)); background: color-mix(in srgb, var(--chip, var(--fl-ink)) 12%, var(--fl-surface)); color: var(--fl-ink); box-shadow: inset 0 0 0 1px var(--chip, var(--fl-ink)); }
+.shadow-chip:disabled { opacity: 0.45; cursor: default; }
+.shadow-chip:focus-visible { outline: 2px solid var(--fl-red); outline-offset: 2px; }
+.clean-app .shadow-board-none { margin: 0; padding: 22px; border: 1px dashed var(--fl-line-strong); border-radius: 10px; text-align: center; }
 
 .shadow-board {
   --peg: rgba(0, 0, 0, 0.16);
@@ -93,9 +113,9 @@ html.dark .shadow-board { --peg: rgba(0, 0, 0, 0.5); box-shadow: inset 0 2px 0 r
 
 .shadow-board-peg { fill: var(--fl-line-strong); stroke: var(--fl-muted); stroke-width: 0.8; }
 
-/* A sombra pintada: sempre no painel, aparece quando a ferramenta sai */
-.shadow-board-outline path { fill: rgba(var(--fl-red-rgb), 0.08); stroke: rgba(var(--fl-red-rgb), 0.55); stroke-width: 1.1; stroke-dasharray: 3 2; }
-.shadow-board-outline path[fill="none"] { fill: none; stroke: rgba(var(--fl-red-rgb), 0.18); }
+/* A sombra pintada: silhueta cheia, na cor da situação, como a pintura de um quadro 5S real */
+.shadow-board-outline path { fill: color-mix(in srgb, var(--st, var(--fl-ink)) 34%, transparent); stroke: var(--st, var(--fl-ink)); stroke-width: 1.4; }
+.shadow-board-outline path[fill="none"] { fill: none; stroke: color-mix(in srgb, var(--st, var(--fl-ink)) 45%, transparent); }
 .shadow-board-outline .shadow-board-detail { display: none; }
 
 /* A ferramenta: aço, pendurada no gancho */
@@ -139,17 +159,50 @@ html.dark .shadow-board-tool-body path[fill="none"] { stroke: #a7adb2; }
 .shadow-station-plate strong { color: var(--fl-ink); font: 700 0.68rem/1.2 var(--fl-body); letter-spacing: 0.06em; }
 .clean-app .shadow-station-plate small { display: block; max-width: 100%; overflow: hidden; color: var(--fl-muted); font-size: 0.68rem !important; text-overflow: ellipsis; white-space: nowrap; }
 
-/* Etiqueta pendurada: quem está com a ferramenta */
-.shadow-station-tag { position: relative; display: grid; justify-items: center; gap: 2px; max-width: 100%; padding: 5px 9px 6px; border-radius: 3px 3px 8px 8px; background: #f3d36b; color: #3a2c00; font-size: 0.72rem; font-weight: 700; text-align: center; transform: rotate(-2deg); box-shadow: 0 2px 4px rgba(0, 0, 0, 0.12); }
-.shadow-station-tag::before { position: absolute; top: -6px; left: 50%; width: 1px; height: 6px; background: #8a7a40; content: ""; }
-.shadow-station-tag span { max-width: 112px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.clean-app .shadow-station-tag small { color: #5a4a10; font-size: 0.64rem !important; font-weight: 600; }
-.shadow-station-tag button { display: inline-flex; align-items: center; gap: 3px; margin-top: 2px; padding: 1px 7px; border: 1px solid currentColor; border-radius: 999px; background: transparent; color: inherit; font-size: 0.66rem; font-weight: 700; }
-.shadow-station-tag button:hover { background: rgba(0, 0, 0, 0.08); }
-.shadow-station-tag.is-quiet { background: var(--fl-surface); color: var(--fl-muted); transform: none; box-shadow: none; border: 1px dashed var(--fl-line-strong); }
-.shadow-station-tag.is-quiet::before { display: none; }
-.shadow-station.is-overdue .shadow-station-tag { background: var(--fl-red); color: #fff6f6; }
-.clean-app .shadow-station.is-overdue .shadow-station-tag small { color: #ffe1e1; }
+/* Bolinhas: uma por unidade (cheia = livre no gancho, anel = reservada, vazia = fora) */
+.shadow-station-units { display: grid; justify-items: center; gap: 3px; }
+.shadow-station-dots { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px; max-width: 96px; }
+.shadow-station-dots i { width: 9px; height: 9px; border: 1.5px solid var(--st); border-radius: 50%; }
+.shadow-station-dots i.is-free { background: var(--st-complete); border-color: var(--st-complete); }
+.shadow-station-dots i.is-reserved { background: color-mix(in srgb, var(--st-out) 30%, transparent); border-color: var(--st-out); }
+.shadow-station-dots i.is-out { background: transparent; border-style: dashed; }
+.shadow-station-dots i.is-maintenance { background: var(--st-maintenance); border-color: var(--st-maintenance); }
+.clean-app .shadow-station-units small { color: var(--fl-muted); font-size: 0.66rem !important; font-weight: 600; font-variant-numeric: tabular-nums; }
+
+/* Etiqueta pendurada: na cor da situação, com quem está e até quando */
+.shadow-station-tag { position: relative; display: grid; justify-items: center; gap: 1px; width: 100%; max-width: 132px; padding: 5px 8px 6px; border-radius: 3px 3px 8px 8px; background: var(--st); color: #fff; font-size: 0.72rem; font-weight: 700; line-height: 1.25; text-align: center; transform: rotate(-1.5deg); box-shadow: 0 2px 4px rgba(0, 0, 0, 0.14); }
+.shadow-station-tag::before { position: absolute; top: -6px; left: 50%; width: 1px; height: 6px; background: color-mix(in srgb, var(--st) 70%, #000); content: ""; }
+.shadow-station-tag span { display: -webkit-box; max-width: 100%; overflow: hidden; overflow-wrap: anywhere; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+.clean-app .shadow-station-tag small { color: rgba(255, 255, 255, 0.88); font-size: 0.64rem !important; font-weight: 600; }
+.shadow-station.is-partial .shadow-station-tag, .shadow-station.is-away .shadow-station-tag { color: #2e2100; }
+.clean-app .shadow-station:is(.is-partial, .is-away) .shadow-station-tag small { color: #4a3600; }
+/* Tudo no lugar: etiqueta discreta, para os olhos irem direto ao que saiu */
+.shadow-station.is-complete .shadow-station-tag { background: transparent; color: var(--st); box-shadow: none; transform: none; border: 1px solid color-mix(in srgb, var(--st) 45%, transparent); }
+.shadow-station.is-complete .shadow-station-tag::before { display: none; }
+html.dark .shadow-station:is(.is-overdue, .is-maintenance) .shadow-station-tag { color: #120f10; }
+html.dark .clean-app .shadow-station:is(.is-overdue, .is-maintenance) .shadow-station-tag small { color: #2a2224; }
+
+.shadow-station.is-selected .shadow-station-hook { background: color-mix(in srgb, var(--st) 12%, transparent); box-shadow: inset 0 0 0 2px var(--st); }
+
+/* Detalhe da ferramenta escolhida: quem está com cada unidade */
+.shadow-detail { display: grid; gap: 12px; padding: 16px 18px; border: 1px solid var(--fl-line-strong); border-left: 5px solid var(--st); border-radius: 10px; background: var(--fl-surface); }
+.shadow-detail header { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.shadow-detail header > div { display: grid; gap: 3px; min-width: 0; }
+.clean-app .shadow-detail header small { color: var(--fl-muted); font-size: 0.74rem !important; }
+.shadow-detail header strong { color: var(--fl-ink); font: 700 1rem/1.3 var(--fl-body); }
+.shadow-detail-state { display: inline-flex; align-items: center; gap: 6px; color: var(--fl-ink-soft); font-size: 0.82rem; font-weight: 600; }
+.shadow-detail-state i { width: 10px; height: 10px; border-radius: 50%; background: var(--st); }
+.shadow-detail-close { display: grid; place-items: center; flex: none; width: 34px; height: 34px; border: 0; border-radius: 8px; background: transparent; color: var(--fl-muted); cursor: pointer; }
+.shadow-detail-close:hover { background: var(--fl-surface-2); color: var(--fl-ink); }
+.shadow-detail-loans { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.shadow-detail-loans li { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 14px; padding: 10px 12px; border: 1px solid var(--fl-line); border-radius: 8px; }
+.shadow-detail-loans li.is-overdue { border-color: var(--fl-red); background: color-mix(in srgb, var(--fl-red) 7%, transparent); }
+.shadow-detail-loans li > div { display: grid; gap: 2px; min-width: 0; }
+.shadow-detail-loans strong { color: var(--fl-ink); font-size: 0.9rem; }
+.clean-app .shadow-detail-loans small { color: var(--fl-muted); font-size: 0.76rem !important; }
+.shadow-detail-loans li.is-overdue small { color: var(--fl-red-deep); }
+.shadow-detail footer { display: flex; flex-wrap: wrap; gap: 8px; }
+.clean-app .shadow-detail > p { margin: 0; font-size: 0.86rem !important; }
 
 /* ------------------------------------------------------------------ */
 /* Paquímetro (progresso do módulo)                                    */

@@ -189,8 +189,7 @@ export default function InventoryPage({
             <em>ferramentaria.</em>
           </h1>
           <p>
-            Ferramentas, máquinas, materiais e peças com saldo, localização,
-            empréstimos e histórico — visível somente para docentes.
+            Saldo, localização e empréstimos de cada peça.
           </p>
         </div>
         <div className="inventory-hero-actions">
@@ -231,21 +230,20 @@ export default function InventoryPage({
         ) : (
           <>
             <Metric
-              label="Itens cadastrados"
+              label="Itens"
               value={totals?.items}
-              detail={`${totals?.archived ?? 0} arquivado(s)`}
+              detail={`${totals?.available ?? 0} disponíveis para uso`}
             />
             <Metric
-              label="Disponíveis"
-              value={totals?.available}
-              detail="com saldo para uso"
-            />
-            <Metric
-              label="Manutenção / indisponíveis"
+              label="Fora de uso"
               value={
                 totals ? totals.maintenance + totals.unavailable : undefined
               }
-              detail="inclui itens sem saldo"
+              detail="manutenção ou sem saldo"
+              onClick={() => {
+                setItemFilter("unavailable");
+                navigate("/estoque");
+              }}
             />
             <Metric
               label="Estoque baixo"
@@ -271,28 +269,6 @@ export default function InventoryPage({
           </>
         )}
       </section>
-
-      {summaryQuery.data &&
-        summaryQuery.data.alerts.length > 0 &&
-        tab === "itens" && (
-          <section className="inventory-alerts" aria-label="Alertas de estoque">
-            <AlertTriangle size={16} aria-hidden="true" />
-            <div>
-              <strong>Atenção à reposição</strong>
-              <ul>
-                {summaryQuery.data.alerts.map(alert => (
-                  <li key={alert.id}>
-                    <button type="button" onClick={() => setDetailId(alert.id)}>
-                      {alert.code} · {alert.name}:{" "}
-                      {formatQuantity(alert.available, alert.unit)} disp.
-                      {alert.minQuantity ? ` (mín. ${alert.minQuantity})` : ""}
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </section>
-        )}
 
       <nav className="inventory-tabs" aria-label="Seções do estoque">
         {TABS.map(entry => {
@@ -698,10 +674,9 @@ function ItemsTab({
                       <strong>
                         {formatQuantity(item.available, item.unit)}
                       </strong>
-                      <small>
-                        físico {item.quantityPhysical} · res.{" "}
-                        {item.quantityReserved}
-                      </small>
+                      {item.quantityReserved > 0 && (
+                        <small>{item.quantityReserved} reservado(s)</small>
+                      )}
                     </td>
                     <td data-label="Situação">
                       <HealthChip health={item.health} />
