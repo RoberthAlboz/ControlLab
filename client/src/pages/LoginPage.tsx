@@ -1,12 +1,13 @@
 import { useEffect, useId, useRef, useState, type FormEvent } from "react";
 import { useLocation, useSearch } from "wouter";
-import { ArrowRight, Eye, EyeOff, LoaderCircle, LockKeyhole, Moon, Sun } from "lucide-react";
+import { ArrowRight, Eye, EyeOff, LoaderCircle, LockKeyhole } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 import { useTheme } from "@/contexts/ThemeContext";
 import { safeRedirectPath } from "@shared/roles";
-import GearLoader from "@/components/forge/GearLoader";
+import BootScreen from "@/components/forge/BootScreen";
 import AuthGearTrain from "@/components/forge/AuthGearTrain";
 import BrandLogo from "@/components/forge/BrandLogo";
+import ThemeSunMoon from "@/components/forge/ThemeSunMoon";
 import DevAccessDialog from "@/components/forge/DevAccessDialog";
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -20,6 +21,8 @@ function validate(email: string, password: string): FieldErrors {
   if (!password) errors.password = "Informe a sua senha.";
   return errors;
 }
+
+const LOCK_PAUSE_MS = 480;
 
 export default function LoginPage() {
   const [, navigate] = useLocation();
@@ -38,6 +41,7 @@ export default function LoginPage() {
   const [formError, setFormError] = useState<string | null>(null);
   const [capsLock, setCapsLock] = useState(false);
   const [failures, setFailures] = useState(0);
+  const [locked, setLocked] = useState(false);
   const [devAccessOpen, setDevAccessOpen] = useState(false);
   const emailRef = useRef<HTMLInputElement>(null);
   const passwordRef = useRef<HTMLInputElement>(null);
@@ -56,7 +60,7 @@ export default function LoginPage() {
 
   const submit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (loginMutation.isPending) return;
+    if (loginMutation.isPending || locked) return;
     const found = validate(email, password);
     setErrors(found);
     setFormError(null);
@@ -70,6 +74,12 @@ export default function LoginPage() {
       { email: loginEmail, password: loginPassword },
       {
         onSuccess: async ({ user }) => {
+          // Deixa o trem de engrenagens travar antes da troca de tela. Gravar a
+          // sessão no cache já troca a tela, então a pausa vem antes.
+          setLocked(true);
+          if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+            await new Promise(resolve => setTimeout(resolve, LOCK_PAUSE_MS));
+          }
           utils.auth.me.setData(undefined, user);
           await utils.invalidate();
           navigate(safeRedirectPath(next, user.role), { replace: true });
@@ -87,11 +97,7 @@ export default function LoginPage() {
   };
 
   if (meQuery.isLoading || meQuery.data) {
-    return (
-      <div className="auth-screen is-checking">
-        <GearLoader label="Verificando sessão…" size="lg" />
-      </div>
-    );
+    return <BootScreen label="Verificando sessão…" onRetry={() => void meQuery.refetch()} />;
   }
 
   const isDevelopment = infoQuery.data?.environment === "development";
@@ -100,7 +106,7 @@ export default function LoginPage() {
     <div className="auth-screen">
       <section className="auth-brand-panel" aria-hidden="true">
         <div className="auth-brand-grid" />
-        <AuthGearTrain activity={email.length + password.length} busy={loginMutation.isPending} jolt={failures} />
+        <AuthGearTrain activity={email.length + password.length} busy={loginMutation.isPending && !locked} jolt={failures} locked={locked} />
         <div className="auth-brand-top">
           <BrandLogo tone="inverse" withMark />
           <span>FERRAMENTARIA</span>
@@ -147,7 +153,7 @@ export default function LoginPage() {
             onClick={() => toggleTheme?.()}
             aria-label={theme === "dark" ? "Ativar modo claro" : "Ativar modo escuro"}
           >
-            {theme === "dark" ? <Sun size={17} /> : <Moon size={17} />}
+            <ThemeSunMoon dark={theme === "dark"} size={19} />
           </button>
         </div>
 

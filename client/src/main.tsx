@@ -1,7 +1,7 @@
 import { trpc } from "@/lib/trpc";
 import { UNAUTHED_ERR_MSG } from "@shared/const";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { httpBatchLink, TRPCClientError } from "@trpc/client";
+import { httpBatchLink, httpLink, splitLink, TRPCClientError } from "@trpc/client";
 import { createRoot } from "react-dom/client";
 import superjson from "superjson";
 import App from "./App";
@@ -19,6 +19,7 @@ import "./library.css";
 import "./reader.css";
 import "./teacher.css";
 import "./theme-ux.css";
+import "./workshop.css";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -59,14 +60,21 @@ queryClient.getMutationCache().subscribe(event => {
   }
 });
 
+const withCredentials = (input: RequestInfo | URL, init?: RequestInit) =>
+  globalThis.fetch(input, { ...(init ?? {}), credentials: "include" });
+
+/**
+ * Chamadas com imagens em base64 vão sozinhas (sem lote): o servidor só aceita
+ * corpo grande quando a requisição contém apenas essas chamadas.
+ */
+const LARGE_UPLOAD_PATHS = new Set(["learning.saveModule", "profile.uploadAvatar"]);
+
 const trpcClient = trpc.createClient({
   links: [
-    httpBatchLink({
-      url: "/api/trpc",
-      transformer: superjson,
-      fetch(input, init) {
-        return globalThis.fetch(input, { ...(init ?? {}), credentials: "include" });
-      },
+    splitLink({
+      condition: op => LARGE_UPLOAD_PATHS.has(op.path),
+      true: httpLink({ url: "/api/trpc", transformer: superjson, fetch: withCredentials }),
+      false: httpBatchLink({ url: "/api/trpc", transformer: superjson, fetch: withCredentials }),
     }),
   ],
 });

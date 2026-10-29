@@ -1,10 +1,12 @@
 import { useEffect, useRef } from "react";
+import { buildTrain, deg, gearPath, trainBounds } from "@/lib/gears";
 
 /**
  * Trem de engrenagens do painel de login, desenhado como prancha técnica.
  * Todas as engrenagens têm o mesmo módulo e engrenam de verdade: fase e
  * velocidade de cada uma derivam da engrenagem "mãe" (relação de dentes).
- * Reage ao formulário: digitar acelera, enviar dispara, erro dá um tranco.
+ * Reage ao formulário: digitar acelera, enviar dispara, erro dá um tranco,
+ * login aceito trava o trem.
  */
 type AuthGearTrainProps = {
   /** Muda a cada tecla digitada (ex.: soma dos comprimentos dos campos). */
@@ -13,127 +15,38 @@ type AuthGearTrainProps = {
   busy: boolean;
   /** Incrementa a cada erro de login: o trem engasga e volta. */
   jolt: number;
+  /** Login aceito: o trem desacelera até parar e trava. */
+  locked?: boolean;
   /** Classe extra no contêiner, para posicionar o trem em outros painéis. */
   className?: string;
 };
 
-type GearSpec = { teeth: number; parent?: number; angle?: number; accent?: boolean };
-
 const MODULE = 7;
 const BASE_SPEED = 0.1; // rad/s da engrenagem principal em repouso
 
-const SPECS: GearSpec[] = [
-  { teeth: 36, accent: true },
-  { teeth: 16, parent: 0, angle: -140 },
-  { teeth: 26, parent: 1, angle: -75 },
-  { teeth: 11, parent: 2, angle: -15, accent: true },
-  { teeth: 20, parent: 3, angle: -80 },
-  { teeth: 13, parent: 0, angle: 165 },
-];
-
-type Gear = GearSpec & { x: number; y: number; phase: number; ratio: number; pitch: number; path: string };
-
-const polar = (r: number, a: number) => `${(Math.cos(a) * r).toFixed(2)} ${(Math.sin(a) * r).toFixed(2)}`;
-const circle = (r: number, cx = 0, cy = 0) =>
-  `M${(cx + r).toFixed(2)} ${cy.toFixed(2)}A${r} ${r} 0 1 0 ${(cx - r).toFixed(2)} ${cy.toFixed(2)}A${r} ${r} 0 1 0 ${(cx + r).toFixed(2)} ${cy.toFixed(2)}Z`;
-
-function gearPath(teeth: number): string {
-  const pitch = (MODULE * teeth) / 2;
-  const tip = pitch + MODULE;
-  const root = pitch - 1.25 * MODULE;
-  const step = (Math.PI * 2) / teeth;
-  let d = "";
-  for (let i = 0; i < teeth; i += 1) {
-    const a = i * step;
-    d += `${i === 0 ? "M" : "L"}${polar(root, a - step * 0.5)}`;
-    d += `A${root} ${root} 0 0 1 ${polar(root, a - step * 0.3)}`;
-    d += `L${polar(pitch, a - step * 0.24)}L${polar(tip, a - step * 0.14)}`;
-    d += `A${tip} ${tip} 0 0 1 ${polar(tip, a + step * 0.14)}`;
-    d += `L${polar(pitch, a + step * 0.24)}L${polar(root, a + step * 0.3)}`;
-    d += `A${root} ${root} 0 0 1 ${polar(root, a + step * 0.5)}`;
-  }
-  d += "Z";
-
-  // Furo do eixo, janelas entre os raios e furos de parafuso (evenodd vira vazado).
-  const bore = Math.max(MODULE * 1.3, pitch * 0.12);
-  d += circle(bore);
-  if (teeth >= 16) {
-    const spokes = teeth >= 30 ? 6 : teeth >= 20 ? 5 : 4;
-    const inner = bore * 2.3;
-    const outer = root - MODULE * 1.5;
-    const half = Math.PI / spokes - Math.min(0.32, (MODULE * 1.1) / inner);
-    const halfOuter = Math.PI / spokes - (MODULE * 1.1) / outer;
-    for (let s = 0; s < spokes; s += 1) {
-      const c = (s + 0.5) * ((Math.PI * 2) / spokes);
-      d += `M${polar(inner, c - half)}L${polar(outer, c - halfOuter)}`;
-      d += `A${outer} ${outer} 0 0 1 ${polar(outer, c + halfOuter)}`;
-      d += `L${polar(inner, c + half)}A${inner} ${inner} 0 0 0 ${polar(inner, c - half)}Z`;
-    }
-    const bolts = spokes;
-    const boltRing = (bore + inner) / 2;
-    for (let b = 0; b < bolts; b += 1) {
-      const a = (b / bolts) * Math.PI * 2;
-      d += circle(MODULE * 0.38, Math.cos(a) * boltRing, Math.sin(a) * boltRing);
-    }
-  } else {
-    for (let b = 0; b < 3; b += 1) {
-      const a = (b / 3) * Math.PI * 2 + Math.PI / 6;
-      const ring = (bore + root) / 2;
-      d += circle(MODULE * 0.45, Math.cos(a) * ring, Math.sin(a) * ring);
-    }
-  }
-  return d;
-}
-
-function buildTrain(): Gear[] {
-  const gears: Gear[] = [];
-  for (const spec of SPECS) {
-    const pitch = (MODULE * spec.teeth) / 2;
-    const step = (Math.PI * 2) / spec.teeth;
-    if (spec.parent === undefined) {
-      gears.push({ ...spec, x: 0, y: 0, phase: 0, ratio: 1, pitch, path: gearPath(spec.teeth) });
-      continue;
-    }
-    const parent = gears[spec.parent];
-    const theta = ((spec.angle ?? 0) * Math.PI) / 180;
-    const distance = parent.pitch + pitch;
-    // Fração do passo em que o dente da mãe está na linha de centros; a filha precisa de um vão ali.
-    const parentStep = (Math.PI * 2) / parent.teeth;
-    const fraction = (theta - parent.phase) / parentStep;
-    gears.push({
-      ...spec,
-      x: parent.x + Math.cos(theta) * distance,
-      y: parent.y + Math.sin(theta) * distance,
-      phase: theta + Math.PI - step * (0.5 - fraction),
-      ratio: -parent.ratio * (parent.teeth / spec.teeth),
-      pitch,
-      path: gearPath(spec.teeth),
-    });
-  }
-  return gears;
-}
-
-const TRAIN = buildTrain();
-const PAD = MODULE * 4;
-const BOUNDS = TRAIN.reduce(
-  (box, g) => {
-    const r = g.pitch + MODULE + PAD;
-    return { minX: Math.min(box.minX, g.x - r), minY: Math.min(box.minY, g.y - r), maxX: Math.max(box.maxX, g.x + r), maxY: Math.max(box.maxY, g.y + r) };
-  },
-  { minX: Infinity, minY: Infinity, maxX: -Infinity, maxY: -Infinity },
+const TRAIN = buildTrain(
+  [
+    { teeth: 36, accent: true },
+    { teeth: 16, parent: 0, angle: -140 },
+    { teeth: 26, parent: 1, angle: -75 },
+    { teeth: 11, parent: 2, angle: -15, accent: true },
+    { teeth: 20, parent: 3, angle: -80 },
+    { teeth: 13, parent: 0, angle: 165 },
+  ],
+  MODULE,
 );
+const BOUNDS = trainBounds(TRAIN, MODULE, MODULE * 4);
 const VIEW_BOX = `${BOUNDS.minX.toFixed(0)} ${BOUNDS.minY.toFixed(0)} ${(BOUNDS.maxX - BOUNDS.minX).toFixed(0)} ${(BOUNDS.maxY - BOUNDS.minY).toFixed(0)}`;
-const GHOST_PATH = gearPath(24);
+const GHOST_PATH = gearPath(24, MODULE);
 
-const deg = (rad: number) => ((rad * 180) / Math.PI).toFixed(3);
-
-export default function AuthGearTrain({ activity, busy, jolt, className = "" }: AuthGearTrainProps) {
+export default function AuthGearTrain({ activity, busy, jolt, locked = false, className = "" }: AuthGearTrainProps) {
   const rootRef = useRef<HTMLDivElement>(null);
   const gearRefs = useRef<(SVGGElement | null)[]>([]);
   const ghostRef = useRef<SVGGElement>(null);
-  const state = useRef({ angle: 0, velocity: 1, busy, px: 0, py: 0, tx: 0, ty: 0 });
+  const state = useRef({ angle: 0, velocity: 1, busy, locked, px: 0, py: 0, tx: 0, ty: 0 });
 
   state.current.busy = busy;
+  state.current.locked = locked;
 
   useEffect(() => {
     if (activity === 0) return;
@@ -175,9 +88,11 @@ export default function AuthGearTrain({ activity, busy, jolt, className = "" }: 
       const s = state.current;
       const dt = Math.min((now - last) / 1000, 0.05);
       last = now;
-      if (calm) s.velocity = 0.6;
-      const target = calm ? 0.6 : s.busy ? 10 : 1;
-      s.velocity += (target - s.velocity) * Math.min(1, dt * (s.velocity < target ? 3 : 1.4));
+      if (calm) s.velocity = s.locked ? 0 : 0.6;
+      const target = calm ? s.velocity : s.locked ? 0 : s.busy ? 10 : 1;
+      // Travando, freia forte: o trem para em ~0,4 s, antes da troca de tela.
+      const rate = s.locked ? 9 : s.velocity < target ? 3 : 1.4;
+      s.velocity += (target - s.velocity) * Math.min(1, dt * rate);
       s.angle += s.velocity * BASE_SPEED * dt;
       s.px += (s.tx - s.px) * Math.min(1, dt * 2.5);
       s.py += (s.ty - s.py) * Math.min(1, dt * 2.5);
@@ -202,7 +117,7 @@ export default function AuthGearTrain({ activity, busy, jolt, className = "" }: 
   }, []);
 
   return (
-    <div ref={rootRef} className={`auth-gears ${className}`} aria-hidden="true">
+    <div ref={rootRef} className={`auth-gears${locked ? " is-locked" : ""} ${className}`} aria-hidden="true">
       <svg className="auth-gears-ghost" viewBox="-110 -110 220 220" focusable="false">
         <circle r={84} className="auth-gears-pitch" />
         <g ref={ghostRef}>

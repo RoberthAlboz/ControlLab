@@ -25,7 +25,6 @@
 .clean-app .rd .reader-progress-heading strong { color: var(--fl-ink); font: 700 1.5rem/1 var(--fl-display) !important; }
 .clean-app .rd .reader-progress-track { height: 8px; overflow: hidden; border-radius: 999px; background: var(--fl-surface-2); }
 .clean-app .rd .reader-progress-track span { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, #8e0707, #c4080c); }
-.clean-app .rd .rd-progress-caption { color: var(--fl-subtle); font-size: 0.76rem !important; }
 
 /* Grade: etapas à esquerda (fixas ao rolar), conteúdo à direita */
 .clean-app .rd .reader-content-grid { display: grid; grid-template-columns: 290px minmax(0, 1fr); grid-template-areas: none; align-items: start; gap: 22px; margin-top: 22px; }
@@ -137,34 +136,33 @@
 .clean-app .rd .reader-image-panel.is-empty .reader-image-empty { justify-content: start; padding: 14px 16px !important; }
 .clean-app .rd .rd-resources .category-tabs button { border-radius: 999px !important; border-bottom-width: 1px; }
 
-/* Cronômetro rodando: os ponteiros do ícone de relógio giram (o círculo fica parado) e um
-   anel pulsa em volta. O CSS antigo zera animações com "reduzir movimento"
-   (animation-duration: .01ms !important); aqui é exceção, mais lenta nesse modo. */
-.clean-app .rd .step-timer-icon { position: relative; }
-.clean-app .rd .step-timer-widget.is-running .step-timer-icon { background: linear-gradient(135deg, #8e0707, #c4080c); color: #fff6f6; }
-.clean-app .rd .step-timer-widget.is-running .step-timer-icon svg :is(polyline, path:not(:first-child), line) {
-  transform-box: view-box;
-  transform-origin: 12px 12px;
-  animation: rd-clock-hands 3s linear infinite !important;
-  animation-iteration-count: infinite !important;
-}
-.clean-app .rd .step-timer-widget.is-running .step-timer-icon::after {
-  position: absolute;
-  inset: -4px;
-  border: 2px solid rgba(196, 8, 12, 0.45);
-  border-radius: 14px;
-  content: "";
-  animation: rd-clock-ring 1.6s ease-out infinite !important;
-  animation-iteration-count: infinite !important;
-}
-@keyframes rd-clock-hands { to { transform: rotate(360deg); } }
-@keyframes rd-clock-ring {
-  0% { opacity: 0.9; transform: scale(0.9); }
-  100% { opacity: 0; transform: scale(1.25); }
-}
-@media (prefers-reduced-motion: reduce) {
-  .clean-app .rd .step-timer-widget.is-running .step-timer-icon svg :is(polyline, path:not(:first-child), line) { animation-duration: 6s !important; }
-  .clean-app .rd .step-timer-widget.is-running .step-timer-icon::after { animation-duration: 3s !important; }
+/* Cronômetro da etapa: relógio comparador (DialIndicator). O próprio ponteiro mostra
+   que o tempo corre; o ícone não ganha fundo nem anel pulsando. */
+.clean-app .rd .step-timer-icon { position: relative; background: transparent !important; }
+.clean-app .rd .reader-carousel-controls .step-timer-icon { width: 38px; height: 38px; }
+.dial-indicator { display: block; width: 100%; height: 100%; overflow: visible; }
+.dial-stem { fill: #8b9196; stroke: #5b6166; stroke-width: 0.5; }
+.dial-bezel { fill: #b8bec3; stroke: #6d7378; stroke-width: 0.8; }
+.dial-face { fill: #fbfbfa; stroke: #8b9196; stroke-width: 0.4; }
+.dial-ticks { fill: none; stroke: #2b2f33; stroke-width: 0.7; }
+.dial-ticks.is-minor { stroke-width: 0.35; opacity: 0.55; }
+.dial-counter { fill: none; stroke: #8b9196; stroke-width: 0.45; }
+.dial-needle path { stroke: #c4080c; stroke-width: 1.1; stroke-linecap: round; }
+.dial-needle-small path { stroke: #2b2f33; stroke-width: 0.8; stroke-linecap: round; }
+.dial-hub { fill: #2b2f33; }
+.dial-needle, .dial-needle-small { transform-box: view-box; transform-origin: 0 0; }
+html.dark .dial-bezel { fill: #5b6166; stroke: #2c3033; }
+html.dark .dial-face { fill: #1d2023; stroke: #2c3033; }
+html.dark .dial-ticks, html.dark .dial-needle-small path { stroke: #f1f3f4; }
+html.dark .dial-hub { fill: #f1f3f4; }
+html.dark .dial-needle path { stroke: #ff6b70; }
+/* Parado antes de iniciar: agulha apagada, à espera. */
+.dial-indicator.is-pending .dial-needle path { stroke: #8b9196; }
+@media (prefers-reduced-motion: no-preference) {
+  /* Cada segundo: a agulha salta e assenta, com uma pequena sobra. */
+  .dial-needle { transition: transform 280ms cubic-bezier(0.34, 1.8, 0.64, 1); }
+  .dial-needle-small { transition: transform 280ms ease-out; }
+  .dial-indicator.is-jump :is(.dial-needle, .dial-needle-small) { transition: none; }
 }
 
 /* ------------------------------------------------------------------ */

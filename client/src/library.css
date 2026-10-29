@@ -14,6 +14,7 @@
 }
 .clean-app .library-content .search-box:focus-within { border-color: var(--fl-red); box-shadow: 0 0 0 4px rgba(196, 8, 12, 0.1); }
 .clean-app .library-content .library-tabs button:not(.selected):hover { border-color: rgba(196, 8, 12, 0.4); color: var(--fl-red-deep); }
+.clean-app .library-content .library-tabs button:disabled { cursor: not-allowed; opacity: 0.5; }
 .clean-app .library-content .library-results-bar { margin-top: 14px; }
 
 /* Grade */

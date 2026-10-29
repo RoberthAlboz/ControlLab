@@ -1,6 +1,11 @@
+import type { CSSProperties } from "react";
+import { buildTrain, deg, trainBounds } from "@/lib/gears";
+
 /**
  * Indicador de carregamento com engrenagens entrelaçadas (identidade ForgeLab).
- * O movimento é desligado automaticamente com `prefers-reduced-motion`.
+ * Mesma geometria do trem do login: as duas peças engrenam de verdade, com
+ * fase casada e período na relação de dentes. O movimento é desligado
+ * automaticamente com `prefers-reduced-motion`.
  */
 type GearLoaderProps = {
   label?: string;
@@ -8,40 +13,38 @@ type GearLoaderProps = {
   inline?: boolean;
 };
 
-function GearShape({ teeth, radius, className }: { teeth: number; radius: number; className: string }) {
-  const outer = radius;
-  const inner = radius * 0.78;
-  const points: string[] = [];
-  const step = (Math.PI * 2) / teeth;
-  for (let index = 0; index < teeth; index += 1) {
-    const angle = index * step;
-    const toothHalf = step * 0.22;
-    const corners = [
-      [inner, angle - step / 2 + toothHalf * 0.4],
-      [outer, angle - toothHalf],
-      [outer, angle + toothHalf],
-      [inner, angle + step / 2 - toothHalf * 0.4],
-    ];
-    for (const [r, a] of corners) points.push(`${(Math.cos(a) * r).toFixed(2)},${(Math.sin(a) * r).toFixed(2)}`);
-  }
-  return (
-    <g className={className}>
-      <polygon points={points.join(" ")} />
-      <circle r={radius * 0.32} className="gear-hole" />
-    </g>
-  );
-}
+const MODULE = 3.2;
+const PERIOD_S = 4; // uma volta da engrenagem maior
+
+const TRAIN = buildTrain(
+  [
+    { teeth: 12 },
+    { teeth: 8, parent: 0, angle: -32, accent: true },
+  ],
+  MODULE,
+);
+const BOUNDS = trainBounds(TRAIN, MODULE, MODULE * 0.5);
+const VIEW_BOX = `${BOUNDS.minX.toFixed(1)} ${BOUNDS.minY.toFixed(1)} ${(BOUNDS.maxX - BOUNDS.minX).toFixed(1)} ${(BOUNDS.maxY - BOUNDS.minY).toFixed(1)}`;
 
 export default function GearLoader({ label = "Carregando…", size = "md", inline = false }: GearLoaderProps) {
   return (
     <div className={`gear-loader gear-loader-${size} ${inline ? "is-inline" : ""}`} role="status" aria-live="polite">
-      <svg viewBox="-40 -30 80 60" aria-hidden="true" focusable="false">
-        <g transform="translate(-10 0)">
-          <GearShape teeth={10} radius={18} className="gear-a" />
-        </g>
-        <g transform="translate(17.5 -10.5)">
-          <GearShape teeth={7} radius={12} className="gear-b" />
-        </g>
+      <svg viewBox={VIEW_BOX} aria-hidden="true" focusable="false">
+        {TRAIN.map((gear, index) => (
+          <g key={index} transform={`translate(${gear.x.toFixed(2)} ${gear.y.toFixed(2)}) rotate(${deg(gear.phase)})`} className={gear.accent ? "is-accent" : undefined}>
+            <g
+              className="gear-loader-spin"
+              style={
+                {
+                  "--gear-period": `${(PERIOD_S / Math.abs(gear.ratio)).toFixed(3)}s`,
+                  "--gear-direction": gear.ratio > 0 ? "normal" : "reverse",
+                } as CSSProperties
+              }
+            >
+              <path d={gear.path} fillRule="evenodd" />
+            </g>
+          </g>
+        ))}
       </svg>
       <span>{label}</span>
     </div>
