@@ -31,14 +31,39 @@ function errorOf(action: () => unknown) {
 }
 
 describe("SQLite · migrations", () => {
-  it("aplica a migration base uma única vez (idempotente)", async () => {
-    expect(await runMigrations(file)).toBe(1);
+  it("aplica as migrations uma única vez (idempotente)", async () => {
+    expect(await runMigrations(file)).toBe(6);
     expect(await runMigrations(file)).toBe(0);
     const db = await openSqlite(file);
     const tables = (db.prepare("select name from sqlite_master where type = 'table' order by name").all() as Array<{ name: string }>).map(row => row.name);
+    const columnsOf = (table: string) => (db.prepare(`pragma table_info(${table})`).all() as Array<{ name: string }>).map(row => row.name);
+    const moduleColumns = columnsOf("learning_modules");
+    const activityColumns = columnsOf("learning_activities");
+    const classroomColumns = ["users", "inventory_loans", "inventory_movements"].map(columnsOf);
+    const attachmentColumns = ["learning_steps", "learning_resources"].map(columnsOf);
+    const itemColumns = columnsOf("inventory_items");
     db.close();
-    for (const table of ["users", "auth_sessions", "learning_modules", "learning_resources", "inventory_items", "inventory_movements", "inventory_loans", "inventory_categories", "inventory_audit_log"]) {
+    for (const table of ["users", "auth_sessions", "learning_modules", "learning_resources", "inventory_items", "inventory_movements", "inventory_loans", "inventory_categories", "inventory_audit_log", "student_notes", "classrooms"]) {
       expect(tables).toContain(table);
+    }
+    expect(moduleColumns).toContain("archivedAt");
+    expect(activityColumns).toContain("createdBy");
+    for (const columns of classroomColumns) expect(columns).toContain("classroomId");
+    for (const columns of attachmentColumns) expect(columns).toContain("attachments");
+    expect(itemColumns).toContain("icon");
+  });
+
+  it("área educacional amarrada por FKs: módulo inexistente é recusado e apagar o módulo leva as etapas", async () => {
+    await runMigrations(file);
+    const db = await openSqlite(file);
+    try {
+      expect(errorOf(() => db.prepare("insert into learning_steps (id, moduleId, position, title, description, tip) values ('s1', 'nao-existe', 0, 't', '', '')").run())).toMatch(/FOREIGN KEY/);
+      db.prepare("insert into learning_modules (id, code, title, kind, description, objective, cover, duration) values ('m1', 'M1', 'Módulo', 'Processo', '', '', '', '1h')").run();
+      db.prepare("insert into learning_steps (id, moduleId, position, title, description, tip) values ('s1', 'm1', 0, 't', '', '')").run();
+      db.prepare("delete from learning_modules where id = 'm1'").run();
+      expect((db.prepare("select count(*) as n from learning_steps").get() as { n: number }).n).toBe(0);
+    } finally {
+      db.close();
     }
   });
 });

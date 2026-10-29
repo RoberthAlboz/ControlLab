@@ -65,16 +65,32 @@ class SessionService {
       .sign(this.getSessionSecret());
   }
 
-  /** Valida assinatura, expiração e registro server-side (não revogada). */
+  /**
+   * Valida assinatura, expiração e registro server-side (não revogada).
+   * Token inválido → null. Banco fora do ar → o erro sobe: não é "sessão inválida".
+   */
   async verifySession(cookieValue: string | undefined | null): Promise<VerifiedSession | null> {
     if (!cookieValue) return null;
+    let session: VerifiedSession;
     try {
-      const session = await this.verifySignedSession(cookieValue);
-      if (!session.jti || !(await db.isAuthSessionActive(session.jti))) return null;
-      return session;
+      session = await this.verifySignedSession(cookieValue);
     } catch (error) {
       if (!ENV.isTest) console.warn("[Auth] Sessão rejeitada:", String(error));
       return null;
+    }
+    if (!session.jti || !(await db.isAuthSessionActive(session.jti))) return null;
+    return session;
+  }
+
+  /** Só a assinatura e a validade do token, sem consultar o banco (usado antes de aceitar corpos grandes). */
+  async hasValidSignature(req: Pick<Request, "headers">) {
+    const token = this.getSessionTokens(req)[0];
+    if (!token) return false;
+    try {
+      await this.verifySignedSession(token);
+      return true;
+    } catch {
+      return false;
     }
   }
 

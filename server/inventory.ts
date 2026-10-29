@@ -4,7 +4,10 @@
  *
  * Toda operação que altera quantidade:
  *  1. abre uma transação;
- *  2. bloqueia a linha do item com SELECT ... FOR UPDATE;
+ *  2. lê a linha do item. Não há SELECT ... FOR UPDATE: a exclusividade vem do
+ *     mutex de `_core/db-lock.ts`, que executa uma transação por vez sobre a
+ *     conexão única. Se um dia houver pool de conexões, troque por um
+ *     bloqueio de linha de verdade (FOR UPDATE no Postgres);
  *  3. calcula o novo saldo com as regras puras de `shared/inventory.ts`;
  *  4. grava o item e a movimentação imutável (com snapshot do item);
  *  5. confirma — ou desfaz tudo em caso de erro.
@@ -14,6 +17,7 @@
  */
 import { and, asc, count, desc, eq, inArray, isNotNull, isNull, ne, or, sql, type AnyColumn, type SQL } from "drizzle-orm";
 import {
+  classrooms,
   inventoryAuditLog,
   inventoryCategories,
   inventoryItems,
@@ -32,6 +36,7 @@ import {
   assertManualMovementReason,
   availableQuantity,
   InventoryRuleError,
+  isLoanOverdue,
   isLowStock,
   normalizeItemCode,
   planLoanReturn,
@@ -132,6 +137,18 @@ async function moduleSnapshot(tx: Tx, moduleId: string | null | undefined) {
   return { moduleId: module.id, moduleTitleSnapshot: module.title };
 }
 
+/** Turma informada precisa existir e estar ativa. */
+async function activeClassroomId(tx: Tx, classroomId: number | null | undefined) {
+  if (!classroomId) return null;
+  const [classroom] = await tx
+    .select({ id: classrooms.id })
+    .from(classrooms)
+    .where(and(eq(classrooms.id, classroomId), isNull(classrooms.archivedAt)))
+    .limit(1);
+  if (!classroom) throw new InventoryServiceError("BAD_REQUEST", "A turma informada não existe ou foi arquivada.");
+  return classroom.id;
+}
+
 type ApplyMovementInput = {
   item: InventoryItem;
   type: MovementType;
@@ -141,6 +158,7 @@ type ApplyMovementInput = {
   reference?: string | null;
   note?: string | null;
   loanId?: number | null;
+  classroomId?: number | null;
   moduleId?: string | null;
   moduleTitleSnapshot?: string | null;
   requestKey?: string | null;
@@ -166,6 +184,7 @@ async function applyMovement(tx: Tx, input: ApplyMovementInput) {
       reference: input.reference ?? null,
       note: input.note ?? null,
       loanId: input.loanId ?? null,
+      classroomId: input.classroomId ?? null,
       moduleId: input.moduleId ?? null,
       moduleTitleSnapshot: input.moduleTitleSnapshot ?? null,
       itemCodeSnapshot: input.item.code,
@@ -445,6 +464,7 @@ export async function createItem(input: ItemCreateInput, userId: number) {
           location: input.location,
           conservation: input.conservation,
           status: input.status,
+          icon: input.icon,
           createdBy: userId,
           updatedBy: userId,
         })
@@ -489,6 +509,7 @@ const AUDITED_ITEM_FIELDS = [
   "location",
   "conservation",
   "status",
+  "icon",
 ] as const;
 
 export async function updateItem(input: ItemUpdateInput, userId: number) {
@@ -532,6 +553,7 @@ export async function updateItem(input: ItemUpdateInput, userId: number) {
         location: input.location,
         conservation: input.conservation,
         status: input.status,
+        icon: input.icon,
       };
       const before: Record<string, unknown> = {};
       const after: Record<string, unknown> = {};
@@ -597,10 +619,24 @@ async function findMovementByRequestKey(db: Database, requestKey: string) {
   return existing;
 }
 
+/** Mesma `requestKey` com outro conteúdo é um erro do cliente, não um reenvio. */
+function assertSameRequest(matches: boolean) {
+  if (!matches) {
+    throw new InventoryServiceError("CONFLICT", "Esta solicitação já foi usada para outra operação. Recarregue a página e tente de novo.");
+  }
+}
+
+function sameMovement(saved: { itemId: number; movementType: string; quantity: number }, input: MovementCreateInput) {
+  return saved.itemId === input.itemId && saved.movementType === input.type && saved.quantity === input.quantity;
+}
+
 export async function registerMovement(input: MovementCreateInput, userId: number) {
   const db = await requireDb();
   const existing = await findMovementByRequestKey(db, input.requestKey);
-  if (existing) return { movementId: existing.id, duplicated: true, physicalAfter: existing.physicalAfter, reservedAfter: existing.reservedAfter };
+  if (existing) {
+    assertSameRequest(sameMovement(existing, input));
+    return { movementId: existing.id, duplicated: true, physicalAfter: existing.physicalAfter, reservedAfter: existing.reservedAfter };
+  }
   assertManualMovementReason(input.type, input.reason, input.note);
   try {
     return await db.transaction(async tx => {
@@ -617,6 +653,7 @@ export async function registerMovement(input: MovementCreateInput, userId: numbe
         userId,
         reference: input.reference,
         note: input.note,
+        classroomId: await activeClassroomId(tx, input.classroomId),
         ...module,
         requestKey: input.requestKey,
       });
@@ -625,7 +662,10 @@ export async function registerMovement(input: MovementCreateInput, userId: numbe
   } catch (error) {
     if (isDuplicateEntry(error)) {
       const saved = await findMovementByRequestKey(db, input.requestKey);
-      if (saved) return { movementId: saved.id, duplicated: true, physicalAfter: saved.physicalAfter, reservedAfter: saved.reservedAfter };
+      if (saved) {
+        assertSameRequest(sameMovement(saved, input));
+        return { movementId: saved.id, duplicated: true, physicalAfter: saved.physicalAfter, reservedAfter: saved.reservedAfter };
+      }
     }
     throw error;
   }
@@ -686,15 +726,21 @@ async function findLoanByRequestKey(db: Database, requestKey: string) {
 export async function createLoan(input: LoanCreateInput, userId: number) {
   const db = await requireDb();
   const existing = await findLoanByRequestKey(db, input.requestKey);
-  if (existing) return { loanId: existing.id, duplicated: true };
+  if (existing) {
+    assertSameRequest(existing.itemId === input.itemId && existing.quantity === input.quantity);
+    return { loanId: existing.id, duplicated: true };
+  }
   try {
     return await db.transaction(async tx => {
       const item = await lockItem(tx, input.itemId);
       let borrowerName = input.borrowerName;
+      // Aluno cadastrado: vale a turma do cadastro. Sem aluno (turma/bancada), a turma escolhida.
+      let classroomId = await activeClassroomId(tx, input.classroomId);
       if (input.borrowerUserId) {
-        const [borrower] = await tx.select({ id: users.id, name: users.name, role: users.role, active: users.active }).from(users).where(eq(users.id, input.borrowerUserId)).limit(1);
+        const [borrower] = await tx.select({ id: users.id, name: users.name, role: users.role, active: users.active, classroomId: users.classroomId }).from(users).where(eq(users.id, input.borrowerUserId)).limit(1);
         if (!borrower || !borrower.active) throw new InventoryServiceError("BAD_REQUEST", "A pessoa selecionada não existe ou está desativada.");
         borrowerName = borrower.name || borrowerName;
+        classroomId = borrower.classroomId ?? classroomId;
       }
       const module = await moduleSnapshot(tx, input.moduleId);
       if (input.dueAt && input.dueAt.getTime() < Date.now() - 60_000) {
@@ -708,6 +754,7 @@ export async function createLoan(input: LoanCreateInput, userId: number) {
           itemId: item.id,
           borrowerUserId: input.borrowerUserId ?? null,
           borrowerName,
+          classroomId,
           quantity: input.quantity,
           purpose: input.purpose,
           moduleId: module.moduleId,
@@ -725,6 +772,7 @@ export async function createLoan(input: LoanCreateInput, userId: number) {
         reference: `Empréstimo #${loanId}`,
         note: input.purpose,
         loanId,
+        classroomId,
         ...module,
       });
       return { loanId, duplicated: false };
@@ -732,7 +780,10 @@ export async function createLoan(input: LoanCreateInput, userId: number) {
   } catch (error) {
     if (isDuplicateEntry(error)) {
       const saved = await findLoanByRequestKey(db, input.requestKey);
-      if (saved) return { loanId: saved.id, duplicated: true };
+      if (saved) {
+        assertSameRequest(saved.itemId === input.itemId && saved.quantity === input.quantity);
+        return { loanId: saved.id, duplicated: true };
+      }
     }
     throw error;
   }
@@ -755,6 +806,7 @@ export async function deliverLoan(loanId: number, userId: number) {
       reference: `Empréstimo #${loan.id}`,
       note: `Entregue para ${loan.borrowerName}`,
       loanId: loan.id,
+      classroomId: loan.classroomId,
       ...(await moduleSnapshot(tx, loan.moduleId)),
     });
     await tx.update(inventoryLoans).set({ status: "retirado", deliveredBy: userId, deliveredAt: new Date() }).where(eq(inventoryLoans.id, loan.id));
@@ -778,6 +830,7 @@ export async function cancelLoan(loanId: number, reason: string, userId: number)
       reference: `Empréstimo #${loan.id}`,
       note: reason,
       loanId: loan.id,
+      classroomId: loan.classroomId,
     });
     await tx
       .update(inventoryLoans)
@@ -794,7 +847,10 @@ export async function cancelLoan(loanId: number, reason: string, userId: number)
 export async function returnLoan(input: LoanReturnInput, userId: number) {
   const db = await requireDb();
   const existing = await findMovementByRequestKey(db, input.requestKey);
-  if (existing) return { success: true, duplicated: true } as const;
+  if (existing) {
+    assertSameRequest(existing.loanId === input.loanId);
+    return { success: true, duplicated: true } as const;
+  }
   try {
     return await db.transaction(async tx => {
       const loan = await lockLoan(tx, input.loanId);
@@ -811,6 +867,7 @@ export async function returnLoan(input: LoanReturnInput, userId: number) {
           reference: `Empréstimo #${loan.id}`,
           note: input.note,
           loanId: loan.id,
+          classroomId: loan.classroomId,
           requestKey: input.requestKey,
         });
         keyUsed = true;
@@ -825,6 +882,7 @@ export async function returnLoan(input: LoanReturnInput, userId: number) {
           reference: `Empréstimo #${loan.id}`,
           note: input.note,
           loanId: loan.id,
+          classroomId: loan.classroomId,
           requestKey: keyUsed ? null : input.requestKey,
         });
       }
@@ -840,8 +898,12 @@ export async function returnLoan(input: LoanReturnInput, userId: number) {
       return { success: true, duplicated: false, closed: plan.closed, outstanding: plan.outstandingAfter } as const;
     });
   } catch (error) {
-    if (isDuplicateEntry(error) && (await findMovementByRequestKey(db, input.requestKey))) {
-      return { success: true, duplicated: true } as const;
+    if (isDuplicateEntry(error)) {
+      const saved = await findMovementByRequestKey(db, input.requestKey);
+      if (saved) {
+        assertSameRequest(saved.loanId === input.loanId);
+        return { success: true, duplicated: true } as const;
+      }
     }
     throw error;
   }
@@ -882,7 +944,7 @@ export async function listLoans(input: LoanListInput) {
       moduleTitle: row.moduleTitle,
       createdByName: row.createdByName,
       outstanding: Math.max(0, row.loan.quantity - row.loan.returnedQuantity - row.loan.damagedQuantity),
-      overdue: row.loan.status === "retirado" && row.loan.dueAt != null && row.loan.dueAt.getTime() < now,
+      overdue: isLoanOverdue(row.loan, now),
     })),
     total: Number(total),
     page: input.page,
@@ -928,7 +990,7 @@ export async function getInventorySummary() {
       archived: Number(archived.total),
       activeLoans: loans.length,
       reservedLoans: loans.filter(loan => loan.status === "reservado").length,
-      overdueLoans: loans.filter(loan => loan.status === "retirado" && loan.dueAt != null && loan.dueAt.getTime() < now).length,
+      overdueLoans: loans.filter(loan => isLoanOverdue(loan, now)).length,
     },
     alerts: lowStock
       .sort((a, b) => a.available - a.minQuantity - (b.available - b.minQuantity))
@@ -942,16 +1004,31 @@ export async function getInventorySummary() {
 export async function listBorrowers() {
   const db = await requireDb();
   return db
-    .select({ id: users.id, name: users.name, email: users.email })
+    .select({ id: users.id, name: users.name, email: users.email, classroomId: users.classroomId, classroomName: classrooms.name })
     .from(users)
+    .leftJoin(classrooms, eq(classrooms.id, users.classroomId))
     .where(and(eq(users.role, "student"), eq(users.active, 1)))
     .orderBy(asc(users.name));
+}
+
+/** Turmas ativas para associar a saídas e empréstimos. */
+export async function listClassroomOptions() {
+  const db = await requireDb();
+  return db
+    .select({ id: classrooms.id, name: classrooms.name })
+    .from(classrooms)
+    .where(isNull(classrooms.archivedAt))
+    .orderBy(asc(classrooms.name));
 }
 
 /** Módulos para associar a movimentações e empréstimos. */
 export async function listModuleOptions() {
   const db = await requireDb();
-  return db.select({ id: learningModules.id, code: learningModules.code, title: learningModules.title }).from(learningModules).orderBy(asc(learningModules.code));
+  return db
+    .select({ id: learningModules.id, code: learningModules.code, title: learningModules.title })
+    .from(learningModules)
+    .where(isNull(learningModules.archivedAt))
+    .orderBy(asc(learningModules.code));
 }
 
 export type { InventoryLoan };

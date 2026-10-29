@@ -15,7 +15,7 @@
  */
 import { readFileSync } from "node:fs";
 import pg from "pg";
-import { isInsideTransaction, normalizeParam, waitOutsideTransaction, type DriverMethod } from "./db-lock";
+import { isInsideTransaction, normalizeParam, pendingTransaction, type DriverMethod } from "./db-lock";
 
 const INT8_OID = 20;
 const NUMERIC_OID = 1700;
@@ -157,7 +157,10 @@ export function createPostgresConnection(config: pg.ClientConfig = postgresConfi
   }
 
   async function execute(sqlText: string, params: unknown[], method: DriverMethod) {
-    await waitOutsideTransaction();
+    let pending: Promise<void> | null;
+    while ((pending = pendingTransaction())) await pending;
+    // Entra na fila na mesma volta do event loop da última checagem: uma
+    // transação aberta depois disso fica atrás desta consulta, nunca em volta dela.
     const run = queue.then(() => executeNow(sqlText, params, method));
     queue = run.catch(() => undefined);
     return run;

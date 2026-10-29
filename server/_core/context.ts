@@ -1,5 +1,8 @@
+import { TRPCError } from "@trpc/server";
 import type { CreateExpressContextOptions } from "@trpc/server/adapters/express";
+import { HttpError } from "@shared/_core/errors";
 import type { User } from "../../drizzle/schema";
+import { DATABASE_UNAVAILABLE_MESSAGE, DatabaseUnavailableError } from "./db-errors";
 import { sdk } from "./sdk";
 
 export type TrpcContext = {
@@ -13,9 +16,15 @@ export async function createContext(opts: CreateExpressContextOptions): Promise<
   let user: User | null = null;
   try {
     user = await sdk.authenticateRequest(opts.req);
-  } catch {
-    // Procedimentos públicos (login, me) aceitam requisições anônimas.
-    user = null;
+  } catch (error) {
+    // Sessão ausente/inválida: procedimentos públicos (login, me) seguem como anônimos.
+    if (error instanceof HttpError) {
+      user = null;
+    } else if (error instanceof DatabaseUnavailableError) {
+      throw new TRPCError({ code: "SERVICE_UNAVAILABLE", message: DATABASE_UNAVAILABLE_MESSAGE, cause: error });
+    } else {
+      throw error;
+    }
   }
   return { req: opts.req, res: opts.res, user };
 }

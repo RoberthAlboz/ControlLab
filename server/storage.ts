@@ -5,7 +5,7 @@
  *
  * O banco guarda apenas a URL relativa — nunca o binário.
  */
-import { mkdir, writeFile } from "node:fs/promises";
+import { mkdir, unlink, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { ENV } from "./_core/env";
 
@@ -52,4 +52,25 @@ export async function storagePut(
 /** Aceita somente URLs geradas por `storagePut` (sem travessia de diretório). */
 export function isLocalUploadUrl(value: string) {
   return value.startsWith(UPLOAD_URL_PREFIX) && !value.includes("..") && !value.includes("\\") && !value.includes("?");
+}
+
+/**
+ * Apaga o arquivo de uma URL `/uploads/...`. URLs externas são ignoradas e um
+ * arquivo que já não existe não é erro. Nunca sai da pasta de uploads.
+ */
+export async function storageDeleteUrl(url: string | null | undefined): Promise<boolean> {
+  if (!url || !isLocalUploadUrl(url)) return false;
+  let key: string;
+  try {
+    key = url.slice(UPLOAD_URL_PREFIX.length).split("/").map(decodeURIComponent).join("/");
+  } catch {
+    return false;
+  }
+  if (key.split("/").some(part => part === ".." || part === "")) return false;
+  try {
+    await unlink(getSafeUploadPath(key));
+    return true;
+  } catch {
+    return false;
+  }
 }

@@ -1,12 +1,14 @@
-import { and, asc, desc, eq, gt, gte, inArray, isNotNull, isNull, lt, sql } from "drizzle-orm";
+import { and, asc, desc, eq, gt, gte, inArray, isNotNull, isNull, like, lt, sql } from "drizzle-orm";
 import { drizzle, type SqliteRemoteDatabase } from "drizzle-orm/sqlite-proxy";
 import type { DatabaseSync } from "node:sqlite";
+import { DatabaseUnavailableError } from "./_core/db-errors";
 import { ENV } from "./_core/env";
 import { createPostgresConnection, describePostgresUrl, type PostgresConnection } from "./_core/postgres";
 import { executeProxy, openSqlite, resolveDatabaseFile, runExclusive } from "./_core/sqlite";
 import * as schema from "../drizzle/schema";
 import {
   authSessions,
+  classrooms,
   InsertUser,
   instructors,
   inventoryItems,
@@ -15,20 +17,23 @@ import {
   learningResources,
   learningSteps,
   studentBadges,
+  studentNotes,
   studentStepSessions,
   studentProgress,
   users,
 } from "../drizzle/schema";
 import { availableQuantity, isLowStock, stockHealth } from "@shared/inventory";
+import { isLinkAttachment, parseStoredAttachments, type ContentAttachment } from "@shared/attachments";
 import { getElapsedStudySeconds, getFirstChangedStepIndex, isStepCompleted, isValidStoredElapsedSeconds, MAX_ELAPSED_SECONDS, normalizeElapsedSeconds, normalizeProgressRowsWithStepCounts, resolveProgressUpdate, sanitizeStoredElapsedSeconds, selectCanonicalProgressRows, summarizeCompletedStudyTime, filterStudySessionsByVisibleModules, hasSequentialStepPositions } from "@shared/progress";
 import { normalizeBadgeContent, type AwardStudentBadgeInput } from "@shared/competencies";
 import { getStudentModulesByUser, summarizeStudentStudyTime } from "@shared/supervision";
+import { periodStartInZone, studyStreakDays } from "@shared/time-zone";
 
 export type Database = SqliteRemoteDatabase<typeof schema>;
 let _db: Database | null = null;
 
 export class LearningDomainError extends Error {
-  constructor(public readonly code: "BAD_REQUEST" | "NOT_FOUND", message: string) {
+  constructor(public readonly code: "BAD_REQUEST" | "NOT_FOUND" | "FORBIDDEN", message: string) {
     super(message);
     this.name = "LearningDomainError";
   }
@@ -56,24 +61,37 @@ function countDistinctCompletedSteps(rows: Array<{ moduleId: string; stepIndex: 
   return new Set(rows.map((row) => `${row.moduleId}:${row.stepIndex}`)).size;
 }
 
-function calculateCurrentStreak(rows: Array<{ completedAt: Date | null }>) {
-  const days = Array.from(new Set(rows
-    .filter((row): row is { completedAt: Date } => row.completedAt instanceof Date)
-    .map((row) => row.completedAt.toISOString().slice(0, 10))))
-    .sort((a, b) => b.localeCompare(a));
-  if (!days.length) return 0;
-  const today = new Date();
-  const todayKey = today.toISOString().slice(0, 10);
-  const yesterdayKey = new Date(today.getTime() - 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
-  if (days[0] !== todayKey && days[0] !== yesterdayKey) return 0;
-  let streak = 1;
-  const latest = new Date(`${days[0]}T00:00:00.000Z`).getTime();
-  for (let index = 1; index < days.length; index += 1) {
-    const expected = new Date(latest - index * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
-    if (days[index] !== expected) break;
-    streak += 1;
-  }
-  return streak;
+/** Quem altera conteúdo: o id e o papel vêm da sessão validada (ctx.user). */
+export type ContentActor = { id: number; role: "student" | "teacher" | "admin" };
+
+/**
+ * Docente edita o que criou; administração edita tudo. Conteúdo sem autor
+ * (seed ou anterior a este controle) continua editável por qualquer docente.
+ */
+export function canManageContent(createdBy: number | null | undefined, actor: ContentActor) {
+  return actor.role === "admin" || createdBy == null || createdBy === actor.id;
+}
+
+type Tx = Parameters<Parameters<Database["transaction"]>[0]>[0];
+
+/**
+ * Alunos que `actor` acompanha: `null` = todos (administração); para o docente,
+ * os alunos das turmas ativas em que ele é o responsável.
+ */
+async function studentIdsInScope(db: Database | Tx, actor: ContentActor): Promise<Set<number> | null> {
+  if (actor.role === "admin") return null;
+  const rows = await db.select({ id: users.id })
+    .from(users)
+    .innerJoin(classrooms, eq(classrooms.id, users.classroomId))
+    .where(and(eq(users.role, "student"), eq(classrooms.teacherId, actor.id), isNull(classrooms.archivedAt)));
+  return new Set(rows.map((row) => row.id));
+}
+
+const OUT_OF_SCOPE_MESSAGE = "Este aluno não está em uma turma sob sua responsabilidade.";
+
+async function assertStudentInScope(db: Database | Tx, actor: ContentActor, studentId: number) {
+  const scope = await studentIdsInScope(db, actor);
+  if (scope && !scope.has(studentId)) throw new LearningDomainError("FORBIDDEN", OUT_OF_SCOPE_MESSAGE);
 }
 
 let _sqlite: DatabaseSync | null = null;
@@ -119,10 +137,10 @@ export async function getDb(): Promise<Database | null> {
   return _opening;
 }
 
-/** Garante a conexão ou lança um erro com mensagem amigável. */
+/** Garante a conexão ou lança DatabaseUnavailableError (a API responde 503). */
 export async function requireDb() {
   const db = await getDb();
-  if (!db) throw new Error(`Não foi possível abrir o banco em ${describeDatabaseLocation()}.`);
+  if (!db) throw new DatabaseUnavailableError(`Não foi possível abrir o banco em ${describeDatabaseLocation()}.`);
   return db;
 }
 
@@ -177,15 +195,14 @@ export async function upsertUser(user: InsertUser): Promise<void> {
 }
 
 export async function getUserByOpenId(openId: string) {
-  const db = await getDb();
-  if (!db) return undefined;
+  const db = await requireDb();
   const result = await db.select().from(users).where(eq(users.openId, openId)).limit(1);
   return result[0];
 }
 
+/** Banco fora do ar lança erro (nunca "usuário inexistente", que viraria "senha incorreta"). */
 export async function getUserByEmail(email: string) {
-  const db = await getDb();
-  if (!db) return undefined;
+  const db = await requireDb();
   const result = await db.select().from(users).where(eq(users.email, email.trim().toLowerCase())).limit(1);
   return result[0];
 }
@@ -204,10 +221,35 @@ export async function listActiveStudents() {
     .orderBy(asc(users.name));
 }
 
+/** Troca a foto de perfil e devolve a anterior (para apagar o arquivo antigo). */
 export async function setUserAvatar(userId: number, avatarUrl: string) {
   const db = await requireDb();
+  const [current] = await db.select({ avatarUrl: users.avatarUrl }).from(users).where(eq(users.id, userId)).limit(1);
   await db.update(users).set({ avatarUrl }).where(eq(users.id, userId));
-  return avatarUrl;
+  return { avatarUrl, previousAvatarUrl: current?.avatarUrl ?? null };
+}
+
+/** Diário de aula do usuário (JSON validado pela API); `null` quando nunca foi salvo. */
+export async function getStudentNotes(userId: number): Promise<{ content: string; updatedAt: Date } | null> {
+  const db = await requireDb();
+  const [row] = await db.select({ content: studentNotes.content, updatedAt: studentNotes.updatedAt }).from(studentNotes).where(eq(studentNotes.userId, userId)).limit(1);
+  return row ?? null;
+}
+
+/** Diário de um aluno para consulta do docente; `null` quando o id não é de um aluno. */
+export async function getNotesOfStudent(studentId: number, actor: ContentActor) {
+  const db = await requireDb();
+  const [student] = await db.select({ id: users.id, name: users.name }).from(users).where(and(eq(users.id, studentId), eq(users.role, "student"))).limit(1);
+  if (!student) return null;
+  await assertStudentInScope(db, actor, student.id);
+  return { student, saved: await getStudentNotes(student.id) };
+}
+
+export async function saveStudentNotes(userId: number, content: string) {
+  const db = await requireDb();
+  const updatedAt = new Date();
+  await db.insert(studentNotes).values({ userId, content, updatedAt }).onConflictDoUpdate({ target: studentNotes.userId, set: { content, updatedAt } });
+  return { updatedAt };
 }
 
 export async function createAuthSession(input: { jti: string; openId: string; expiresAt: Date }) {
@@ -216,8 +258,7 @@ export async function createAuthSession(input: { jti: string; openId: string; ex
 }
 
 export async function isAuthSessionActive(jti: string) {
-  const db = await getDb();
-  if (!db) return false;
+  const db = await requireDb();
   const [session] = await db.select({ jti: authSessions.jti })
     .from(authSessions)
     .where(and(eq(authSessions.jti, jti), isNull(authSessions.revokedAt), gt(authSessions.expiresAt, new Date())))
@@ -232,6 +273,14 @@ export async function revokeAuthSession(jti: string) {
     .where(and(eq(authSessions.jti, jti), isNull(authSessions.revokedAt)));
 }
 
+/** Encerra todas as sessões abertas de uma conta (desativação, troca de papel ou de senha). */
+export async function revokeUserSessions(openId: string) {
+  const db = await requireDb();
+  await db.update(authSessions)
+    .set({ revokedAt: new Date() })
+    .where(and(eq(authSessions.openId, openId), isNull(authSessions.revokedAt)));
+}
+
 export async function getStudentBadges(userId: number) {
   const db = await requireDb();
   return db.select({
@@ -242,9 +291,11 @@ export async function getStudentBadges(userId: number) {
   }).from(studentBadges).where(eq(studentBadges.userId, userId)).orderBy(desc(studentBadges.awardedAt));
 }
 
-export async function getTeacherBadgeData() {
+export async function getTeacherBadgeData(actor: ContentActor) {
   const db = await requireDb();
-  const [students, badges, rawProgressRows, stepSessionRows, stepRows] = await Promise.all([
+  const scope = await studentIdsInScope(db, actor);
+  const inScope = (userId: number) => !scope || scope.has(userId);
+  const [allStudents, allBadges, allProgressRows, allStepSessionRows, stepRows] = await Promise.all([
     db.select({ id: users.id, name: users.name }).from(users).where(eq(users.role, "student")).orderBy(asc(users.name)),
     db.select({
       id: studentBadges.id,
@@ -265,7 +316,7 @@ export async function getTeacherBadgeData() {
     }).from(studentProgress)
       .innerJoin(users, eq(studentProgress.userId, users.id))
       .innerJoin(learningModules, eq(learningModules.id, studentProgress.moduleId))
-      .where(eq(users.role, "student")),
+      .where(and(eq(users.role, "student"), isNull(learningModules.archivedAt))),
     db.select({
       userId: studentStepSessions.userId,
       moduleId: studentStepSessions.moduleId,
@@ -277,9 +328,14 @@ export async function getTeacherBadgeData() {
       .innerJoin(users, eq(studentStepSessions.userId, users.id))
       .innerJoin(learningModules, eq(learningModules.id, studentStepSessions.moduleId))
       .innerJoin(learningSteps, and(eq(learningSteps.moduleId, studentStepSessions.moduleId), eq(learningSteps.position, studentStepSessions.stepIndex)))
-      .where(and(eq(users.role, "student"), isNotNull(studentStepSessions.completedAt))),
+      .where(and(eq(users.role, "student"), isNotNull(studentStepSessions.completedAt), isNull(learningModules.archivedAt))),
     db.select({ moduleId: learningSteps.moduleId, position: learningSteps.position }).from(learningSteps),
   ]);
+  // Docente só vê os alunos das próprias turmas; a administração vê todos.
+  const students = allStudents.filter((row) => inScope(row.id));
+  const badges = allBadges.filter((row) => inScope(row.userId));
+  const rawProgressRows = allProgressRows.filter((row) => inScope(row.userId));
+  const stepSessionRows = allStepSessionRows.filter((row) => inScope(row.userId));
   const { stepCounts, positionsByModule } = getStepStructure(stepRows);
   const progressRows = normalizeProgressRowsWithStepCounts(rawProgressRows, stepCounts);
   const validStepSessionRows = stepSessionRows.filter((row) => positionsByModule.get(row.moduleId)?.has(row.stepIndex));
@@ -310,21 +366,25 @@ export async function getTeacherBadgeData() {
   return { students, badges, supervision };
 }
 
-export async function assignStudentBadge(input: AwardStudentBadgeInput, awardedBy: number) {
+export async function assignStudentBadge(input: AwardStudentBadgeInput, actor: ContentActor) {
   const db = await requireDb();
   const [student] = await db.select({ id: users.id }).from(users).where(and(eq(users.id, input.studentId), eq(users.role, "student"))).limit(1);
-  if (!student) throw new Error("Aluno não encontrado.");
+  if (!student) throw new LearningDomainError("NOT_FOUND", "Aluno não encontrado.");
+  await assertStudentInScope(db, actor, student.id);
   const content = normalizeBadgeContent(input.label, input.detail);
   await db.insert(studentBadges).values({
     userId: student.id,
     label: content.label,
     detail: content.detail,
-    awardedBy,
+    awardedBy: actor.id,
   });
 }
 
-export async function removeStudentBadge(badgeId: number) {
+export async function removeStudentBadge(badgeId: number, actor: ContentActor) {
   const db = await requireDb();
+  const [badge] = await db.select({ id: studentBadges.id, userId: studentBadges.userId }).from(studentBadges).where(eq(studentBadges.id, badgeId)).limit(1);
+  if (!badge) throw new LearningDomainError("NOT_FOUND", "Competência não encontrada. Atualize a lista.");
+  await assertStudentInScope(db, actor, badge.userId);
   await db.delete(studentBadges).where(eq(studentBadges.id, badgeId));
 }
 
@@ -339,7 +399,8 @@ type InventoryRow = typeof inventoryItems.$inferSelect;
  * docentes, inclui a disponibilidade atual — ou o aviso de item arquivado.
  */
 export function presentCatalogResource(resource: ResourceRow, inventoryById: Map<number, InventoryRow> | null) {
-  const { inventoryItemId, ...publicResource } = resource;
+  const { inventoryItemId, attachments, ...resourceFields } = resource;
+  const publicResource = { ...resourceFields, attachments: parseStoredAttachments(attachments) };
   if (!inventoryById) return { ...publicResource, inventoryItemId: null, inventory: null };
   const item = inventoryItemId != null ? inventoryById.get(inventoryItemId) : undefined;
   if (!item) return { ...publicResource, inventoryItemId: inventoryItemId ?? null, inventory: null };
@@ -377,7 +438,8 @@ export async function getCatalog(userId?: number, period: "all" | "today" | "wee
   const includeUnpublished = viewerRole === "teacher" || viewerRole === "admin";
   const activeSessionCutoff = new Date(Date.now() - MAX_ELAPSED_SECONDS * 1000);
   const [moduleRows, stepRows, resourceRows, instructorRows, activityRows, progressRows, sessionRows, activeSessionRows] = await Promise.all([
-    db.select().from(learningModules),
+    // Módulos arquivados ("excluídos") somem do catálogo; o progresso fica guardado no banco.
+    db.select().from(learningModules).where(isNull(learningModules.archivedAt)),
     db.select().from(learningSteps).orderBy(asc(learningSteps.position)),
     db.select().from(learningResources),
     db.select().from(instructors).where(eq(instructors.active, 1)),
@@ -410,10 +472,9 @@ export async function getCatalog(userId?: number, period: "all" | "today" | "wee
       && row.stepIndex < progress!.stepIndex
       && isValidStoredElapsedSeconds(row.elapsedSeconds);
   });
-  const periodStart = new Date();
-  if (period === "today") periodStart.setHours(0, 0, 0, 0);
-  if (period === "week") { periodStart.setHours(0, 0, 0, 0); periodStart.setDate(periodStart.getDate() - 6); }
-  if (period === "month") { periodStart.setHours(0, 0, 0, 0); periodStart.setDate(1); }
+  const now = new Date();
+  // "Hoje", "semana" e "mês" seguem o fuso da escola, não o do servidor.
+  const periodStart = period === "all" ? now : periodStartInZone(period, now, ENV.timeZone);
   const periodSessionRows = period === "all"
     ? completedSessionRows
     : completedSessionRows.filter((row) => row.completedAt instanceof Date && row.completedAt >= periodStart);
@@ -441,7 +502,7 @@ export async function getCatalog(userId?: number, period: "all" | "today" | "wee
         published: Boolean(module.published),
         // O progresso do aluno nunca herda o valor editorial do catálogo.
         progress: usesCatalogBaseline ? module.progress : (progress?.progress ?? 0),
-        steps: stepRows.filter((step) => step.moduleId === module.id).map((step) => ({ ...step, image: step.imageUrl ?? undefined })),
+        steps: stepRows.filter((step) => step.moduleId === module.id).map((step) => ({ ...step, image: step.imageUrl ?? undefined, attachments: parseStoredAttachments(step.attachments) })),
         resources: resourceRows
           .filter((resource) => resource.moduleId === module.id)
           .map((resource) => presentCatalogResource(resource, includeUnpublished ? inventoryById : null)),
@@ -467,7 +528,7 @@ export async function getCatalog(userId?: number, period: "all" | "today" | "wee
       averageProgress: currentProgress.length ? Math.round(currentProgress.reduce((sum, progress) => sum + progress, 0) / currentProgress.length) : 0,
       studiedMinutes,
       studiedSeconds,
-      streakDays: calculateCurrentStreak(completedSessionRows),
+      streakDays: studyStreakDays(completedSessionRows.map((row) => row.completedAt), now, ENV.timeZone),
       completedSteps,
       ...gamification,
     },
@@ -482,19 +543,65 @@ export function calculateGamification(studiedMinutes: number, completedSteps: nu
 }
 
 export type SaveModuleInput = {
-  id: string; code: string; title: string; kind: "Ferramenta" | "Montagem" | "Processo"; description: string; objective: string; cover: string; coverImage?: string | null; progress: number; duration: string; published: boolean;
-  steps: Array<{ id: string; title: string; description: string; tip: string; image?: string | null }>;
+  id: string; code: string; title: string; kind: string; description: string; objective: string; cover: string; coverImage?: string | null; progress: number; duration: string; published: boolean;
+  steps: Array<{ id: string; title: string; description: string; tip: string; image?: string | null; attachments?: ContentAttachment[] }>;
   confirmStepStructureReset?: boolean;
-  resources: Array<{ id: string; category: "materials" | "machines" | "tools" | "parts"; label: string; title: string; detail: string; status: string; progress: number; modelUrl: string; color: string; inventoryItemId?: number | null }>;
+  resources: Array<{ id: string; category: "materials" | "machines" | "tools" | "parts"; label: string; title: string; detail: string; status: string; progress: number; modelUrl: string; color: string; inventoryItemId?: number | null; attachments?: ContentAttachment[] }>;
 };
 
-export async function saveLearningModule(input: SaveModuleInput, createdBy?: number) {
+/** URLs de arquivos enviados (não links externos) usados nos anexos. */
+function uploadedAttachmentUrls(lists: Array<ContentAttachment[] | string | null | undefined>) {
+  return lists.flatMap((list) => (typeof list === "string" || list == null ? parseStoredAttachments(list) : list))
+    .filter((attachment) => !isLinkAttachment(attachment))
+    .map((attachment) => attachment.url);
+}
+
+/** Ids de etapa/recurso são chave da tabela inteira: não podem repetir os de outro módulo. */
+async function assertIdsFreeForModule(tx: Parameters<Parameters<Database["transaction"]>[0]>[0], input: SaveModuleInput) {
+  const stepIds = input.steps.map((step) => step.id);
+  if (stepIds.length) {
+    const [taken] = await tx.select({ id: learningSteps.id }).from(learningSteps)
+      .where(and(inArray(learningSteps.id, stepIds), sql`${learningSteps.moduleId} <> ${input.id}`)).limit(1);
+    if (taken) throw new LearningDomainError("BAD_REQUEST", `O identificador de etapa "${taken.id}" já pertence a outro módulo. Recarregue o editor e tente de novo.`);
+  }
+  const resourceIds = input.resources.map((resource) => resource.id);
+  if (resourceIds.length) {
+    const [taken] = await tx.select({ id: learningResources.id }).from(learningResources)
+      .where(and(inArray(learningResources.id, resourceIds), sql`${learningResources.moduleId} <> ${input.id}`)).limit(1);
+    if (taken) throw new LearningDomainError("BAD_REQUEST", `O identificador de recurso "${taken.id}" já pertence a outro módulo. Recarregue o editor e tente de novo.`);
+  }
+}
+
+/**
+ * Cria ou atualiza um módulo. Devolve as imagens que deixaram de ser usadas,
+ * para que o chamador apague os arquivos depois do commit.
+ */
+export async function saveLearningModule(input: SaveModuleInput, actor: ContentActor): Promise<{ removedImages: string[] }> {
   const db = await requireDb();
-  await db.transaction(async (tx) => {
-    const [existingModule] = await tx.select({ id: learningModules.id }).from(learningModules).where(eq(learningModules.id, input.id)).limit(1);
+  return db.transaction(async (tx) => {
+    const [existingModule] = await tx.select({ id: learningModules.id, createdBy: learningModules.createdBy, archivedAt: learningModules.archivedAt, coverImage: learningModules.coverImage })
+      .from(learningModules).where(eq(learningModules.id, input.id)).limit(1);
+    if (existingModule?.archivedAt) throw new LearningDomainError("NOT_FOUND", "Este módulo foi excluído. Recarregue a página.");
+    if (existingModule && !canManageContent(existingModule.createdBy, actor)) {
+      throw new LearningDomainError("FORBIDDEN", "Somente quem criou este módulo (ou a administração) pode alterá-lo.");
+    }
+    await assertIdsFreeForModule(tx, input);
     const existingSteps = existingModule
-      ? await tx.select({ id: learningSteps.id }).from(learningSteps).where(eq(learningSteps.moduleId, input.id)).orderBy(asc(learningSteps.position))
+      ? await tx.select({ id: learningSteps.id, imageUrl: learningSteps.imageUrl, attachments: learningSteps.attachments }).from(learningSteps).where(eq(learningSteps.moduleId, input.id)).orderBy(asc(learningSteps.position))
       : [];
+    const existingResourceAttachments = existingModule
+      ? (await tx.select({ attachments: learningResources.attachments }).from(learningResources).where(eq(learningResources.moduleId, input.id))).map((row) => row.attachments)
+      : [];
+    const previousImages = [
+      existingModule?.coverImage,
+      ...existingSteps.map((step) => step.imageUrl),
+      ...uploadedAttachmentUrls([...existingSteps.map((step) => step.attachments), ...existingResourceAttachments]),
+    ].filter((url): url is string => Boolean(url));
+    const nextImages = new Set([
+      input.coverImage,
+      ...input.steps.map((step) => step.image),
+      ...uploadedAttachmentUrls([...input.steps.map((step) => step.attachments), ...input.resources.map((resource) => resource.attachments)]),
+    ].filter((url): url is string => Boolean(url)));
     const resetFromStepIndex = existingModule
       ? getFirstChangedStepIndex(existingSteps.map((step) => step.id), input.steps.map((step) => step.id))
       : null;
@@ -546,25 +653,48 @@ export async function saveLearningModule(input: SaveModuleInput, createdBy?: num
         if (item.archivedAt && !previousLinks.has(id)) throw new LearningDomainError("BAD_REQUEST", "Não é possível vincular um item de estoque arquivado.");
       }
     }
-    await tx.insert(learningModules).values({ id: input.id, code: input.code, title: input.title, kind: input.kind, description: input.description, objective: input.objective, cover: input.cover, coverImage: input.coverImage ?? null, progress: input.progress, duration: input.duration, published: input.published ? 1 : 0, createdBy }).onConflictDoUpdate({ target: learningModules.id, set: { code: input.code, title: input.title, kind: input.kind, description: input.description, objective: input.objective, cover: input.cover, coverImage: input.coverImage ?? null, progress: input.progress, duration: input.duration, published: input.published ? 1 : 0 } });
+    await tx.insert(learningModules).values({ id: input.id, code: input.code, title: input.title, kind: input.kind, description: input.description, objective: input.objective, cover: input.cover, coverImage: input.coverImage ?? null, progress: input.progress, duration: input.duration, published: input.published ? 1 : 0, createdBy: actor.id }).onConflictDoUpdate({ target: learningModules.id, set: { code: input.code, title: input.title, kind: input.kind, description: input.description, objective: input.objective, cover: input.cover, coverImage: input.coverImage ?? null, progress: input.progress, duration: input.duration, published: input.published ? 1 : 0 } });
     await tx.delete(learningSteps).where(eq(learningSteps.moduleId, input.id));
     await tx.delete(learningResources).where(eq(learningResources.moduleId, input.id));
-    if (input.steps.length) await tx.insert(learningSteps).values(input.steps.map((step, position) => ({ id: step.id, moduleId: input.id, position, title: step.title, description: step.description, tip: step.tip, imageUrl: step.image ?? null })));
-    if (input.resources.length) await tx.insert(learningResources).values(input.resources.map((resource) => ({ id: resource.id, moduleId: input.id, category: resource.category, label: resource.label, title: resource.title, detail: resource.detail, status: resource.status, progress: resource.progress, modelUrl: resource.modelUrl, color: resource.color, inventoryItemId: resource.inventoryItemId ?? null })));
+    if (input.steps.length) await tx.insert(learningSteps).values(input.steps.map((step, position) => ({ id: step.id, moduleId: input.id, position, title: step.title, description: step.description, tip: step.tip, imageUrl: step.image ?? null, attachments: JSON.stringify(step.attachments ?? []) })));
+    if (input.resources.length) await tx.insert(learningResources).values(input.resources.map((resource) => ({ id: resource.id, moduleId: input.id, category: resource.category, label: resource.label, title: resource.title, detail: resource.detail, status: resource.status, progress: resource.progress, modelUrl: resource.modelUrl, attachments: JSON.stringify(resource.attachments ?? []), color: resource.color, inventoryItemId: resource.inventoryItemId ?? null })));
+    return { removedImages: previousImages.filter((url) => !nextImages.has(url)) };
   });
 }
 
-export async function deleteLearningModule(moduleId: string) {
+/** Uma imagem enviada ainda é usada por algum módulo, etapa ou foto de perfil? */
+export async function isUploadReferenced(url: string) {
+  const db = await requireDb();
+  // A URL aparece entre aspas dentro do JSON dos anexos (ela nunca contém aspas).
+  const quotedUrl = `%${JSON.stringify(url)}%`;
+  const [[cover], [step], [avatar], [stepAttachment], [resourceAttachment]] = await Promise.all([
+    db.select({ id: learningModules.id }).from(learningModules).where(eq(learningModules.coverImage, url)).limit(1),
+    db.select({ id: learningSteps.id }).from(learningSteps).where(eq(learningSteps.imageUrl, url)).limit(1),
+    db.select({ id: users.id }).from(users).where(eq(users.avatarUrl, url)).limit(1),
+    db.select({ id: learningSteps.id }).from(learningSteps).where(like(learningSteps.attachments, quotedUrl)).limit(1),
+    db.select({ id: learningResources.id }).from(learningResources).where(like(learningResources.attachments, quotedUrl)).limit(1),
+  ]);
+  return Boolean(cover || step || avatar || stepAttachment || resourceAttachment);
+}
+
+/**
+ * "Excluir" arquiva: o módulo sai do catálogo e da agenda, mas etapas, recursos,
+ * progresso e tempos dos alunos continuam no banco (basta limpar `archivedAt`
+ * para trazê-lo de volta; ainda não há tela para isso).
+ */
+export async function deleteLearningModule(moduleId: string, actor: ContentActor) {
   const db = await requireDb();
   await db.transaction(async (tx) => {
-    const [existing] = await tx.select({ id: learningModules.id }).from(learningModules).where(eq(learningModules.id, moduleId)).limit(1);
+    const [existing] = await tx.select({ id: learningModules.id, createdBy: learningModules.createdBy }).from(learningModules)
+      .where(and(eq(learningModules.id, moduleId), isNull(learningModules.archivedAt))).limit(1);
     if (!existing) throw new LearningDomainError("NOT_FOUND", "Módulo não encontrado.");
+    if (!canManageContent(existing.createdBy, actor)) {
+      throw new LearningDomainError("FORBIDDEN", "Somente quem criou este módulo (ou a administração) pode excluí-lo.");
+    }
+    const [{ total }] = await tx.select({ total: sql<number>`count(*)` }).from(learningModules).where(isNull(learningModules.archivedAt));
+    if (Number(total) <= 1) throw new LearningDomainError("BAD_REQUEST", "Mantenha pelo menos um módulo no catálogo.");
     await tx.delete(learningActivities).where(eq(learningActivities.moduleId, moduleId));
-    await tx.delete(learningSteps).where(eq(learningSteps.moduleId, moduleId));
-    await tx.delete(learningResources).where(eq(learningResources.moduleId, moduleId));
-    await tx.delete(studentProgress).where(eq(studentProgress.moduleId, moduleId));
-    await tx.delete(studentStepSessions).where(eq(studentStepSessions.moduleId, moduleId));
-    await tx.delete(learningModules).where(eq(learningModules.id, moduleId));
+    await tx.update(learningModules).set({ archivedAt: new Date(), published: 0 }).where(eq(learningModules.id, moduleId));
   });
 }
 
@@ -579,21 +709,44 @@ export type LearningScheduleEntry = {
   color: string;
 };
 
-export async function replaceLearningSchedule(entries: LearningScheduleEntry[]) {
+/**
+ * Grava a agenda enviada pelo docente sem tocar no que é de outros docentes.
+ *
+ * O cliente envia a agenda inteira (é o que ele exibe). Atividades de outro
+ * docente presentes na lista são ignoradas — continuam como estão no banco —,
+ * e as ausentes não são apagadas. Só as atividades editáveis por `actor`
+ * (dele, sem autor, ou qualquer uma para a administração) são substituídas.
+ */
+export async function replaceLearningSchedule(entries: LearningScheduleEntry[], actor: ContentActor) {
   const db = await requireDb();
-  const moduleIds = Array.from(new Set(entries.map((entry) => entry.moduleId)));
   if (entries.some((entry) => !entry.moduleId || !entry.id || entry.endsAt <= entry.startsAt)) {
     throw new LearningDomainError("BAD_REQUEST", "Cada atividade precisa de módulo e intervalo de horário válidos.");
   }
   await db.transaction(async (tx) => {
+    const existing = await tx.select({ id: learningActivities.id, createdBy: learningActivities.createdBy, startsAt: learningActivities.startsAt }).from(learningActivities);
+    const foreign = existing.filter((row) => !canManageContent(row.createdBy, actor));
+    const foreignIds = new Set(foreign.map((row) => row.id));
+    const writable = entries.filter((entry) => !foreignIds.has(entry.id));
+
+    const moduleIds = Array.from(new Set(writable.map((entry) => entry.moduleId)));
     const existingModules = moduleIds.length
-      ? await tx.select({ id: learningModules.id }).from(learningModules).where(inArray(learningModules.id, moduleIds))
+      ? await tx.select({ id: learningModules.id }).from(learningModules).where(and(inArray(learningModules.id, moduleIds), isNull(learningModules.archivedAt)))
       : [];
     if (existingModules.length !== moduleIds.length) {
       throw new LearningDomainError("BAD_REQUEST", "A agenda contém referência para um módulo inexistente.");
     }
-    await tx.delete(learningActivities);
-    if (entries.length) await tx.insert(learningActivities).values(entries);
+    const foreignSlots = new Set(foreign.map((row) => row.startsAt.getTime()));
+    if (writable.some((entry) => foreignSlots.has(entry.startsAt.getTime()))) {
+      throw new LearningDomainError("BAD_REQUEST", "Outro docente já agendou uma atividade neste dia e horário.");
+    }
+
+    const ownIds = existing.filter((row) => !foreignIds.has(row.id)).map((row) => row.id);
+    if (ownIds.length) await tx.delete(learningActivities).where(inArray(learningActivities.id, ownIds));
+    if (writable.length) {
+      const authorById = new Map(existing.map((row) => [row.id, row.createdBy] as const));
+      // Atividade já existente mantém o autor (inclusive "sem autor"); nova fica com quem salvou.
+      await tx.insert(learningActivities).values(writable.map((entry) => ({ ...entry, createdBy: authorById.has(entry.id) ? authorById.get(entry.id) ?? null : actor.id })));
+    }
   });
 }
 
@@ -603,11 +756,11 @@ export async function startStudentStep(userId: number, moduleId: string, stepInd
     throw new LearningDomainError("BAD_REQUEST", "A etapa informada não pertence a este módulo.");
   }
   const sessionState = await db.transaction(async (tx) => {
-    const [module] = await tx.select({ id: learningModules.id, published: learningModules.published })
+    const [module] = await tx.select({ id: learningModules.id, published: learningModules.published, archivedAt: learningModules.archivedAt })
       .from(learningModules)
       .where(eq(learningModules.id, moduleId))
       .limit(1);
-    if (!module || !module.published) throw new LearningDomainError("NOT_FOUND", "Módulo não encontrado ou ainda não publicado.");
+    if (!module || !module.published || module.archivedAt) throw new LearningDomainError("NOT_FOUND", "Módulo não encontrado ou ainda não publicado.");
     const moduleSteps = await tx.select({ position: learningSteps.position }).from(learningSteps).where(eq(learningSteps.moduleId, moduleId));
     if (!hasSequentialStepPositions(moduleSteps.map(({ position }) => position)) || stepIndex >= moduleSteps.length || !moduleSteps.some(({ position }) => position === stepIndex)) {
       throw new LearningDomainError("BAD_REQUEST", "A etapa informada não pertence a uma sequência válida deste módulo.");
@@ -666,11 +819,11 @@ export async function updateProgress(userId: number, moduleId: string, stepIndex
     throw new LearningDomainError("BAD_REQUEST", error instanceof Error ? error.message : "Tempo de estudo inválido.");
   }
   const savedElapsedSeconds = await db.transaction(async (tx) => {
-    const [module] = await tx.select({ id: learningModules.id, published: learningModules.published })
+    const [module] = await tx.select({ id: learningModules.id, published: learningModules.published, archivedAt: learningModules.archivedAt })
       .from(learningModules)
       .where(eq(learningModules.id, moduleId))
       .limit(1);
-    if (!module || !module.published) {
+    if (!module || !module.published || module.archivedAt) {
       throw new LearningDomainError("NOT_FOUND", "Módulo não encontrado ou ainda não publicado.");
     }
     const moduleSteps = await tx.select({ position: learningSteps.position }).from(learningSteps).where(eq(learningSteps.moduleId, moduleId));
@@ -716,11 +869,12 @@ export async function updateProgress(userId: number, moduleId: string, stepIndex
   return { success: true, elapsedSeconds: savedElapsedSeconds } as const;
 }
 
-export async function resetStudentModuleProgress(studentId: number, moduleId: string) {
+export async function resetStudentModuleProgress(studentId: number, moduleId: string, actor: ContentActor) {
   const db = await requireDb();
   await db.transaction(async (tx) => {
     const [student] = await tx.select({ id: users.id, role: users.role }).from(users).where(eq(users.id, studentId)).limit(1);
     if (!student || student.role !== "student") throw new LearningDomainError("NOT_FOUND", "Aluno não encontrado.");
+    await assertStudentInScope(tx, actor, student.id);
     const [module] = await tx.select({ id: learningModules.id }).from(learningModules).where(eq(learningModules.id, moduleId)).limit(1);
     if (!module) throw new LearningDomainError("NOT_FOUND", "Módulo não encontrado.");
     await tx.delete(studentStepSessions).where(and(eq(studentStepSessions.userId, studentId), eq(studentStepSessions.moduleId, moduleId)));

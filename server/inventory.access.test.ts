@@ -18,6 +18,7 @@ const service = vi.hoisted(() => {
     listCategories: vi.fn(async (..._args: unknown[]) => []),
     listBorrowers: vi.fn(async (..._args: unknown[]) => []),
     listModuleOptions: vi.fn(async (..._args: unknown[]) => []),
+    listClassroomOptions: vi.fn(async (..._args: unknown[]) => []),
     createCategory: ok(),
     updateCategory: ok(),
     setCategoryArchived: ok(),

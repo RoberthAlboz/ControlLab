@@ -19,6 +19,48 @@ export const ITEM_TYPE_LABELS: Record<ItemType, string> = {
   part: "Peça / mini peça",
 };
 
+/**
+ * Figura do item: aparece na lista, no detalhe e no painel de ferramentas.
+ * `null` no cadastro = escolha automática pela descrição e pelo tipo.
+ */
+export const ITEM_ICONS = [
+  "drill",
+  "caliper",
+  "micrometer",
+  "wrench",
+  "allen",
+  "screwdriver",
+  "pliers",
+  "hammer",
+  "file",
+  "saw",
+  "square",
+  "bar",
+  "pin",
+  "gear",
+  "box",
+  "machine",
+] as const;
+export type ItemIcon = (typeof ITEM_ICONS)[number];
+export const ITEM_ICON_LABELS: Record<ItemIcon, string> = {
+  drill: "Broca / fresa",
+  caliper: "Paquímetro",
+  micrometer: "Micrômetro",
+  wrench: "Chave de boca",
+  allen: "Chave Allen",
+  screwdriver: "Chave de fenda",
+  pliers: "Alicate",
+  hammer: "Martelo",
+  file: "Lima",
+  saw: "Serra / arco",
+  square: "Esquadro / régua",
+  bar: "Barra / tarugo",
+  pin: "Pino / parafuso",
+  gear: "Engrenagem / peça",
+  box: "Caixa / jogo",
+  machine: "Máquina",
+};
+
 /** Unidades contáveis. Quantidades são sempre inteiras (UN e JG são distintas). */
 export const ITEM_UNITS = ["UN", "JG", "PC", "CX", "PAR"] as const;
 export type ItemUnit = (typeof ITEM_UNITS)[number];
@@ -39,7 +81,11 @@ export const ITEM_CONSERVATION_LABELS: Record<ItemConservation, string> = {
   ruim: "Ruim",
 };
 
-export const ITEM_STATUSES = ["disponivel", "manutencao", "indisponivel"] as const;
+export const ITEM_STATUSES = [
+  "disponivel",
+  "manutencao",
+  "indisponivel",
+] as const;
 export type ItemStatus = (typeof ITEM_STATUSES)[number];
 export const ITEM_STATUS_LABELS: Record<ItemStatus, string> = {
   disponivel: "Disponível",
@@ -48,14 +94,28 @@ export const ITEM_STATUS_LABELS: Record<ItemStatus, string> = {
 };
 
 /** Movimentos registráveis manualmente pelo docente. */
-export const MANUAL_MOVEMENT_TYPES = ["entrada", "saida", "ajuste_entrada", "ajuste_saida"] as const;
+export const MANUAL_MOVEMENT_TYPES = [
+  "entrada",
+  "saida",
+  "ajuste_entrada",
+  "ajuste_saida",
+] as const;
 export type ManualMovementType = (typeof MANUAL_MOVEMENT_TYPES)[number];
 
 /** Movimentos gerados pelo fluxo de empréstimo. */
-export const LOAN_MOVEMENT_TYPES = ["reserva", "cancelamento_reserva", "retirada", "devolucao", "devolucao_avaria"] as const;
+export const LOAN_MOVEMENT_TYPES = [
+  "reserva",
+  "cancelamento_reserva",
+  "retirada",
+  "devolucao",
+  "devolucao_avaria",
+] as const;
 export type LoanMovementType = (typeof LOAN_MOVEMENT_TYPES)[number];
 
-export const MOVEMENT_TYPES = [...MANUAL_MOVEMENT_TYPES, ...LOAN_MOVEMENT_TYPES] as const;
+export const MOVEMENT_TYPES = [
+  ...MANUAL_MOVEMENT_TYPES,
+  ...LOAN_MOVEMENT_TYPES,
+] as const;
 export type MovementType = (typeof MOVEMENT_TYPES)[number];
 export const MOVEMENT_TYPE_LABELS: Record<MovementType, string> = {
   entrada: "Entrada",
@@ -98,14 +158,22 @@ export const MOVEMENT_REASON_LABELS: Record<MovementReason, string> = {
 };
 
 /** Motivos aceitos em cada movimento manual. */
-export const REASONS_BY_MANUAL_TYPE: Record<ManualMovementType, readonly MovementReason[]> = {
+export const REASONS_BY_MANUAL_TYPE: Record<
+  ManualMovementType,
+  readonly MovementReason[]
+> = {
   entrada: ["compra", "doacao", "inventario", "manutencao", "outro"],
   saida: ["aula", "manutencao", "perda", "avaria", "outro"],
   ajuste_entrada: ["correcao", "inventario"],
   ajuste_saida: ["correcao", "inventario"],
 };
 
-export const LOAN_STATUSES = ["reservado", "retirado", "devolvido", "cancelado"] as const;
+export const LOAN_STATUSES = [
+  "reservado",
+  "retirado",
+  "devolvido",
+  "cancelado",
+] as const;
 export type LoanStatus = (typeof LOAN_STATUSES)[number];
 export const LOAN_STATUS_LABELS: Record<LoanStatus, string> = {
   reservado: "Reservado",
@@ -129,7 +197,10 @@ export type InventoryRuleCode =
   | "LOCKED_FIELD";
 
 export class InventoryRuleError extends Error {
-  constructor(public readonly code: InventoryRuleCode, message: string) {
+  constructor(
+    public readonly code: InventoryRuleCode,
+    message: string
+  ) {
     super(message);
     this.name = "InventoryRuleError";
   }
@@ -150,22 +221,40 @@ export type StockPlan = {
   reservedAfter: number;
 };
 
-export function availableQuantity(stock: Pick<StockSnapshot, "physical" | "reserved">) {
+export function availableQuantity(
+  stock: Pick<StockSnapshot, "physical" | "reserved">
+) {
   return Math.max(0, stock.physical - stock.reserved);
 }
 
-export function assertValidQuantity(quantity: unknown): asserts quantity is number {
-  if (typeof quantity !== "number" || !Number.isInteger(quantity) || quantity < 1 || quantity > MAX_MOVEMENT_QUANTITY) {
+export function assertValidQuantity(
+  quantity: unknown
+): asserts quantity is number {
+  if (
+    typeof quantity !== "number" ||
+    !Number.isInteger(quantity) ||
+    quantity < 1 ||
+    quantity > MAX_MOVEMENT_QUANTITY
+  ) {
     throw new InventoryRuleError(
       "INVALID_QUANTITY",
-      `Informe uma quantidade inteira entre 1 e ${MAX_MOVEMENT_QUANTITY.toLocaleString("pt-BR")}.`,
+      `Informe uma quantidade inteira entre 1 e ${MAX_MOVEMENT_QUANTITY.toLocaleString("pt-BR")}.`
     );
   }
 }
 
 function assertConsistentStock(stock: StockSnapshot) {
-  if (!Number.isInteger(stock.physical) || !Number.isInteger(stock.reserved) || stock.physical < 0 || stock.reserved < 0 || stock.reserved > stock.physical) {
-    throw new InventoryRuleError("INVALID_STATE", "O saldo registrado deste item está inconsistente. Corrija-o com um ajuste justificado.");
+  if (
+    !Number.isInteger(stock.physical) ||
+    !Number.isInteger(stock.reserved) ||
+    stock.physical < 0 ||
+    stock.reserved < 0 ||
+    stock.reserved > stock.physical
+  ) {
+    throw new InventoryRuleError(
+      "INVALID_STATE",
+      "O saldo registrado deste item está inconsistente. Corrija-o com um ajuste justificado."
+    );
   }
 }
 
@@ -174,11 +263,18 @@ function assertConsistentStock(stock: StockSnapshot) {
  * ele não pode ser registrado. Nunca produz saldo negativo nem reserva maior que
  * o físico.
  */
-export function planStockChange(stock: StockSnapshot, type: MovementType, quantity: number): StockPlan {
+export function planStockChange(
+  stock: StockSnapshot,
+  type: MovementType,
+  quantity: number
+): StockPlan {
   assertValidQuantity(quantity);
   assertConsistentStock(stock);
   if (stock.archived) {
-    throw new InventoryRuleError("ARCHIVED", "Item arquivado não recebe movimentações. Restaure o item antes de movimentá-lo.");
+    throw new InventoryRuleError(
+      "ARCHIVED",
+      "Item arquivado não recebe movimentações. Restaure o item antes de movimentá-lo."
+    );
   }
   const available = availableQuantity(stock);
   let physicalAfter = stock.physical;
@@ -195,32 +291,47 @@ export function planStockChange(stock: StockSnapshot, type: MovementType, quanti
       if (quantity > available) {
         throw new InventoryRuleError(
           "INSUFFICIENT_STOCK",
-          `Saldo disponível insuficiente: há ${available} disponível(is) e ${stock.reserved} reservado(s). A saída pedida é de ${quantity}.`,
+          `Saldo disponível insuficiente: há ${available} disponível(is) e ${stock.reserved} reservado(s). A saída pedida é de ${quantity}.`
         );
       }
       physicalAfter = stock.physical - quantity;
       break;
     case "reserva":
       if (!stock.returnable) {
-        throw new InventoryRuleError("NOT_RETURNABLE", "Itens consumíveis não são emprestados. Registre uma saída para uso em aula.");
+        throw new InventoryRuleError(
+          "NOT_RETURNABLE",
+          "Itens consumíveis não são emprestados. Registre uma saída para uso em aula."
+        );
       }
       if (stock.status !== "disponivel") {
-        throw new InventoryRuleError("UNAVAILABLE", "Este item está em manutenção ou indisponível e não pode ser reservado.");
+        throw new InventoryRuleError(
+          "UNAVAILABLE",
+          "Este item está em manutenção ou indisponível e não pode ser reservado."
+        );
       }
       if (quantity > available) {
-        throw new InventoryRuleError("INSUFFICIENT_STOCK", `Saldo disponível insuficiente para reservar: há ${available} disponível(is).`);
+        throw new InventoryRuleError(
+          "INSUFFICIENT_STOCK",
+          `Saldo disponível insuficiente para reservar: há ${available} disponível(is).`
+        );
       }
       reservedAfter = stock.reserved + quantity;
       break;
     case "cancelamento_reserva":
       if (quantity > stock.reserved) {
-        throw new InventoryRuleError("INVALID_STATE", "A reserva a liberar é maior que a quantidade reservada do item.");
+        throw new InventoryRuleError(
+          "INVALID_STATE",
+          "A reserva a liberar é maior que a quantidade reservada do item."
+        );
       }
       reservedAfter = stock.reserved - quantity;
       break;
     case "retirada":
       if (quantity > stock.reserved || quantity > stock.physical) {
-        throw new InventoryRuleError("INVALID_STATE", "A retirada precisa corresponder a uma reserva existente.");
+        throw new InventoryRuleError(
+          "INVALID_STATE",
+          "A retirada precisa corresponder a uma reserva existente."
+        );
       }
       physicalAfter = stock.physical - quantity;
       reservedAfter = stock.reserved - quantity;
@@ -230,24 +341,53 @@ export function planStockChange(stock: StockSnapshot, type: MovementType, quanti
       break;
     default: {
       const exhaustive: never = type;
-      throw new InventoryRuleError("INVALID_STATE", `Movimento desconhecido: ${String(exhaustive)}`);
+      throw new InventoryRuleError(
+        "INVALID_STATE",
+        `Movimento desconhecido: ${String(exhaustive)}`
+      );
     }
   }
 
   if (physicalAfter < 0 || reservedAfter < 0 || reservedAfter > physicalAfter) {
-    throw new InventoryRuleError("INSUFFICIENT_STOCK", "O movimento deixaria o saldo negativo ou com reserva maior que o físico.");
+    throw new InventoryRuleError(
+      "INSUFFICIENT_STOCK",
+      "O movimento deixaria o saldo negativo ou com reserva maior que o físico."
+    );
   }
-  return { physicalBefore: stock.physical, physicalAfter, reservedBefore: stock.reserved, reservedAfter };
+  return {
+    physicalBefore: stock.physical,
+    physicalAfter,
+    reservedBefore: stock.reserved,
+    reservedAfter,
+  };
 }
 
 /** Valida o motivo e a justificativa de um movimento manual. */
-export function assertManualMovementReason(type: ManualMovementType, reason: MovementReason, note?: string | null) {
+export function assertManualMovementReason(
+  type: ManualMovementType,
+  reason: MovementReason,
+  note?: string | null
+) {
   if (!REASONS_BY_MANUAL_TYPE[type].includes(reason)) {
-    throw new InventoryRuleError("INVALID_REASON", `O motivo "${MOVEMENT_REASON_LABELS[reason] ?? reason}" não se aplica a ${MOVEMENT_TYPE_LABELS[type].toLowerCase()}.`);
+    throw new InventoryRuleError(
+      "INVALID_REASON",
+      `O motivo "${MOVEMENT_REASON_LABELS[reason] ?? reason}" não se aplica a ${MOVEMENT_TYPE_LABELS[type].toLowerCase()}.`
+    );
   }
-  const needsJustification = type === "ajuste_entrada" || type === "ajuste_saida" || reason === "outro" || reason === "perda" || reason === "avaria";
-  if (needsJustification && (note ?? "").trim().length < MIN_JUSTIFICATION_LENGTH) {
-    throw new InventoryRuleError("JUSTIFICATION_REQUIRED", `Descreva a justificativa com pelo menos ${MIN_JUSTIFICATION_LENGTH} caracteres.`);
+  const needsJustification =
+    type === "ajuste_entrada" ||
+    type === "ajuste_saida" ||
+    reason === "outro" ||
+    reason === "perda" ||
+    reason === "avaria";
+  if (
+    needsJustification &&
+    (note ?? "").trim().length < MIN_JUSTIFICATION_LENGTH
+  ) {
+    throw new InventoryRuleError(
+      "JUSTIFICATION_REQUIRED",
+      `Descreva a justificativa com pelo menos ${MIN_JUSTIFICATION_LENGTH} caracteres.`
+    );
   }
 }
 
@@ -259,34 +399,75 @@ export type LoanSnapshot = {
 };
 
 export function outstandingLoanQuantity(loan: LoanSnapshot) {
-  return Math.max(0, loan.quantity - loan.returnedQuantity - loan.damagedQuantity);
+  return Math.max(
+    0,
+    loan.quantity - loan.returnedQuantity - loan.damagedQuantity
+  );
 }
 
-export function assertLoanTransition(loan: LoanSnapshot, action: "deliver" | "cancel" | "return") {
+/**
+ * Vencido = data prevista passou e o empréstimo segue aberto. Vale também para
+ * reservas nunca retiradas: elas prendem saldo e precisam de atenção.
+ */
+export function isLoanOverdue(
+  loan: { status: string; dueAt: Date | string | null },
+  now = Date.now()
+) {
+  if (loan.status !== "retirado" && loan.status !== "reservado") return false;
+  if (loan.dueAt == null) return false;
+  return new Date(loan.dueAt).getTime() < now;
+}
+
+export function assertLoanTransition(
+  loan: LoanSnapshot,
+  action: "deliver" | "cancel" | "return"
+) {
   const allowed: Record<typeof action, LoanStatus[]> = {
     deliver: ["reservado"],
     cancel: ["reservado"],
     return: ["retirado"],
   };
   if (!allowed[action].includes(loan.status)) {
-    const verb = action === "deliver" ? "confirmar a retirada" : action === "cancel" ? "cancelar" : "registrar devolução";
-    throw new InventoryRuleError("INVALID_STATE", `Não é possível ${verb}: o empréstimo está ${LOAN_STATUS_LABELS[loan.status].toLowerCase()}.`);
+    const verb =
+      action === "deliver"
+        ? "confirmar a retirada"
+        : action === "cancel"
+          ? "cancelar"
+          : "registrar devolução";
+    throw new InventoryRuleError(
+      "INVALID_STATE",
+      `Não é possível ${verb}: o empréstimo está ${LOAN_STATUS_LABELS[loan.status].toLowerCase()}.`
+    );
   }
 }
 
 /** Calcula o estado do empréstimo após uma devolução (parcial ou total). */
-export function planLoanReturn(loan: LoanSnapshot, goodQuantity: number, damagedQuantity: number) {
+export function planLoanReturn(
+  loan: LoanSnapshot,
+  goodQuantity: number,
+  damagedQuantity: number
+) {
   assertLoanTransition(loan, "return");
   for (const value of [goodQuantity, damagedQuantity]) {
     if (!Number.isInteger(value) || value < 0) {
-      throw new InventoryRuleError("INVALID_QUANTITY", "As quantidades devolvidas precisam ser inteiras e não negativas.");
+      throw new InventoryRuleError(
+        "INVALID_QUANTITY",
+        "As quantidades devolvidas precisam ser inteiras e não negativas."
+      );
     }
   }
   const total = goodQuantity + damagedQuantity;
   const outstanding = outstandingLoanQuantity(loan);
-  if (total < 1) throw new InventoryRuleError("INVALID_QUANTITY", "Informe ao menos uma unidade devolvida.");
+  if (total < 1)
+    throw new InventoryRuleError(
+      "INVALID_QUANTITY",
+      "Informe ao menos uma unidade devolvida."
+    );
   if (total > outstanding) {
-    throw new InventoryRuleError("INVALID_QUANTITY", `A devolução excede o pendente: restam ${outstanding} a devolver.`);
+    throw new InventoryRuleError(
+      "INVALID_QUANTITY",
+      `A devolução excede o pendente: restam ${outstanding} a devolver.`
+    );
   }
   const returnedQuantity = loan.returnedQuantity + goodQuantity;
   const damaged = loan.damagedQuantity + damagedQuantity;
@@ -314,25 +495,51 @@ export type ItemRuleContext = {
  * Impede edições que reinterpretariam o histórico (ex.: trocar UN por JG com
  * saldo) ou que deixariam empréstimos ativos inconsistentes.
  */
-export function assertItemEditAllowed(current: ItemRuleContext, next: { unit: ItemUnit; returnable: boolean; status: ItemStatus }) {
-  if (next.unit !== current.unit && (current.hasMovements || current.physical > 0 || current.reserved > 0)) {
-    throw new InventoryRuleError("LOCKED_FIELD", "A unidade não pode mudar depois que o item tem saldo ou movimentações. Cadastre outro item para a nova unidade.");
+export function assertItemEditAllowed(
+  current: ItemRuleContext,
+  next: { unit: ItemUnit; returnable: boolean; status: ItemStatus }
+) {
+  if (
+    next.unit !== current.unit &&
+    (current.hasMovements || current.physical > 0 || current.reserved > 0)
+  ) {
+    throw new InventoryRuleError(
+      "LOCKED_FIELD",
+      "A unidade não pode mudar depois que o item tem saldo ou movimentações. Cadastre outro item para a nova unidade."
+    );
   }
   if (next.returnable !== current.returnable && current.activeLoans > 0) {
-    throw new InventoryRuleError("LOCKED_FIELD", "Há empréstimos em andamento: conclua-os antes de mudar o tipo de controle (devolvível/consumível).");
+    throw new InventoryRuleError(
+      "LOCKED_FIELD",
+      "Há empréstimos em andamento: conclua-os antes de mudar o tipo de controle (devolvível/consumível)."
+    );
   }
   if (next.status !== "disponivel" && current.reserved > 0) {
-    throw new InventoryRuleError("LOCKED_FIELD", "Há quantidades reservadas: cancele ou entregue as reservas antes de marcar o item como indisponível.");
+    throw new InventoryRuleError(
+      "LOCKED_FIELD",
+      "Há quantidades reservadas: cancele ou entregue as reservas antes de marcar o item como indisponível."
+    );
   }
 }
 
-export function assertArchiveAllowed(current: Pick<ItemRuleContext, "reserved" | "activeLoans">) {
+export function assertArchiveAllowed(
+  current: Pick<ItemRuleContext, "reserved" | "activeLoans">
+) {
   if (current.activeLoans > 0 || current.reserved > 0) {
-    throw new InventoryRuleError("LOCKED_FIELD", "Há empréstimos ou reservas em andamento. Conclua-os antes de arquivar o item.");
+    throw new InventoryRuleError(
+      "LOCKED_FIELD",
+      "Há empréstimos ou reservas em andamento. Conclua-os antes de arquivar o item."
+    );
   }
 }
 
-export type StockHealth = "arquivado" | "manutencao" | "indisponivel" | "sem_saldo" | "baixo" | "ok";
+export type StockHealth =
+  | "arquivado"
+  | "manutencao"
+  | "indisponivel"
+  | "sem_saldo"
+  | "baixo"
+  | "ok";
 
 export const STOCK_HEALTH_LABELS: Record<StockHealth, string> = {
   arquivado: "Arquivado",
@@ -343,12 +550,23 @@ export const STOCK_HEALTH_LABELS: Record<StockHealth, string> = {
   ok: "Disponível",
 };
 
-export function isLowStock(item: { physical: number; reserved: number; minQuantity: number; archived: boolean }) {
+export function isLowStock(item: {
+  physical: number;
+  reserved: number;
+  minQuantity: number;
+  archived: boolean;
+}) {
   if (item.archived || item.minQuantity <= 0) return false;
   return availableQuantity(item) <= item.minQuantity;
 }
 
-export function stockHealth(item: { physical: number; reserved: number; minQuantity: number; archived: boolean; status: ItemStatus }): StockHealth {
+export function stockHealth(item: {
+  physical: number;
+  reserved: number;
+  minQuantity: number;
+  archived: boolean;
+  status: ItemStatus;
+}): StockHealth {
   if (item.archived) return "arquivado";
   if (item.status === "manutencao") return "manutencao";
   if (item.status === "indisponivel") return "indisponivel";
@@ -363,7 +581,10 @@ export function normalizeItemCode(code: string) {
 }
 
 /** Mapeia a categoria pedagógica de um recurso para o tipo de item do estoque. */
-export const RESOURCE_CATEGORY_TO_ITEM_TYPE: Record<"materials" | "machines" | "tools" | "parts", ItemType> = {
+export const RESOURCE_CATEGORY_TO_ITEM_TYPE: Record<
+  "materials" | "machines" | "tools" | "parts",
+  ItemType
+> = {
   materials: "material",
   machines: "machine",
   tools: "tool",

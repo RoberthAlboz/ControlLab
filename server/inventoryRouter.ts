@@ -45,12 +45,13 @@ export const inventoryRouter = router({
 
   options: inventoryProcedure.query(() =>
     run(async () => {
-      const [categories, borrowers, modules] = await Promise.all([
+      const [categories, borrowers, modules, classrooms] = await Promise.all([
         inventory.listCategories(),
         inventory.listBorrowers(),
         inventory.listModuleOptions(),
+        inventory.listClassroomOptions(),
       ]);
-      return { categories, borrowers, modules };
+      return { categories, borrowers, modules, classrooms };
     }),
   ),
 
