@@ -6,6 +6,11 @@ import { loanCancelSchema, loanCreateSchema, loanReturnSchema } from "@shared/in
 import type { InventoryLoanRow, InventoryOptions } from "@/lib/router-types";
 import { errorMessage, Field, FormAlert, formatQuantity, Modal, useRequestKey, zodFieldErrors } from "./InventoryUI";
 
+const BORROWER_GROUPS = [
+  { role: "student", label: "Alunos" },
+  { role: "teacher", label: "Docentes" },
+] as const;
+
 function useInvalidateInventory() {
   const utils = trpc.useUtils();
   return async () => {
@@ -80,7 +85,7 @@ export function CreateLoanDialog({
     });
     const nextErrors = parsed.success ? {} : zodFieldErrors(parsed.error.issues);
     if (!itemId) nextErrors.itemId = "Selecione uma ferramenta devolvível.";
-    if (borrowerMode === "student" && !student) nextErrors.borrowerName = "Selecione o aluno.";
+    if (borrowerMode === "student" && !student) nextErrors.borrowerName = "Selecione quem recebe.";
     if (item && parsed.success && parsed.data.quantity > item.available) {
       nextErrors.quantity = `Há apenas ${item.available} ${item.unit} disponível(is).`;
     }
@@ -142,7 +147,7 @@ export function CreateLoanDialog({
           <legend>Quem recebe</legend>
           <label className={borrowerMode === "student" ? "is-selected" : ""}>
             <input type="radio" name="borrower-mode" checked={borrowerMode === "student"} onChange={() => setBorrowerMode("student")} disabled={!options.borrowers.length} />
-            Aluno cadastrado
+            Aluno ou docente
           </label>
           <label className={borrowerMode === "other" ? "is-selected" : ""}>
             <input type="radio" name="borrower-mode" checked={borrowerMode === "other"} onChange={() => setBorrowerMode("other")} />
@@ -150,16 +155,23 @@ export function CreateLoanDialog({
           </label>
         </fieldset>
         {borrowerMode === "student" ? (
-          <Field label="Aluno" required error={errors.borrowerName} className="span-2">
+          <Field label="Pessoa" required error={errors.borrowerName} className="span-2" hint="O empréstimo aparece no painel da própria conta.">
             {props => (
               <select {...props} value={borrowerUserId} onChange={e => setBorrowerUserId(e.target.value)}>
-                <option value="">Selecione o aluno</option>
-                {options.borrowers.map(student => (
-                  <option key={student.id} value={student.id}>
-                    {student.name ?? student.email}
-                    {student.classroomName ? ` — ${student.classroomName}` : " — sem turma"}
-                  </option>
-                ))}
+                <option value="">Selecione quem recebe</option>
+                {BORROWER_GROUPS.map(group => {
+                  const people = options.borrowers.filter(person => person.role === group.role);
+                  return people.length ? (
+                    <optgroup key={group.role} label={group.label}>
+                      {people.map(person => (
+                        <option key={person.id} value={person.id}>
+                          {person.name ?? person.email}
+                          {group.role === "student" ? (person.classroomName ? ` — ${person.classroomName}` : " — sem turma") : ""}
+                        </option>
+                      ))}
+                    </optgroup>
+                  ) : null;
+                })}
               </select>
             )}
           </Field>
