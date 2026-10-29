@@ -121,7 +121,7 @@ O ambiente em que a integração foi feita **não tinha acesso ao registro npm**
 ## 10. Pendências reais
 
 1. **Rodar `pnpm check`, `pnpm test`, `pnpm build` e `pnpm db:setup`** em uma máquina com internet (ver seção 9).
-2. **Anotações** continuam salvas no navegador (`localStorage`), como no ForgeLab original. Levá-las ao banco é a próxima evolução natural.
+2. ~~**Anotações** no navegador~~ — resolvido: o diário agora fica na tabela `student_notes` (migration `0001`), e as notas antigas do `localStorage` são enviadas uma vez e apagadas do navegador. Também entraram na mesma migration: módulos excluídos passam a ser arquivados (`archivedAt`, preservando o progresso) e cada atividade da agenda guarda o docente que a criou (`createdBy`). Falta uma tela para restaurar módulos arquivados.
 3. **Validar com o setor** as regras herdadas do ControlLab que eram hipóteses: reserva na criação do empréstimo, quem pode confirmar retirada/devolução, tratamento de consumíveis devolvidos.
 4. **Dependências sem uso** (`mysql2` — o banco agora é SQLite —, `@aws-sdk/*`, `three`/`@react-three/*`, `streamdown`, `@types/google.maps`, plugin `vite-plugin-jsx-loc` e o patch do `wouter`) foram mantidas para não invalidar o `pnpm-lock.yaml` neste ambiente sem rede; podem ser removidas com `pnpm remove …` seguido de `pnpm install`.
 5. **Recuperação de senha** por e-mail não existe; a redefinição é feita por `pnpm user:create` (mesmo e-mail atualiza a senha).
