@@ -100,7 +100,10 @@ export default function AppSidebar({ view, isTeacher, isAdmin, open, onClose, on
   });
 
   const isActive = (item: NavItem) => view === item.view || (item.activeAlso?.includes(view) ?? false);
-  const progress = Math.max(0, Math.min(100, Math.round(catalog.averageProgress)));
+  // Aluno: o próprio progresso médio. Docente não tem progresso: o anel mostra quanto do catálogo está publicado.
+  const progress = isTeacher
+    ? catalog.total ? Math.round((catalog.published / catalog.total) * 100) : 0
+    : Math.max(0, Math.min(100, Math.round(catalog.averageProgress)));
 
   const renderItem = (item: NavItem) => {
     const active = isActive(item);
@@ -180,14 +183,14 @@ export default function AppSidebar({ view, isTeacher, isAdmin, open, onClose, on
         {!isAdmin && (
           <button type="button" className="cl-nav-catalog" onClick={() => onNavigate("library")}>
             <span className="cl-nav-ring" style={{ "--p": progress } as CSSProperties} aria-hidden="true">
-              <b>{progress}%</b>
+              <b>{isTeacher ? `${catalog.published}/${catalog.total}` : `${progress}%`}</b>
             </span>
             <span className="cl-nav-text">
               <b>
                 {catalog.total} {catalog.total === 1 ? "módulo" : "módulos"}
               </b>
               <small>
-                {catalog.published} publicados · progresso médio
+                {isTeacher ? `${catalog.published} publicados · ${catalog.total - catalog.published} rascunho(s)` : `${catalog.published} publicados · progresso médio`}
               </small>
             </span>
             <ArrowRight size={15} className="cl-nav-catalog-arrow" aria-hidden="true" />

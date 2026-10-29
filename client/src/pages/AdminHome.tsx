@@ -104,11 +104,6 @@ export default function AdminHome({
   const failed = [usersQuery, classroomsQuery, oversightQuery].filter(
     query => query.isError
   );
-  const goTo = (id: string) =>
-    document
-      .getElementById(id)
-      ?.scrollIntoView({ behavior: "smooth", block: "start" });
-
   // "Para fazer agora": cada item leva à tela onde a ação acontece.
   const todo: TodoItem[] = [
     ...urgentAlerts.slice(0, 3).map(alert => ({
@@ -126,7 +121,8 @@ export default function AdminHome({
       action: "Ver supervisão",
       onClick: onOpenOversight,
     })),
-    ...(overdueLoans > 0
+    // O alerta da supervisão já nomeia cada empréstimo atrasado; o resumo genérico só entra sem ele.
+    ...(overdueLoans > 0 && !urgentAlerts.some(alert => alert.kind === "atraso")
       ? [
           {
             id: "loans",
@@ -227,8 +223,7 @@ export default function AdminHome({
           <span className="eyebrow">ADMINISTRAÇÃO</span>
           <h1>Olá, {firstName}.</h1>
           <p>
-            Contas, turmas e estoque da escola. Os docentes operam o dia a dia;
-            aqui você vê o que precisa de atenção e aciona quem for preciso.
+            O que precisa de atenção em contas, turmas e estoque.
           </p>
         </div>
         <div className="td-hero-actions">
@@ -247,18 +242,6 @@ export default function AdminHome({
           </button>
         </div>
       </header>
-
-      <nav className="td-nav" aria-label="Seções do início">
-        {[
-          ["ah-atencao", "Para fazer agora"],
-          ["ah-turmas", "Turmas"],
-          ["ah-calendario", "Calendário"],
-        ].map(([id, label]) => (
-          <button key={id} type="button" onClick={() => goTo(id)}>
-            {label}
-          </button>
-        ))}
-      </nav>
 
       <div
         className="teacher-data-status"

@@ -117,7 +117,7 @@ export default function TeacherBadgeManager({
         <div className="teacher-badge-form-footer">
           <p className="teacher-badge-preview" aria-live="polite">
             <Award size={14} aria-hidden="true" />
-            {label.trim() ? <>Aparecerá como <strong>Bom em {label.trim()}</strong></> : "Escolha uma sugestão ou descreva a habilidade observada."}
+            {label.trim() ? <>O aluno verá <strong>{label.trim().charAt(0).toLocaleUpperCase("pt-BR") + label.trim().slice(1)}</strong></> : "Escolha uma sugestão ou descreva a habilidade observada."}
           </p>
           <button className="new-module-button teacher-badge-submit" type="submit" disabled={loading || saving || students.length === 0 || !label.trim()}>
             <Plus size={14} aria-hidden="true" /> {saving ? "Salvando..." : "Registrar ponto forte"}

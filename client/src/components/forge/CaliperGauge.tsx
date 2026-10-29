@@ -130,9 +130,6 @@ export default function CaliperGauge({ value, label, caption }: CaliperGaugeProp
       <div className="caliper-reading" aria-hidden="true">
         <div className="caliper-reading-meta">
           {caption && <span className="caliper-caption">{caption}</span>}
-          <span className="caliper-breakdown">
-            escala <b>{whole}</b> + nônio <b>0,{tenth}</b>
-          </span>
         </div>
         <strong>{decimal(tenths / 10)}%</strong>
       </div>

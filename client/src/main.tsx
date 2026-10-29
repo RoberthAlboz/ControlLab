@@ -18,6 +18,7 @@ import "./notes.css";
 import "./library.css";
 import "./reader.css";
 import "./teacher.css";
+import "./quiz.css";
 import "./theme-ux.css";
 import "./workshop.css";
 

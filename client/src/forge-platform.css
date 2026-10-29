@@ -600,13 +600,14 @@ html.dark button:hover > .theme-sunmoon { color: #ff8a8e; }
 /* ------------------------------------------------------------------ */
 /* Página de estoque                                                   */
 /* ------------------------------------------------------------------ */
-.inventory-page { display: grid; gap: 20px; }
+/* minmax(0, 1fr): sem isso a coluna implícita cresce até o conteúdo sem quebra (e-mails, abas) e estoura no celular. */
+.inventory-page { display: grid; grid-template-columns: minmax(0, 1fr); gap: 20px; }
 .inventory-hero { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 20px; padding-bottom: 6px; }
 .inventory-hero h1 { margin: 10px 0 10px; }
 .inventory-hero h1 em { color: var(--fl-red-deep); font-style: normal; }
 .inventory-hero p { max-width: 60ch; margin: 0; }
 .inventory-hero-actions { display: flex; flex-wrap: wrap; gap: 10px; }
-.inventory-metrics { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); border: 1px solid var(--theme-border, var(--fl-line)); border-radius: var(--fl-radius); background: var(--theme-surface, var(--fl-surface)); }
+.inventory-metrics { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border: 1px solid var(--theme-border, var(--fl-line)); border-radius: var(--fl-radius); background: var(--theme-surface, var(--fl-surface)); }
 .inventory-metric { display: grid; gap: 3px; padding: 16px 18px; border: 0; background: transparent; color: inherit; text-align: left; }
 .inventory-metric + .inventory-metric { border-left: 1px solid var(--theme-border, var(--fl-line)); }
 .inventory-metric span { color: var(--fl-muted); }
@@ -615,8 +616,7 @@ html.dark button:hover > .theme-sunmoon { color: #ff8a8e; }
 .inventory-metric.is-alert strong, .clean-app .inventory-metric.is-alert small { color: var(--fl-red-deep); }
 button.inventory-metric:hover { background: var(--fl-red-wash); }
 .inventory-metrics > .fl-state { grid-column: 1 / -1; border: 0; }
-@media (max-width: 1100px) { .inventory-metrics { grid-template-columns: repeat(3, minmax(0, 1fr)); } .inventory-metric:nth-child(4) { border-left: 0; } .inventory-metric:nth-child(n + 4) { border-top: 1px solid var(--theme-border, var(--fl-line)); } }
-@media (max-width: 640px) { .inventory-metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); } .inventory-metric { border-left: 0 !important; border-top: 1px solid var(--theme-border, var(--fl-line)); } .inventory-metric:nth-child(-n + 2) { border-top: 0; } .inventory-metric:nth-child(even) { border-left: 1px solid var(--theme-border, var(--fl-line)) !important; } }
+@media (max-width: 900px) { .inventory-metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); } .inventory-metric { border-left: 0 !important; border-top: 1px solid var(--theme-border, var(--fl-line)); } .inventory-metric:nth-child(-n + 2) { border-top: 0; } .inventory-metric:nth-child(even) { border-left: 1px solid var(--theme-border, var(--fl-line)) !important; } }
 
 .inventory-alerts { display: flex; gap: 12px; padding: 14px 16px; border: 1px solid rgba(133, 87, 10, 0.3); border-left: 3px solid var(--fl-warn); border-radius: var(--fl-radius); background: var(--fl-warn-wash); color: var(--fl-warn); }
 .inventory-alerts strong { display: block; margin-bottom: 4px; }
@@ -629,7 +629,7 @@ button.inventory-metric:hover { background: var(--fl-red-wash); }
 .inventory-tabs button:hover { color: var(--fl-ink); }
 .inventory-tabs button.is-active { border-bottom-color: var(--fl-red); color: var(--fl-ink); }
 
-.inventory-panel { display: grid; gap: 14px; }
+.inventory-panel { display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; }
 .inventory-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
 .clean-app .inventory-section-title { margin: 0 auto 0 0; font-size: 1.15rem !important; }
 .inventory-toolbar > select, .inventory-toolbar select { min-height: 40px; padding: 0 10px; border: 1px solid var(--fl-line-strong); border-radius: var(--fl-radius); background: var(--theme-surface, var(--fl-surface)); color: var(--fl-ink); }
@@ -676,7 +676,7 @@ html.dark .fl-chip-group button.is-selected { border-color: var(--fl-red); backg
   .fl-table tbody tr:hover td { background: transparent; }
 }
 
-.inventory-category-list { display: grid; margin: 0; padding: 0; border: 1px solid var(--theme-border, var(--fl-line)); border-radius: var(--fl-radius); background: var(--theme-surface, var(--fl-surface)); list-style: none; }
+.inventory-category-list { display: grid; grid-template-columns: minmax(0, 1fr); margin: 0; padding: 0; border: 1px solid var(--theme-border, var(--fl-line)); border-radius: var(--fl-radius); background: var(--theme-surface, var(--fl-surface)); list-style: none; }
 .inventory-category-list li { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 16px; }
 .inventory-category-list li + li { border-top: 1px solid var(--theme-border, var(--fl-line)); }
 .inventory-category-list li.is-archived { opacity: 0.65; }
@@ -796,3 +796,16 @@ html.dark .fl-chip-group button.is-selected { border-color: var(--fl-red); backg
 /* Início da administração */
 .admin-home-missing { color: var(--fl-red-deep); font-weight: 600; }
 .admin-home .fl-table td small.admin-home-missing { display: block; }
+
+/* Alvos de toque com pelo menos 24px de altura (WCAG 2.2, critério 2.5.8): links em
+   texto do cabeçalho, do estoque e dos painéis ganham área clicável sem mudar o visual. */
+.reference-nav button,
+.fl-row-title,
+.inventory-alerts button,
+.open-module,
+.teacher-supervision-head > button { min-height: 24px; }
+.fl-row-title, .inventory-alerts button { padding-block: 3px; }
+
+/* Contagem dentro da aba de contas (substitui a faixa de números repetida). */
+.admin-users-page .admin-users-count { margin-left: 6px; padding: 1px 7px; border-radius: 999px; background: var(--fl-line); color: var(--fl-ink-soft); font-size: 0.72rem; font-weight: 700; }
+.admin-users-page .is-active .admin-users-count { background: var(--fl-red-wash); color: var(--fl-red-deep); }

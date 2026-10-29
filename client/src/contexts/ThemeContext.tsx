@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useLayoutEffect, useState } from "react";
+import React, { createContext, useContext, useEffect, useLayoutEffect, useState } from "react";
 import { nextThemePreference, resolveThemePreference, type ThemePreference } from "@shared/theme";
 
 type Theme = ThemePreference;
@@ -17,42 +17,61 @@ interface ThemeProviderProps {
   switchable?: boolean;
 }
 
+const DARK_QUERY = "(prefers-color-scheme: dark)";
+
+/** Tema escolhido no botão (null = a pessoa nunca escolheu; segue o sistema). */
+function readSavedTheme(): string | null {
+  try {
+    return localStorage.getItem("theme");
+  } catch {
+    return null;
+  }
+}
+
+function systemTheme(fallback: Theme): Theme {
+  try {
+    return window.matchMedia(DARK_QUERY).matches ? "dark" : "light";
+  } catch {
+    return fallback;
+  }
+}
+
 export function ThemeProvider({
   children,
   defaultTheme = "light",
   switchable = false,
 }: ThemeProviderProps) {
   const [theme, setTheme] = useState<Theme>(() => {
-    if (switchable) {
-      try {
-        return resolveThemePreference(localStorage.getItem("theme"), defaultTheme);
-      } catch {
-        return defaultTheme;
-      }
-    }
-    return defaultTheme;
+    if (!switchable) return defaultTheme;
+    return resolveThemePreference(readSavedTheme(), systemTheme(defaultTheme));
   });
 
   useLayoutEffect(() => {
-    const root = document.documentElement;
-    if (theme === "dark") {
-      root.classList.add("dark");
-    } else {
-      root.classList.remove("dark");
-    }
+    document.documentElement.classList.toggle("dark", theme === "dark");
+  }, [theme]);
 
-    if (switchable) {
-      try {
-        localStorage.setItem("theme", theme);
-      } catch {
-        // O tema continua funcional mesmo quando o navegador bloqueia o armazenamento.
-      }
-    }
-  }, [theme, switchable]);
+  // Sem escolha salva, acompanha o modo claro/escuro do sistema também depois de abrir.
+  useEffect(() => {
+    if (!switchable || typeof window.matchMedia !== "function") return;
+    const media = window.matchMedia(DARK_QUERY);
+    const follow = () => {
+      if (!readSavedTheme()) setTheme(media.matches ? "dark" : "light");
+    };
+    media.addEventListener("change", follow);
+    return () => media.removeEventListener("change", follow);
+  }, [switchable]);
 
   const toggleTheme = switchable
     ? () => {
-        setTheme(prev => nextThemePreference(prev));
+        setTheme(prev => {
+          const next = nextThemePreference(prev);
+          try {
+            localStorage.setItem("theme", next);
+          } catch {
+            // O tema continua funcional mesmo quando o navegador bloqueia o armazenamento.
+          }
+          return next;
+        });
       }
     : undefined;
 

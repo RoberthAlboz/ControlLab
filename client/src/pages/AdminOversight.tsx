@@ -43,7 +43,7 @@ export default function AdminOversightPage() {
             <br />
             <em>o que sai.</em>
           </h1>
-          <p>Consumo por turma e por docente, com alertas de perdas, avarias, atrasos e retiradas fora do padrão. Os docentes operam o estoque; aqui você acompanha e aciona o responsável.</p>
+          <p>Consumo por turma e por docente, com alertas para acionar o responsável.</p>
         </div>
         <div className="fl-chip-group" role="group" aria-label="Período analisado">
           {OVERSIGHT_PERIODS.map(option => (
