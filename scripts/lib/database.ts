@@ -28,6 +28,7 @@ const APP_TABLES = [
   "inventory_categories",
   "learning_activities",
   "instructors",
+  "student_quiz_attempts",
   "student_step_sessions",
   "student_progress",
   "learning_steps",
