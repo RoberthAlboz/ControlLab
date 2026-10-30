@@ -54,10 +54,11 @@ export function canAccessModules(role: unknown) {
   return !isAdminRole(role);
 }
 
-/** Rota inicial depois do login, conforme o papel autenticado. */
-export function homePathForRole(role: unknown) {
-  return isStaffRole(role) ? "/" : "/";
-}
+/**
+ * Rota inicial depois do login. Todos os papéis começam no Início ("/"): a
+ * própria tela escolhe o painel de aluno, docente ou administração.
+ */
+export const HOME_PATH = "/";
 
 /**
  * Valida um caminho de retorno após o login. Só aceita caminhos internos e
@@ -65,14 +66,15 @@ export function homePathForRole(role: unknown) {
  */
 export function safeRedirectPath(next: unknown, role: unknown): string {
   if (typeof next !== "string" || !next.startsWith("/") || next.startsWith("//") || next.includes("\\")) {
-    return homePathForRole(role);
+    return HOME_PATH;
   }
-  if (next.startsWith("/login")) return homePathForRole(role);
-  if (isStaffOnlyPath(next) && !isStaffRole(role)) return homePathForRole(role);
-  if (isAdminOnlyPath(next) && !isAdminRole(role)) return homePathForRole(role);
-  if (isModulePath(next) && !canAccessModules(role)) return homePathForRole(role);
+  if (next.startsWith("/login")) return HOME_PATH;
+  if (isStaffOnlyPath(next) && !isStaffRole(role)) return HOME_PATH;
+  if (isAdminOnlyPath(next) && !isAdminRole(role)) return HOME_PATH;
+  if (isModulePath(next) && !canAccessModules(role)) return HOME_PATH;
   return next;
 }
+
 
 const STAFF_ONLY_PREFIXES = ["/estoque", "/editor"];
 const ADMIN_ONLY_PREFIXES = ["/admin"];
