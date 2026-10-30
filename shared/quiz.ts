@@ -49,9 +49,11 @@ export function parseStoredQuiz(raw: string | null | undefined): StepQuiz | null
   try {
     const value = JSON.parse(raw) as Partial<StepQuiz> | null;
     if (!value || typeof value !== "object" || typeof value.question !== "string" || !Array.isArray(value.options)) return null;
+    // Descartar só a alternativa inválida deslocaria o gabarito para outra opção: o quiz inteiro é recusado.
+    if (!value.options.every((option): option is string => typeof option === "string")) return null;
     const quiz: StepQuiz = {
       question: value.question,
-      options: value.options.filter((option): option is string => typeof option === "string"),
+      options: value.options,
       correctIndex: Number(value.correctIndex),
       explanation: typeof value.explanation === "string" ? value.explanation : "",
     };

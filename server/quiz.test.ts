@@ -1,6 +1,6 @@
 /**
  * Banco SQLite real: mini-quiz das etapas e regras de tempo da conclusão
- * (mínimo para concluir, teto creditado, acerto obrigatório e métricas do docente).
+ * (mínimo para concluir, teto creditado, quiz opcional e métricas do docente).
  */
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { mkdtempSync, rmSync } from "node:fs";
@@ -18,6 +18,7 @@ const { openSqlite } = await import("./_core/sqlite");
 
 const teacher = { id: 1, role: "teacher" as const };
 const STUDENT = 7;
+const OTHER_STUDENT = 8;
 const quiz: StepQuiz = {
   question: "Qual instrumento confere o alinhamento?",
   options: ["Trena", "Relógio comparador", "Esquadro"],
@@ -41,9 +42,10 @@ beforeAll(async () => {
   sqlite.exec(`
     insert into users (id, openId, email, name, role) values
       (1, 'local:doc', 'doc@x.br', 'Docente', 'teacher'),
-      (7, 'local:aluno', 'aluno@x.br', 'Aluno', 'student');
+      (7, 'local:aluno', 'aluno@x.br', 'Aluno', 'student'),
+      (8, 'local:aluno2', 'aluno2@x.br', 'Aluno 2', 'student');
     insert into classrooms (id, name, teacherId) values (1, 'Turma', 1);
-    update users set classroomId = 1 where id = 7;
+    update users set classroomId = 1 where id in (7, 8);
   `);
   sqlite.close();
   await db.saveLearningModule({
@@ -83,6 +85,8 @@ describe("quiz: regras compartilhadas", () => {
     expect(parseStoredQuiz("{nao é json")).toBeNull();
     expect(parseStoredQuiz(JSON.stringify({ ...quiz, correctIndex: 9 }))).toBeNull();
     expect(parseStoredQuiz(null)).toBeNull();
+    // Uma alternativa inválida no meio deslocaria o gabarito: o quiz inteiro é recusado.
+    expect(parseStoredQuiz(JSON.stringify({ ...quiz, options: [quiz.options[0], 42, ...quiz.options.slice(1)] }))).toBeNull();
   });
 
   it("resume acerto de primeira e tentativas até acertar", () => {
@@ -127,17 +131,25 @@ describe("quiz: fluxo do aluno no banco", () => {
     expect(teacherCatalog.modules[0].steps[0].quiz).toEqual(quiz);
   });
 
-  it("não deixa concluir antes do tempo mínimo nem sem acertar o quiz", async () => {
+  it("não deixa concluir antes do tempo mínimo", async () => {
     // Responder antes de iniciar a etapa não vale.
     await expect(db.answerStepQuiz(STUDENT, "q", 0, 1)).rejects.toThrow(/Inicie a etapa/);
     await db.startStudentStep(STUDENT, "q", 0);
     await expect(db.answerStepQuiz(STUDENT, "q", 1, 0)).rejects.toMatchObject({ code: "NOT_FOUND" });
     await expect(db.updateProgress(STUDENT, "q", 1)).rejects.toThrow(new RegExp(`${MIN_STEP_SECONDS} segundos`));
-    await backdateSession(0, 60);
-    await expect(db.updateProgress(STUDENT, "q", 1)).rejects.toThrow(/verificação/);
   });
 
-  it("erro não revela o gabarito; acerto libera a conclusão e mostra a explicação", async () => {
+  it("o quiz é opcional: conclui a etapa sem responder", async () => {
+    await db.startStudentStep(OTHER_STUDENT, "q", 0);
+    const sqlite = await openSqlite(process.env.DATABASE_FILE);
+    sqlite.prepare("update student_step_sessions set startedAt = ? where userId = ? and moduleId = 'q' and stepIndex = 0")
+      .run(Date.now() - 60 * 1000, OTHER_STUDENT);
+    sqlite.close();
+    const done = await db.updateProgress(OTHER_STUDENT, "q", 1);
+    expect(done.elapsedSeconds).toBeGreaterThanOrEqual(59);
+  });
+
+  it("erro não revela o gabarito; acerto mostra a explicação", async () => {
     expect(await db.answerStepQuiz(STUDENT, "q", 0, 0)).toEqual({ correct: false, explanation: "" });
     expect(await db.answerStepQuiz(STUDENT, "q", 0, 1)).toEqual({ correct: true, explanation: quiz.explanation });
     await backdateSession(0, 60);

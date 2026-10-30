@@ -15,7 +15,7 @@
 
 /* Topo */
 .clean-app .td .td-hero { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 18px; }
-.clean-app .td .td-hero .eyebrow { color: var(--fl-red-deep); font-size: 0.72rem !important; font-weight: 700; letter-spacing: 0.14em; }
+.clean-app .td .td-hero .eyebrow { color: var(--fl-red-deep); font-size: 0.75rem !important; font-weight: 700; letter-spacing: 0.14em; }
 .clean-app .td .td-hero h1 { margin: 8px 0 6px; color: var(--fl-ink); font: 700 clamp(1.9rem, 3.2vw, 2.6rem)/1.08 var(--fl-display) !important; letter-spacing: -0.035em; }
 .clean-app .td .td-hero p { max-width: 60ch; margin: 0; color: var(--fl-muted); font-size: 0.98rem !important; line-height: 1.5; }
 .clean-app .td .td-hero-actions { display: flex; flex-wrap: wrap; gap: 8px; }
@@ -26,7 +26,7 @@
 .clean-app .td .td-nav button { display: inline-flex; align-items: center; gap: 7px; margin-bottom: -1px; padding: 12px 14px; border: 0; border-bottom: 2px solid transparent; border-radius: 0; background: transparent; color: var(--fl-muted); font-weight: 600; }
 .clean-app .td .td-nav button:hover { color: var(--fl-ink); }
 .clean-app .td .td-nav button.is-active { border-bottom-color: var(--fl-red); color: var(--fl-ink); }
-.clean-app .td .td-nav .td-nav-count { min-width: 20px; padding: 1px 6px; border-radius: 999px; background: var(--fl-line); color: var(--fl-ink-soft); font-size: 0.72rem; text-align: center; }
+.clean-app .td .td-nav .td-nav-count { min-width: 20px; padding: 1px 6px; border-radius: 999px; background: var(--fl-line); color: var(--fl-ink-soft); font-size: 0.75rem; text-align: center; }
 .clean-app .td .td-nav button.is-active .td-nav-count { background: var(--fl-red-wash); color: var(--fl-red-deep); }
 .clean-app .td .td-nav .td-help-toggle { display: inline-flex; align-items: center; gap: 6px; margin-left: auto; border-color: transparent; background: transparent; color: var(--fl-muted); }
 .clean-app .td .td-help { margin: 8px 0 0; padding: 14px 16px; border-left: 3px solid #c4080c; background: var(--fl-surface); }
@@ -47,7 +47,7 @@
 /* Seções */
 .clean-app .td .td-section { margin-top: 34px; scroll-margin-top: 70px; }
 .clean-app .td .td-section-head { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
-.clean-app .td .td-section-head .eyebrow { color: var(--fl-red-deep); font-size: 0.7rem !important; font-weight: 700; letter-spacing: 0.14em; }
+.clean-app .td .td-section-head .eyebrow { color: var(--fl-red-deep); font-size: 0.75rem !important; font-weight: 700; letter-spacing: 0.14em; }
 .clean-app .td .td-section-head h2 { margin: 4px 0 0; color: var(--fl-ink); font: 700 1.4rem var(--fl-display) !important; letter-spacing: -0.02em; }
 .clean-app .td .td-section-head p { margin: 4px 0 0; color: var(--fl-muted); font-size: 0.9rem !important; }
 
@@ -73,10 +73,10 @@
 .clean-app .td .td-module { display: grid; grid-template-columns: 44px minmax(0, 1fr) auto auto; align-items: center; gap: 16px; padding: 14px 16px; border: 1px solid var(--fl-line); border-radius: 14px; background: var(--fl-surface); }
 .clean-app .td .td-module-icon { display: grid; width: 44px; height: 44px; place-items: center; border-radius: 12px; background: var(--fl-red-wash); color: var(--fl-red-deep); }
 .clean-app .td .td-module-copy { display: grid; min-width: 0; gap: 2px; }
-.clean-app .td .td-module-copy em { color: var(--fl-subtle); font: 700 0.68rem var(--fl-body); font-style: normal; letter-spacing: 0.12em; text-transform: uppercase; }
+.clean-app .td .td-module-copy em { color: var(--fl-subtle); font: 700 0.75rem var(--fl-body); font-style: normal; letter-spacing: 0.12em; text-transform: uppercase; }
 .clean-app .td .td-module-copy strong { overflow: hidden; color: var(--fl-ink); font: 700 1.02rem var(--fl-body); text-overflow: ellipsis; white-space: nowrap; }
 .clean-app .td .td-module-meta { color: var(--fl-muted); font-size: 0.8rem !important; }
-.clean-app .td .td-module-status { padding: 4px 10px; border-radius: 999px; font: 700 0.72rem var(--fl-body); white-space: nowrap; }
+.clean-app .td .td-module-status { padding: 4px 10px; border-radius: 999px; font: 700 0.75rem var(--fl-body); white-space: nowrap; }
 .clean-app .td .td-module-status.is-published { background: var(--fl-ok-wash); color: var(--fl-ok); }
 .clean-app .td .td-module-status.is-draft { background: var(--fl-warn-wash); color: var(--fl-warn); }
 .clean-app .td .td-module-actions { display: flex; gap: 8px; }
@@ -118,7 +118,7 @@
 }
 .clean-app .td :is(.teacher-analytics, .teacher-supervision, .teacher-badge-manager, .schedule-manager)::before,
 .clean-app .td :is(.teacher-analytics, .teacher-supervision, .teacher-badge-manager, .schedule-manager)::after { display: none !important; }
-.clean-app .td :is(.teacher-section-head, .teacher-badge-manager-heading, .teacher-analytics) .eyebrow { color: var(--fl-red-deep) !important; font-size: 0.7rem !important; font-weight: 700; letter-spacing: 0.14em; }
+.clean-app .td :is(.teacher-section-head, .teacher-badge-manager-heading, .teacher-analytics) .eyebrow { color: var(--fl-red-deep) !important; font-size: 0.75rem !important; font-weight: 700; letter-spacing: 0.14em; }
 .clean-app .td :is(.teacher-analytics, .teacher-supervision, .teacher-badge-manager, .schedule-manager) h2 { color: var(--fl-ink); font: 700 1.3rem/1.2 var(--fl-display) !important; letter-spacing: -0.02em; }
 .clean-app .td :is(.teacher-chart-card, .teacher-badge-form) { border-radius: 14px; box-shadow: none; }
 .clean-app .td .teacher-section-head button { color: var(--fl-red-deep); }

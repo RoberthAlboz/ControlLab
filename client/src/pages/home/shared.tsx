@@ -170,8 +170,20 @@ export function serverMessage(error: unknown, fallback: string) {
   const data = (error as { data?: { code?: string } } | null)?.data;
   const message = error instanceof Error ? error.message : "";
   return data?.code && data.code !== "INTERNAL_SERVER_ERROR" && message
-    ? message
+    ? firstValidationMessage(message) ?? message
     : fallback;
+}
+
+/** Erro de validação (zod) chega como JSON da lista de problemas: mostra só o primeiro texto. */
+function firstValidationMessage(message: string): string | null {
+  if (!message.startsWith("[")) return null;
+  try {
+    const issues = JSON.parse(message) as Array<{ message?: unknown }>;
+    const first = Array.isArray(issues) ? issues[0]?.message : null;
+    return typeof first === "string" && first ? first : null;
+  } catch {
+    return null;
+  }
 }
 
 export function StudentModuleProgress({ module }: { module: DidacticModule }) {

@@ -129,7 +129,7 @@ function DistributionChartCard({
             {/* Toda barra tem o valor na ponta, então o eixo X e a grade só fariam ruído. */}
             <BarChart data={rows} layout="vertical" margin={{ top: 4, right: 32, bottom: 4, left: 2 }} barCategoryGap={14}>
               <XAxis type="number" hide domain={[0, maxCount]} allowDecimals={false} />
-              <YAxis type="category" dataKey="label" width={104} axisLine={{ stroke: "var(--theme-border-strong)" }} tickLine={false} tick={{ fill: "var(--theme-heading)", fontSize: 11 }} />
+              <YAxis type="category" dataKey="label" width={104} axisLine={{ stroke: "var(--theme-border-strong)" }} tickLine={false} tick={{ fill: "var(--theme-heading)", fontSize: 12 }} />
               <Tooltip content={<FloatingTooltip />} cursor={{ fill: "var(--theme-surface-soft)" }} />
               <Bar dataKey="count" radius={[0, 4, 4, 0]} barSize={18} isAnimationActive={!reducedMotion} animationDuration={650}>
                 {rows.map((row) => <Cell key={row.label} fill={row.color} />)}

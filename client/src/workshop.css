@@ -23,7 +23,7 @@ html.dark .tool-glyph-body path[fill="none"] { stroke: #a7adb2; }
 /* Manômetro do saldo disponível (detalhe do item) */
 .stock-gauge { display: grid; flex: none; align-content: center; justify-items: center; gap: 2px; width: 96px; margin: 0; }
 .stock-gauge svg { display: block; width: 100%; height: auto; overflow: visible; }
-.stock-gauge figcaption { color: var(--fl-muted); font-size: 0.7rem; font-weight: 600; font-variant-numeric: tabular-nums; }
+.stock-gauge figcaption { color: var(--fl-muted); font-size: 0.75rem; font-weight: 600; font-variant-numeric: tabular-nums; }
 .stock-gauge-bezel { fill: #b8bec3; stroke: #6d7378; stroke-width: 0.8; }
 .stock-gauge-face { fill: #fbfbfa; stroke: #8b9196; stroke-width: 0.4; }
 .stock-gauge-track { fill: none; stroke: #2f6b4f; stroke-width: 2.6; opacity: 0.35; }
@@ -61,7 +61,7 @@ html.dark .inventory-view-toggle button.is-selected { background: var(--fl-red-w
 .icon-picker { margin: 0; padding: 0; border: 0; }
 .icon-picker legend { margin-bottom: 6px; padding: 0; color: var(--fl-ink-soft); font: 600 0.8125rem/1.3 var(--fl-body); }
 .icon-picker-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(78px, 1fr)); gap: 6px; }
-.icon-picker-option { display: grid; justify-items: center; gap: 4px; padding: 8px 4px 6px; border: 1px solid var(--fl-line); border-radius: 8px; background: transparent; color: var(--fl-muted); font-size: 0.7rem; font-weight: 600; line-height: 1.2; text-align: center; cursor: pointer; }
+.icon-picker-option { display: grid; justify-items: center; gap: 4px; padding: 8px 4px 6px; border: 1px solid var(--fl-line); border-radius: 8px; background: transparent; color: var(--fl-muted); font-size: 0.75rem; font-weight: 600; line-height: 1.2; text-align: center; cursor: pointer; }
 .icon-picker-option .tool-glyph { width: 26px; height: 52px; }
 .icon-picker-option:hover { border-color: var(--fl-red); color: var(--fl-ink); }
 .icon-picker-option:focus-visible { outline: 2px solid rgba(var(--fl-red-rgb), 0.72); outline-offset: 2px; }
@@ -69,7 +69,7 @@ html.dark .inventory-view-toggle button.is-selected { background: var(--fl-red-w
 .icon-picker-option:first-child { border-style: dashed; }
 
 /* Uma cor por situação, usada no chip, na sombra, nas bolinhas e na etiqueta: dá para ler o painel sem ler texto. */
-.shadow-board-summary, .shadow-station, .shadow-detail { --st-complete: #2f8a57; --st-out: #c98a0b; --st-overdue: var(--fl-red); --st-maintenance: #6b7280; }
+.shadow-board-summary, .shadow-station, .shadow-detail { --st-complete: #2f8a57; --st-out: #94600a; --st-overdue: var(--fl-red); --st-maintenance: #6b7280; }
 html.dark :is(.shadow-board-summary, .shadow-station, .shadow-detail) { --st-complete: #5cc28a; --st-out: #e6b04a; --st-maintenance: #9aa1ab; }
 .shadow-station.is-complete, .shadow-detail.is-complete { --st: var(--st-complete); }
 .shadow-station:is(.is-partial, .is-away), .shadow-detail:is(.is-partial, .is-away) { --st: var(--st-out); }
@@ -156,8 +156,8 @@ html.dark .shadow-board-tool-body path[fill="none"] { stroke: #a7adb2; }
 }
 
 .shadow-station-plate { display: grid; width: 100%; justify-items: center; padding: 4px 6px; border: 1px solid var(--fl-line-strong); border-radius: 3px; background: var(--fl-surface); text-align: center; }
-.shadow-station-plate strong { color: var(--fl-ink); font: 700 0.68rem/1.2 var(--fl-body); letter-spacing: 0.06em; }
-.clean-app .shadow-station-plate small { display: block; max-width: 100%; overflow: hidden; color: var(--fl-muted); font-size: 0.68rem !important; text-overflow: ellipsis; white-space: nowrap; }
+.shadow-station-plate strong { color: var(--fl-ink); font: 700 0.75rem/1.2 var(--fl-body); letter-spacing: 0.06em; }
+.clean-app .shadow-station-plate small { display: block; max-width: 100%; overflow: hidden; color: var(--fl-muted); font-size: 0.75rem !important; text-overflow: ellipsis; white-space: nowrap; }
 
 /* Bolinhas: uma por unidade (cheia = livre no gancho, anel = reservada, vazia = fora) */
 .shadow-station-units { display: grid; justify-items: center; gap: 3px; }
@@ -167,13 +167,13 @@ html.dark .shadow-board-tool-body path[fill="none"] { stroke: #a7adb2; }
 .shadow-station-dots i.is-reserved { background: color-mix(in srgb, var(--st-out) 30%, transparent); border-color: var(--st-out); }
 .shadow-station-dots i.is-out { background: transparent; border-style: dashed; }
 .shadow-station-dots i.is-maintenance { background: var(--st-maintenance); border-color: var(--st-maintenance); }
-.clean-app .shadow-station-units small { color: var(--fl-muted); font-size: 0.66rem !important; font-weight: 600; font-variant-numeric: tabular-nums; }
+.clean-app .shadow-station-units small { color: var(--fl-muted); font-size: 0.75rem !important; font-weight: 600; font-variant-numeric: tabular-nums; }
 
 /* Etiqueta pendurada: na cor da situação, com quem está e até quando */
-.shadow-station-tag { position: relative; display: grid; justify-items: center; gap: 1px; width: 100%; max-width: 132px; padding: 5px 8px 6px; border-radius: 3px 3px 8px 8px; background: var(--st); color: #fff; font-size: 0.72rem; font-weight: 700; line-height: 1.25; text-align: center; transform: rotate(-1.5deg); box-shadow: 0 2px 4px rgba(0, 0, 0, 0.14); }
+.shadow-station-tag { position: relative; display: grid; justify-items: center; gap: 1px; width: 100%; max-width: 132px; padding: 5px 8px 6px; border-radius: 3px 3px 8px 8px; background: var(--st); color: #fff; font-size: 0.75rem; font-weight: 700; line-height: 1.25; text-align: center; transform: rotate(-1.5deg); box-shadow: 0 2px 4px rgba(0, 0, 0, 0.14); }
 .shadow-station-tag::before { position: absolute; top: -6px; left: 50%; width: 1px; height: 6px; background: color-mix(in srgb, var(--st) 70%, #000); content: ""; }
 .shadow-station-tag span { display: -webkit-box; max-width: 100%; overflow: hidden; overflow-wrap: anywhere; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
-.clean-app .shadow-station-tag small { color: rgba(255, 255, 255, 0.88); font-size: 0.64rem !important; font-weight: 600; }
+.clean-app .shadow-station-tag small { color: rgba(255, 255, 255, 0.88); font-size: 0.75rem !important; font-weight: 600; }
 .shadow-station.is-partial .shadow-station-tag, .shadow-station.is-away .shadow-station-tag { color: #2e2100; }
 .clean-app .shadow-station:is(.is-partial, .is-away) .shadow-station-tag small { color: #4a3600; }
 /* Tudo no lugar: etiqueta discreta, para os olhos irem direto ao que saiu */
@@ -188,7 +188,7 @@ html.dark .clean-app .shadow-station:is(.is-overdue, .is-maintenance) .shadow-st
 .shadow-detail { display: grid; gap: 12px; padding: 16px 18px; border: 1px solid var(--fl-line-strong); border-left: 5px solid var(--st); border-radius: 10px; background: var(--fl-surface); }
 .shadow-detail header { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
 .shadow-detail header > div { display: grid; gap: 3px; min-width: 0; }
-.clean-app .shadow-detail header small { color: var(--fl-muted); font-size: 0.74rem !important; }
+.clean-app .shadow-detail header small { color: var(--fl-muted); font-size: 0.75rem !important; }
 .shadow-detail header strong { color: var(--fl-ink); font: 700 1rem/1.3 var(--fl-body); }
 .shadow-detail-state { display: inline-flex; align-items: center; gap: 6px; color: var(--fl-ink-soft); font-size: 0.82rem; font-weight: 600; }
 .shadow-detail-state i { width: 10px; height: 10px; border-radius: 50%; background: var(--st); }
@@ -249,7 +249,7 @@ html.dark .caliper-vernier-label { fill: #e5e8ea; }
 .caliper-reading { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; margin-top: 2px; }
 .caliper-reading-meta { display: grid; gap: 3px; min-width: 0; }
 .clean-app .caliper-caption { color: var(--fl-ink-soft); font-size: 0.78rem !important; font-weight: 600; }
-.clean-app .caliper-breakdown { color: var(--fl-subtle); font-size: 0.7rem !important; }
+.clean-app .caliper-breakdown { color: var(--fl-subtle); font-size: 0.75rem !important; }
 .caliper-reading b { color: var(--fl-ink-soft); font-variant-numeric: tabular-nums; }
 .clean-app .caliper-reading strong { flex: none; color: var(--fl-ink); font: 700 1.35rem/1 var(--fl-display) !important; font-variant-numeric: tabular-nums; transition: color 300ms ease; }
 .clean-app .caliper-gauge.is-complete .caliper-reading strong { color: var(--fl-ok); }
@@ -335,9 +335,9 @@ html.dark .stamp-plate-bolt { fill: #3c4246; stroke: #2c3033; }
 .machined-part { display: grid; gap: 4px; margin: 0 2px; padding: 8px 8px 6px; border: 1px dashed var(--fl-line-strong); border-radius: 12px; background: var(--fl-paper); }
 .machined-part svg { display: block; width: 100%; height: auto; overflow: visible; }
 .machined-part figcaption { display: flex; align-items: baseline; justify-content: space-between; padding: 0 2px; }
-.clean-app .machined-part figcaption span { display: inline-flex; align-items: center; gap: 5px; color: var(--fl-red-deep); font-size: 0.62rem !important; font-weight: 700; letter-spacing: 0.12em; }
+.clean-app .machined-part figcaption span { display: inline-flex; align-items: center; gap: 5px; color: var(--fl-red-deep); font-size: 0.75rem !important; font-weight: 700; letter-spacing: 0.12em; }
 .machined-part figcaption span svg { width: 12px; height: 12px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
-.clean-app .machined-part figcaption small { color: var(--fl-subtle); font-size: 0.7rem !important; font-variant-numeric: tabular-nums; }
+.clean-app .machined-part figcaption small { color: var(--fl-subtle); font-size: 0.75rem !important; font-variant-numeric: tabular-nums; }
 
 .machined-chuck { fill: var(--fl-line-strong); stroke: var(--fl-muted); stroke-width: 0.6; }
 .machined-shade-edge { stop-color: #6f767b; }

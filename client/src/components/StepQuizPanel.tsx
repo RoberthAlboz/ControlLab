@@ -85,11 +85,10 @@ export default function StepQuizPanel({
       </div>
       <div className="step-quiz-footer" role="status" aria-live="polite">
         {isTeacher ? (
-          <p>Pré-visualização: o aluno precisa acertar para concluir a etapa.{quiz.explanation ? ` Explicação: ${quiz.explanation}` : ""}</p>
+          <p>Pré-visualização: quiz opcional, não bloqueia a conclusão da etapa.{quiz.explanation ? ` Explicação: ${quiz.explanation}` : ""}</p>
         ) : solved ? (
           <p className="step-quiz-ok">
-            <Check size={15} aria-hidden="true" /> Resposta correta.{feedback?.explanation ? ` ${feedback.explanation}` : ""} Agora você pode concluir a etapa.
-          </p>
+            <Check size={15} aria-hidden="true" /> Resposta correta.{feedback?.explanation ? ` ${feedback.explanation}` : ""}          </p>
         ) : feedback && !feedback.correct ? (
           <p className="step-quiz-wrong">
             <X size={15} aria-hidden="true" /> Ainda não. Releia a etapa e escolha outra alternativa.
@@ -97,7 +96,7 @@ export default function StepQuizPanel({
         ) : locked ? (
           <p>Inicie a etapa para responder.</p>
         ) : (
-          <p>Escolha uma alternativa e confira para liberar a conclusão.</p>
+          <p>Opcional: escolha uma alternativa e confira.</p>
         )}
         {!isTeacher && !solved && (
           <button type="button" className="step-quiz-submit" onClick={() => void submit()} disabled={selected === null || locked || pending}>

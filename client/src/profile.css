@@ -78,7 +78,7 @@
   border-radius: 999px;
   background: linear-gradient(135deg, var(--profile-accent-strong), color-mix(in srgb, var(--profile-accent) 70%, var(--profile-accent-strong)));
   color: #fff;
-  font: 700 0.72rem var(--fl-body);
+  font: 700 0.75rem var(--fl-body);
   letter-spacing: 0.02em;
   white-space: nowrap;
   transform: translateX(-50%);
@@ -100,14 +100,14 @@
 /* Pontos fortes */
 .sp-badges { display: grid; gap: 10px; padding-top: 16px; border-top: 1px solid var(--profile-line); }
 .sp-badges-head { display: flex; align-items: center; justify-content: space-between; }
-.clean-app .sp-panel .sp-badges-head b { display: inline-flex; align-items: center; gap: 6px; color: var(--profile-text); font: 700 0.72rem var(--fl-body); letter-spacing: 0.12em; text-transform: uppercase; }
+.clean-app .sp-panel .sp-badges-head b { display: inline-flex; align-items: center; gap: 6px; color: var(--profile-text); font: 700 0.75rem var(--fl-body); letter-spacing: 0.12em; text-transform: uppercase; }
 .sp-badges-head b svg { color: var(--profile-accent); }
-.clean-app .sp-panel .sp-badges-head strong { display: grid; min-width: 24px; height: 24px; padding: 0 7px; place-items: center; border: 1px solid color-mix(in srgb, var(--profile-accent) 40%, transparent); border-radius: 999px; background: color-mix(in srgb, var(--profile-accent) 12%, transparent); color: var(--profile-accent); font: 700 0.72rem var(--fl-body); }
+.clean-app .sp-panel .sp-badges-head strong { display: grid; min-width: 24px; height: 24px; padding: 0 7px; place-items: center; border: 1px solid color-mix(in srgb, var(--profile-accent) 40%, transparent); border-radius: 999px; background: color-mix(in srgb, var(--profile-accent) 12%, transparent); color: var(--profile-accent); font: 700 0.75rem var(--fl-body); }
 .sp-badges ul { display: grid; gap: 8px; max-height: 260px; margin: 0; padding: 0; overflow-y: auto; list-style: none; }
 .sp-badges li { display: grid; grid-template-columns: 30px minmax(0, 1fr); align-items: center; gap: 10px; padding: 10px; border: 1px solid var(--profile-line); border-left: 3px solid var(--profile-accent-strong); border-radius: 12px; background: linear-gradient(110deg, var(--profile-card-strong), var(--profile-card)); }
 .sp-badge-icon { display: grid; width: 30px; height: 30px; place-items: center; border-radius: 9px; background: color-mix(in srgb, var(--profile-accent) 16%, transparent); color: var(--profile-accent); }
 .clean-app .sp-panel .sp-badges li b { display: block; overflow: hidden; color: var(--profile-text); font: 600 0.82rem/1.25 var(--fl-body); text-overflow: ellipsis; white-space: nowrap; }
-.clean-app .sp-panel .sp-badges li p { margin: 2px 0 0; color: var(--profile-muted); font-size: 0.72rem !important; line-height: 1.35; }
+.clean-app .sp-panel .sp-badges li p { margin: 2px 0 0; color: var(--profile-muted); font-size: 0.75rem !important; line-height: 1.35; }
 .clean-app .sp-panel p.sp-badges-empty { margin: 0; padding: 12px; border: 1px dashed var(--profile-line); border-radius: 12px; color: var(--profile-muted); font-size: 0.76rem !important; line-height: 1.45; }
 
 /* Tablet/celular: cartão horizontal no topo da página */
@@ -126,7 +126,7 @@
   .clean-app .sp-panel p.sp-role { grid-area: auto; grid-column: 2; grid-row: 2; text-align: left; }
   .clean-app .sp-panel .sp-avatar { font-size: 1.4rem; }
   .sp-avatar-upload { right: -4px; bottom: 2px; width: 28px; height: 28px; }
-  .sp-level-chip { bottom: -8px; padding: 2px 8px; font-size: 0.66rem; }
+  .sp-level-chip { bottom: -8px; padding: 2px 8px; font-size: 0.75rem; }
   .clean-app .sp-panel h2.sp-hello { align-self: end; }
   .clean-app .sp-panel p.sp-role { align-self: start; }
   .clean-app .sp-gears .auth-gears-train { right: -60px; bottom: -40px; height: 240px; }

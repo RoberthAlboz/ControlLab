@@ -897,7 +897,7 @@ export async function updateProgress(userId: number, moduleId: string, stepIndex
     if (!module || !module.published || module.archivedAt) {
       throw new LearningDomainError("NOT_FOUND", "Módulo não encontrado ou ainda não publicado.");
     }
-    const moduleSteps = await tx.select({ id: learningSteps.id, position: learningSteps.position, quiz: learningSteps.quiz }).from(learningSteps).where(eq(learningSteps.moduleId, moduleId));
+    const moduleSteps = await tx.select({ id: learningSteps.id, position: learningSteps.position }).from(learningSteps).where(eq(learningSteps.moduleId, moduleId));
     if (!hasSequentialStepPositions(moduleSteps.map(({ position }) => position))
       || !Number.isInteger(stepIndex) || stepIndex < 1 || stepIndex > moduleSteps.length
       || !moduleSteps.some(({ position }) => position === stepIndex - 1)) {
@@ -927,18 +927,7 @@ export async function updateProgress(userId: number, moduleId: string, stepIndex
     if (measuredSeconds < MIN_STEP_SECONDS) {
       throw new LearningDomainError("BAD_REQUEST", `Leia a etapa com atenção: é possível concluí-la depois de ${MIN_STEP_SECONDS} segundos.`);
     }
-    const step = moduleSteps.find(({ position }) => position === stepIndex - 1)!;
-    if (parseStoredQuiz(step.quiz)) {
-      const [passed] = await tx.select({ id: studentQuizAttempts.id }).from(studentQuizAttempts)
-        .where(and(
-          eq(studentQuizAttempts.userId, userId),
-          eq(studentQuizAttempts.stepId, step.id),
-          eq(studentQuizAttempts.correct, 1),
-          gte(studentQuizAttempts.createdAt, session.startedAt),
-        ))
-        .limit(1);
-      if (!passed) throw new LearningDomainError("BAD_REQUEST", "Responda corretamente à verificação da etapa antes de concluí-la.");
-    }
+    // O quiz da etapa é opcional: não bloqueia a conclusão.
     // Só o tempo plausível conta: uma aba esquecida aberta não vira horas de estudo nem XP.
     const serverElapsedSeconds = creditedStepSeconds(measuredSeconds, stepTimeCapSeconds(module.duration, moduleSteps.length));
     await tx.update(studentStepSessions).set({ completedAt: new Date(), elapsedSeconds: serverElapsedSeconds }).where(eq(studentStepSessions.id, session.id));

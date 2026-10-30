@@ -71,7 +71,7 @@
   text-align: center;
 }
 .clean-app .student-main-column .stat-ring strong { color: #fff6f6; font: 700 1rem var(--fl-display); }
-.clean-app .student-main-column .stat-ring span { color: rgba(255, 246, 246, 0.8); font-size: 0.6rem !important; }
+.clean-app .student-main-column .stat-ring span { color: rgba(255, 246, 246, 0.8); font-size: 0.75rem !important; }
 
 /* Títulos de seção e cronograma */
 .clean-app .student-main-column .student-section-heading { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
@@ -89,7 +89,7 @@
 .clean-app .student-main-column .student-section-heading button:hover,
 .clean-app .student-main-column .period-select:hover { border-color: rgba(196, 8, 12, 0.4); background: var(--fl-red-wash); }
 .clean-app .student-main-column .schedule-row { display: grid; grid-template-columns: 56px minmax(0, 1fr); align-items: stretch; gap: 14px; }
-.clean-app .student-main-column .schedule-day { display: grid; place-content: center; justify-items: center; padding: 8px 0; border-radius: 10px; background: var(--fl-red-wash); color: var(--fl-red-deep); font-size: 0.7rem !important; font-weight: 700; letter-spacing: 0.08em; }
+.clean-app .student-main-column .schedule-day { display: grid; place-content: center; justify-items: center; padding: 8px 0; border-radius: 10px; background: var(--fl-red-wash); color: var(--fl-red-deep); font-size: 0.75rem !important; font-weight: 700; letter-spacing: 0.08em; }
 .clean-app .student-main-column .schedule-day strong { color: var(--fl-ink); font: 700 1.3rem/1.1 var(--fl-display); }
 .clean-app .student-main-column .schedule-block { border-radius: 10px; transition: transform 200ms var(--fl-ease), box-shadow 200ms ease; }
 .clean-app .student-main-column .schedule-block:hover { box-shadow: 0 10px 24px rgba(142, 7, 7, 0.1); transform: translateX(3px); }
@@ -134,7 +134,7 @@
 .rc-teachers { padding: 18px 16px 12px; }
 .rc-teachers::before { position: absolute; top: 0; right: 0; left: 0; height: 3px; background: linear-gradient(90deg, #8e0707, #c4080c 60%, transparent); content: ""; }
 .rc-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; padding: 0 4px 12px; }
-.clean-app .rc-head .rc-eyebrow { color: var(--fl-red-deep); font: 700 0.66rem var(--fl-body); letter-spacing: 0.16em; }
+.clean-app .rc-head .rc-eyebrow { color: var(--fl-red-deep); font: 700 0.75rem var(--fl-body); letter-spacing: 0.16em; }
 .clean-app .rc-head h2 { margin: 4px 0 0; color: var(--fl-ink); font: 700 1.3rem/1.15 var(--fl-display) !important; letter-spacing: -0.02em; }
 .clean-app .rc-head .rc-count { display: grid; min-width: 28px; height: 28px; padding: 0 8px; place-items: center; border-radius: 999px; background: var(--fl-red-wash); color: var(--fl-red-deep); font: 700 0.8rem var(--fl-body); }
 .clean-app .rc-teachers p.rc-empty { margin: 0; padding: 14px; border: 1px dashed var(--fl-line-strong); border-radius: 10px; color: var(--fl-muted); font-size: 0.84rem; }
@@ -176,7 +176,7 @@
 .rc-teacher-copy > * { max-width: 100%; }
 .clean-app .rc-teacher strong { overflow: hidden; color: var(--fl-ink); font: 700 0.95rem/1.25 var(--fl-body); text-overflow: ellipsis; white-space: nowrap; }
 .clean-app .rc-teacher p { display: -webkit-box; overflow: hidden; margin: 0; color: var(--fl-muted); font-size: 0.78rem; line-height: 1.35; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
-.clean-app .rc-teacher em { justify-self: start; margin-top: 4px; padding: 2px 8px; border-radius: 999px; background: var(--fl-surface); box-shadow: inset 0 0 0 1px var(--fl-line); color: var(--fl-red-deep); font: 700 0.68rem var(--fl-body); font-style: normal; letter-spacing: 0.04em; }
+.clean-app .rc-teacher em { justify-self: start; margin-top: 4px; padding: 2px 8px; border-radius: 999px; background: var(--fl-surface); box-shadow: inset 0 0 0 1px var(--fl-line); color: var(--fl-red-deep); font: 700 0.75rem var(--fl-body); font-style: normal; letter-spacing: 0.04em; }
 .rc-chevron { color: var(--fl-subtle); transition: transform 200ms var(--fl-ease), color 160ms; }
 .rc-teacher:hover .rc-chevron { color: var(--fl-red-deep); transform: translateX(3px); }
 .rc-more { display: flex; width: 100%; align-items: center; justify-content: center; gap: 6px; margin-top: 8px; padding: 8px; border: 0; border-radius: 10px; background: transparent; color: var(--fl-red-deep); font-weight: 600; cursor: pointer; }
@@ -307,10 +307,10 @@
 /* ------------------------------------------------------------------ */
 /* Coluna direita: ferramentas emprestadas ao aluno (rc-loans)         */
 /* ------------------------------------------------------------------ */
-.rc-loans { --loan-out: #c98a0b; --loan-reserved: #2563eb; padding: 14px 12px 10px; }
+.rc-loans { --loan-out: #94600a; --loan-reserved: #2563eb; padding: 14px 12px 10px; }
 .dark .rc-loans { --loan-out: #f0b43c; --loan-reserved: #7aa7ff; }
 .rc-loans .rc-head { align-items: center; }
-.clean-app .rc-loans .rc-loans-alert { flex: none; padding: 2px 8px; white-space: nowrap; border-radius: 999px; background: var(--fl-red-wash); color: var(--fl-red-deep); font: 700 0.72rem var(--fl-body); }
+.clean-app .rc-loans .rc-loans-alert { flex: none; padding: 2px 8px; white-space: nowrap; border-radius: 999px; background: var(--fl-red-wash); color: var(--fl-red-deep); font: 700 0.75rem var(--fl-body); }
 .clean-app .rc-loans p.rc-loans-empty { margin: 0; padding: 4px 6px 6px; color: var(--fl-muted); font-size: 0.82rem; }
 .rc-loans-list { display: grid; gap: 4px; margin: 0; padding: 0; list-style: none; }
 .rc-loan { --loan-tone: var(--fl-muted); display: grid; grid-template-columns: 32px minmax(0, 1fr); align-items: center; gap: 10px; padding: 7px 6px; border-radius: 10px; }
@@ -321,5 +321,5 @@
 .rc-loan-copy { display: grid; min-width: 0; gap: 1px; }
 .clean-app .rc-loan strong { display: -webkit-box; overflow: hidden; color: var(--fl-ink); font-size: 0.88rem; overflow-wrap: anywhere; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
 .clean-app .rc-loan .rc-loan-state { color: var(--loan-tone); font: 600 0.76rem var(--fl-body); overflow-wrap: anywhere; }
-.clean-app .rc-loan .rc-loan-meta { overflow: hidden; color: var(--fl-muted); font-size: 0.74rem; text-overflow: ellipsis; white-space: nowrap; }
+.clean-app .rc-loan .rc-loan-meta { overflow: hidden; color: var(--fl-muted); font-size: 0.75rem; text-overflow: ellipsis; white-space: nowrap; }
 .rc-loan.is-closed strong { color: var(--fl-muted); font-weight: 500; }
