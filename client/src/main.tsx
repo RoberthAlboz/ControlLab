@@ -6,22 +6,22 @@ import { createRoot } from "react-dom/client";
 import superjson from "superjson";
 import App from "./App";
 import { LOGIN_PATH, loginUrl } from "./const";
-import "./index.css";
-import "./forge-editorial.css";
-import "./forge-platform.css";
-import "./sidebar.css";
-import "./header.css";
-import "./profile.css";
-import "./student.css";
-import "./teacher-modal.css";
-import "./notes.css";
-import "./library.css";
-import "./reader.css";
-import "./teacher.css";
-import "./quiz.css";
-import "./theme-ux.css";
-import "./workshop.css";
-import "./dashboard-home.css";
+import "./styles/index.css";
+import "./styles/forge-editorial.css";
+import "./styles/forge-platform.css";
+import "./styles/sidebar.css";
+import "./styles/header.css";
+import "./styles/profile.css";
+import "./styles/student.css";
+import "./styles/teacher-modal.css";
+import "./styles/notes.css";
+import "./styles/library.css";
+import "./styles/reader.css";
+import "./styles/teacher.css";
+import "./styles/quiz.css";
+import "./styles/theme-ux.css";
+import "./styles/workshop.css";
+import "./styles/dashboard-home.css";
 
 const queryClient = new QueryClient({
   defaultOptions: {
