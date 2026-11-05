@@ -8,9 +8,11 @@
  * os números são por turma e por conta.
  */
 import type { ReactNode } from "react";
+import { HalfGauge, PillGauge, TickBars } from "@/components/forge/HomeMeters";
 import {
   AlertTriangle,
   ArrowRight,
+  ArrowUpRight,
   Check,
   FileText,
   School,
@@ -94,6 +96,20 @@ export default function AdminHome({
     (oversight?.classrooms ?? []).map(row => [row.id, row] as const)
   );
   const stockAlerts = inventorySummary?.alerts ?? [];
+  const stockHealthy = inventorySummary?.totals.items
+    ? Math.round(
+        ((inventorySummary.totals.items - stockAlerts.length) /
+          inventorySummary.totals.items) *
+          100
+      )
+    : 0;
+  const classroomsCovered = classrooms.length
+    ? Math.round(
+        ((classrooms.length - classroomsWithoutTeacher.length) /
+          classrooms.length) *
+          100
+      )
+    : 0;
   const overdueLoans = inventorySummary?.totals.overdueLoans ?? 0;
 
   const firstName = adminName.split(" ")[0] || "administração";
@@ -217,30 +233,120 @@ export default function AdminHome({
   ];
 
   return (
-    <main className="clean-content teacher-dashboard-content td admin-home">
-      <header className="td-hero">
-        <div>
-          <span className="eyebrow">ADMINISTRAÇÃO</span>
-          <h1>Olá, {firstName}.</h1>
-          <p>
-            O que precisa de atenção em contas, turmas e estoque.
-          </p>
+    <main className="clean-content teacher-dashboard-content td admin-home hd-home">
+      <header className="td-hero hd-hero">
+        <div className="hd-hero-copy">
+          <div>
+            <span className="eyebrow">ADMINISTRAÇÃO</span>
+            <h1>Olá, {firstName}.</h1>
+            <p>
+              O que precisa de atenção em contas, turmas e estoque.
+            </p>
+          </div>
+          <div className="td-hero-actions">
+            <button type="button" className="td-btn" onClick={onOpenNotes}>
+              <FileText size={15} aria-hidden="true" /> Anotações
+            </button>
+            <button type="button" className="td-btn" onClick={onOpenOversight}>
+              <ShieldCheck size={15} aria-hidden="true" /> Supervisão
+            </button>
+            <button
+              type="button"
+              className="td-btn is-primary"
+              onClick={onOpenUsers}
+            >
+              <Users size={15} aria-hidden="true" /> Usuários
+            </button>
+          </div>
         </div>
-        <div className="td-hero-actions">
-          <button type="button" className="td-btn" onClick={onOpenNotes}>
-            <FileText size={15} aria-hidden="true" /> Anotações
-          </button>
-          <button type="button" className="td-btn" onClick={onOpenOversight}>
-            <ShieldCheck size={15} aria-hidden="true" /> Supervisão
+        <section className="td-summary" aria-label="Resumo">
+          <button type="button" className="td-stat" onClick={onOpenUsers}>
+            <b className="hd-go" aria-hidden="true">
+              <ArrowUpRight size={16} />
+            </b>
+            <b className="td-stat-icon" aria-hidden="true">
+              <Users size={18} />
+            </b>
+            <span className="td-stat-label">Contas ativas</span>
+            <strong>{usersQuery.isError ? "—" : activeUsers.length}</strong>
+            <em>
+              {teachers} {teachers === 1 ? "docente" : "docentes"} ·{" "}
+              {students.length} {students.length === 1 ? "aluno" : "alunos"}
+              {inactiveUsers ? ` · ${inactiveUsers} desativada(s)` : ""}
+            </em>
+            <PillGauge value={users.length ? (activeUsers.length / users.length) * 100 : 0} />
           </button>
           <button
             type="button"
-            className="td-btn is-primary"
-            onClick={onOpenUsers}
+            className={`td-stat ${classroomsWithoutTeacher.length ? "has-alert" : ""}`}
+            onClick={onOpenClassrooms}
           >
-            <Users size={15} aria-hidden="true" /> Usuários
+            <b className="hd-go" aria-hidden="true">
+              <ArrowUpRight size={16} />
+            </b>
+            <b className="td-stat-icon" aria-hidden="true">
+              <School size={18} />
+            </b>
+            <span className="td-stat-label">Turmas ativas</span>
+            <strong>{classroomsQuery.isError ? "—" : classrooms.length}</strong>
+            <em>
+              {classroomsWithoutTeacher.length
+                ? `${classroomsWithoutTeacher.length} sem responsável`
+                : "todas com responsável"}
+            </em>
+            <HalfGauge value={classroomsCovered} />
           </button>
-        </div>
+          <button
+            type="button"
+            className={`td-stat ${stockAlerts.length ? "has-alert" : ""}`}
+            onClick={onOpenInventory}
+          >
+            <b className="hd-go" aria-hidden="true">
+              <ArrowUpRight size={16} />
+            </b>
+            <b className="td-stat-icon" aria-hidden="true">
+              <Warehouse size={18} />
+            </b>
+            <span className="td-stat-label">Estoque</span>
+            <strong>
+              {inventorySummary?.totals.items ?? "—"}
+              <small> itens</small>
+            </strong>
+            <em>
+              {stockAlerts.length
+                ? `${stockAlerts.length} com estoque baixo`
+                : `${inventorySummary?.totals.activeLoans ?? 0} empréstimos ativos`}
+            </em>
+            <HalfGauge value={stockHealthy} />
+          </button>
+          <button
+            type="button"
+            className={`td-stat ${urgentAlerts.length || overdueLoans ? "has-alert" : ""}`}
+            onClick={onOpenOversight}
+          >
+            <b className="hd-go" aria-hidden="true">
+              <ArrowUpRight size={16} />
+            </b>
+            <b className="td-stat-icon" aria-hidden="true">
+              <ShieldCheck size={18} />
+            </b>
+            <span className="td-stat-label">Alertas ({OVERSIGHT_DAYS} dias)</span>
+            <strong>
+              {oversightQuery.isError ? "—" : (oversight?.alerts.length ?? 0)}
+            </strong>
+            <em>
+              {urgentAlerts.length}{" "}
+              {urgentAlerts.length === 1 ? "grave" : "graves"} · {overdueLoans}{" "}
+              {overdueLoans === 1 ? "atraso" : "atrasos"}
+            </em>
+            <TickBars
+              filled={Math.min(urgentAlerts.length, 9)}
+              total={9}
+              start={`${OVERSIGHT_DAYS} dias`}
+              end="Graves"
+            />
+          </button>
+        </section>
       </header>
 
       <div
@@ -262,74 +368,6 @@ export default function AdminHome({
           </>
         ) : null}
       </div>
-
-      <section className="td-summary" aria-label="Resumo">
-        <button type="button" className="td-stat" onClick={onOpenUsers}>
-          <b className="td-stat-icon" aria-hidden="true">
-            <Users size={18} />
-          </b>
-          <span className="td-stat-label">Contas ativas</span>
-          <strong>{usersQuery.isError ? "—" : activeUsers.length}</strong>
-          <em>
-            {teachers} {teachers === 1 ? "docente" : "docentes"} ·{" "}
-            {students.length} {students.length === 1 ? "aluno" : "alunos"}
-            {inactiveUsers ? ` · ${inactiveUsers} desativada(s)` : ""}
-          </em>
-        </button>
-        <button
-          type="button"
-          className={`td-stat ${classroomsWithoutTeacher.length ? "has-alert" : ""}`}
-          onClick={onOpenClassrooms}
-        >
-          <b className="td-stat-icon" aria-hidden="true">
-            <School size={18} />
-          </b>
-          <span className="td-stat-label">Turmas ativas</span>
-          <strong>{classroomsQuery.isError ? "—" : classrooms.length}</strong>
-          <em>
-            {classroomsWithoutTeacher.length
-              ? `${classroomsWithoutTeacher.length} sem responsável`
-              : "todas com responsável"}
-          </em>
-        </button>
-        <button
-          type="button"
-          className={`td-stat ${stockAlerts.length ? "has-alert" : ""}`}
-          onClick={onOpenInventory}
-        >
-          <b className="td-stat-icon" aria-hidden="true">
-            <Warehouse size={18} />
-          </b>
-          <span className="td-stat-label">Estoque</span>
-          <strong>
-            {inventorySummary?.totals.items ?? "—"}
-            <small> itens</small>
-          </strong>
-          <em>
-            {stockAlerts.length
-              ? `${stockAlerts.length} com estoque baixo`
-              : `${inventorySummary?.totals.activeLoans ?? 0} empréstimos ativos`}
-          </em>
-        </button>
-        <button
-          type="button"
-          className={`td-stat ${urgentAlerts.length || overdueLoans ? "has-alert" : ""}`}
-          onClick={onOpenOversight}
-        >
-          <b className="td-stat-icon" aria-hidden="true">
-            <ShieldCheck size={18} />
-          </b>
-          <span className="td-stat-label">Alertas ({OVERSIGHT_DAYS} dias)</span>
-          <strong>
-            {oversightQuery.isError ? "—" : (oversight?.alerts.length ?? 0)}
-          </strong>
-          <em>
-            {urgentAlerts.length}{" "}
-            {urgentAlerts.length === 1 ? "grave" : "graves"} · {overdueLoans}{" "}
-            {overdueLoans === 1 ? "atraso" : "atrasos"}
-          </em>
-        </button>
-      </section>
 
       <section
         id="ah-atencao"

@@ -7,19 +7,20 @@ import {
 import { localDateKey, scheduleDateKey } from "@shared/class-schedule";
 import type { StudentBadge } from "@shared/competencies";
 import NumberTicker from "@/components/forge/NumberTicker";
-import StudyProgressRing from "@/components/forge/StudyProgressRing";
+import { HalfGauge, TickBars } from "@/components/forge/HomeMeters";
 import TeacherProfileModal from "@/components/forge/TeacherProfileModal";
-import AuthGearTrain from "@/components/forge/AuthGearTrain";
 import StudentLoansCard from "@/components/StudentLoansCard";
 import {
   ArrowLeft,
   ArrowRight,
+  ArrowUpRight,
   BookOpen,
   ChevronDown,
   ChevronRight,
   Clock,
   Target,
   FileText,
+  Flame,
   ImagePlus,
   Layers3,
   MoreHorizontal,
@@ -85,6 +86,7 @@ export function StudentDashboard({
   const studiedValue = studiedInHours
     ? Math.floor(studiedSeconds / 3600)
     : Math.floor(studiedSeconds / 60);
+  const minutesThisHour = Math.floor((studiedSeconds % 3600) / 60);
   const streakDays = catalog?.stats.streakDays ?? 0;
   const level = catalog?.stats.level ?? 1;
   const levelProgress = catalog?.stats.levelProgress ?? 0;
@@ -173,14 +175,106 @@ export function StudentDashboard({
         new Date(current.getFullYear(), current.getMonth() + delta, 1, 12)
     );
   return (
-    <main className="student-dashboard">
+    <main className="student-dashboard hd-home">
+      <header className="student-topbar hd-hero">
+        <div className="hd-hero-copy">
+          <div>
+            <span className="eyebrow">PAINEL DO ALUNO</span>
+            <h1>Retome sua formação.</h1>
+            <p>Acesse seus módulos, próximas aulas e anotações da turma.</p>
+          </div>
+          <div className="student-top-actions">
+            <label className="student-search">
+              <Search size={15} />
+              <input
+                type="search"
+                aria-label="Buscar módulos"
+                value={query}
+                placeholder="Buscar módulos"
+                onChange={event => setQuery(event.target.value)}
+              />
+            </label>
+          </div>
+        </div>
+        <section className="hd-hero-stats" aria-label="Suas estatísticas">
+          <div className="student-section-heading">
+            <div>
+              <span className="eyebrow">VISÃO GERAL</span>
+              <h2>Suas estatísticas</h2>
+            </div>
+            <label className="period-select">
+              <span>Por período</span>
+              <select
+                value={period}
+                onChange={event =>
+                  onPeriodChange(event.target.value as typeof period)
+                }
+              >
+                <option value="all">Todo o período</option>
+                <option value="today">Hoje</option>
+                <option value="week">Últimos 7 dias</option>
+                <option value="month">Este mês</option>
+              </select>
+              <ChevronDown size={13} />
+            </label>
+          </div>
+          <div className="student-stat-grid">
+            <div className="student-stat-card">
+              <div className="stat-icon dark">
+                <Target size={18} aria-hidden="true" />
+              </div>
+              <span aria-hidden="true">Progresso total</span>
+              <strong aria-hidden="true">{average}%</strong>
+              <small>
+                {overall.done} de {overall.total}{" "}
+                {overall.total === 1 ? "etapa concluída" : "etapas concluídas"}
+                {period !== "all" &&
+                  ` · ${catalog?.stats.completedSteps ?? 0} no período`}
+              </small>
+              <HalfGauge
+                value={average}
+                label="Progresso total"
+                valueText={`${average}% concluído`}
+              />
+            </div>
+            <div className="student-stat-card">
+              <div className="stat-icon dark">
+                <Clock3Icon />
+              </div>
+              <span>Tempo estudado</span>
+              <strong>
+                <NumberTicker
+                  value={studiedValue}
+                  unit={studiedInHours ? "h" : "min"}
+                  ready={Boolean(catalog?.stats)}
+                />
+              </strong>
+              <small>{formatStudyDuration(studiedSeconds)} cronometrados</small>
+              <HalfGauge value={(minutesThisHour / 60) * 100} />
+            </div>
+            <div className="student-stat-card">
+              <div className="stat-icon dark">
+                <Flame size={18} aria-hidden="true" />
+              </div>
+              <span>Sequência atual</span>
+              <strong>
+                {streakDays} {streakDays === 1 ? "dia" : "dias"}
+              </strong>
+              <small>
+                {streakDays > 0 ? "Continue assim!" : "Comece hoje"} · Atualizada
+                ao concluir etapas
+              </small>
+              <TickBars
+                filled={Math.min(streakDays, 7)}
+                total={7}
+                start="7 dias"
+                end="Hoje"
+              />
+            </div>
+          </div>
+        </section>
+      </header>
       <aside className="student-profile-panel sp-panel">
-        <AuthGearTrain
-          className="sp-gears"
-          activity={levelProgress + completed.length}
-          busy={false}
-          jolt={0}
-        />
         <div className="sp-identity">
           <div
             className="sp-avatar-ring"
@@ -303,178 +397,99 @@ export function StudentDashboard({
         </section>
       </aside>
       <section className="student-main-column">
-        <div className="student-topbar">
-          <div>
-            <span className="eyebrow">PAINEL DO ALUNO</span>
-            <h1>Retome sua formação.</h1>
-            <p>Acesse seus módulos, próximas aulas e anotações da turma.</p>
-          </div>
-          <div className="student-top-actions">
-            <label className="student-search">
-              <Search size={15} />
-              <input
-                type="search"
-                aria-label="Buscar módulos"
-                value={query}
-                placeholder="Buscar módulos"
-                onChange={event => setQuery(event.target.value)}
-              />
-            </label>
-          </div>
-        </div>
-        <div className="student-tabs">
-          <div
-            className="student-tab-filters"
-            role="group"
-            aria-label="Filtrar módulos por andamento"
-          >
-            <button
-              type="button"
-              className={tab === "progress" ? "active" : ""}
-              aria-label={`Em andamento, ${inProgress.length} ${inProgress.length === 1 ? "módulo" : "módulos"}`}
-              aria-pressed={tab === "progress"}
-              onClick={() => setTab("progress")}
+        <div className="hd-modules">
+          <div className="student-tabs">
+            <div
+              className="student-tab-filters"
+              role="group"
+              aria-label="Filtrar módulos por andamento"
             >
-              Em andamento{" "}
-              <span className="student-tab-count" aria-hidden="true">
-                {inProgress.length}
-              </span>
-            </button>
-            <button
-              type="button"
-              className={tab === "upcoming" ? "active" : ""}
-              aria-label={`Próximos, ${upcoming.length} ${upcoming.length === 1 ? "módulo" : "módulos"}`}
-              aria-pressed={tab === "upcoming"}
-              onClick={() => setTab("upcoming")}
-            >
-              Próximos{" "}
-              <span className="student-tab-count" aria-hidden="true">
-                {upcoming.length}
-              </span>
-            </button>
-            <button
-              type="button"
-              className={tab === "completed" ? "active" : ""}
-              aria-label={`Concluídos, ${completed.length} ${completed.length === 1 ? "módulo" : "módulos"}`}
-              aria-pressed={tab === "completed"}
-              onClick={() => setTab("completed")}
-            >
-              Concluídos{" "}
-              <span className="student-tab-count" aria-hidden="true">
-                {completed.length}
-              </span>
-            </button>
-          </div>
-          <button type="button" className="view-all" onClick={onOpenLibrary}>
-            Ver todos <ArrowRight size={13} />
-          </button>
-        </div>
-        <div className="student-module-cards">
-          {visibleStudentModules.slice(0, 3).map((module, index) => (
-            <button
-              className={`student-module-card card-tone-${index + 1}`}
-              key={module.id}
-              onClick={() => onOpen(module)}
-            >
-              <div className="student-card-icon">
-                {module.kind === "Ferramenta" ? (
-                  <Wrench size={19} />
-                ) : module.kind === "Montagem" ? (
-                  <Layers3 size={19} />
-                ) : (
-                  <Settings2 size={19} />
-                )}
-              </div>
-              <MoreHorizontal
-                size={16}
-                className="student-card-menu"
-                aria-hidden="true"
-              />
-              <span className="student-card-kind">{module.kind}</span>
-              <strong>{module.title}</strong>
-              <StudentModuleProgress module={module} />
-              <span className="student-card-action">
-                <Play size={11} fill="currentColor" aria-hidden="true" />{" "}
-                {module.progress ? "Continuar módulo" : "Começar módulo"}
-              </span>
-            </button>
-          ))}
-          {visibleStudentModules.length === 0 && (
-            <StudentModuleEmptyState
-              query={query}
-              tab={tab}
-              hasModules={modules.length > 0}
-              onClearSearch={() => setQuery("")}
-              onShowTab={setTab}
-              nextModule={upcoming[0]}
-              upcomingCount={upcoming.length}
-              onStart={onOpen}
-            />
-          )}
-        </div>
-        <div className="student-section-heading">
-          <div>
-            <span className="eyebrow">VISÃO GERAL</span>
-            <h2>Suas estatísticas</h2>
-          </div>
-          <label className="period-select">
-            <span>Por período</span>
-            <select
-              value={period}
-              onChange={event =>
-                onPeriodChange(event.target.value as typeof period)
-              }
-            >
-              <option value="all">Todo o período</option>
-              <option value="today">Hoje</option>
-              <option value="week">Últimos 7 dias</option>
-              <option value="month">Este mês</option>
-            </select>
-            <ChevronDown size={13} />
-          </label>
-        </div>
-        <div className="student-stat-grid">
-          <div className="student-stat-card">
-            <StudyProgressRing
-              value={average}
-              ready={Boolean(catalog?.stats)}
-              label="Progresso total"
-            />
-            <span aria-hidden="true">Progresso total</span>
-            <strong aria-hidden="true">{average}%</strong>
-            <small>
-              {overall.done} de {overall.total}{" "}
-              {overall.total === 1 ? "etapa concluída" : "etapas concluídas"}
-              {period !== "all" &&
-                ` · ${catalog?.stats.completedSteps ?? 0} no período`}
-            </small>
-          </div>
-          <div className="student-stat-card">
-            <div className="stat-icon dark">
-              <Clock3Icon />
+              <button
+                type="button"
+                className={tab === "progress" ? "active" : ""}
+                aria-label={`Em andamento, ${inProgress.length} ${inProgress.length === 1 ? "módulo" : "módulos"}`}
+                aria-pressed={tab === "progress"}
+                onClick={() => setTab("progress")}
+              >
+                Em andamento{" "}
+                <span className="student-tab-count" aria-hidden="true">
+                  {inProgress.length}
+                </span>
+              </button>
+              <button
+                type="button"
+                className={tab === "upcoming" ? "active" : ""}
+                aria-label={`Próximos, ${upcoming.length} ${upcoming.length === 1 ? "módulo" : "módulos"}`}
+                aria-pressed={tab === "upcoming"}
+                onClick={() => setTab("upcoming")}
+              >
+                Próximos{" "}
+                <span className="student-tab-count" aria-hidden="true">
+                  {upcoming.length}
+                </span>
+              </button>
+              <button
+                type="button"
+                className={tab === "completed" ? "active" : ""}
+                aria-label={`Concluídos, ${completed.length} ${completed.length === 1 ? "módulo" : "módulos"}`}
+                aria-pressed={tab === "completed"}
+                onClick={() => setTab("completed")}
+              >
+                Concluídos{" "}
+                <span className="student-tab-count" aria-hidden="true">
+                  {completed.length}
+                </span>
+              </button>
             </div>
-            <span>Tempo estudado</span>
-            <strong>
-              <NumberTicker
-                value={studiedValue}
-                unit={studiedInHours ? "h" : "min"}
-                ready={Boolean(catalog?.stats)}
-              />
-            </strong>
-            <small>{formatStudyDuration(studiedSeconds)} cronometrados</small>
+            <button type="button" className="view-all" onClick={onOpenLibrary}>
+              Ver todos <ArrowRight size={13} />
+            </button>
           </div>
-          <div className="student-stat-card stat-highlight">
-            <div className="stat-ring">
-              <strong>{streakDays}</strong>
-              <span>{streakDays === 1 ? "dia" : "dias"}</span>
-            </div>
-            <div>
-              <span>Sequência atual</span>
-              <strong>
-                {streakDays > 0 ? "Continue assim!" : "Comece hoje"}
-              </strong>
-              <small>Atualizada ao concluir etapas</small>
-            </div>
+          <div className="student-module-cards">
+            {visibleStudentModules.slice(0, 3).map((module, index) => (
+              <button
+                className={`student-module-card card-tone-${index + 1}`}
+                key={module.id}
+                onClick={() => onOpen(module)}
+              >
+                <div className="student-card-icon">
+                  {module.kind === "Ferramenta" ? (
+                    <Wrench size={19} />
+                  ) : module.kind === "Montagem" ? (
+                    <Layers3 size={19} />
+                  ) : (
+                    <Settings2 size={19} />
+                  )}
+                </div>
+                <MoreHorizontal
+                  size={16}
+                  className="student-card-menu"
+                  aria-hidden="true"
+                />
+                <b className="hd-go" aria-hidden="true">
+                  <ArrowUpRight size={16} />
+                </b>
+                <span className="student-card-kind">{module.kind}</span>
+                <strong>{module.title}</strong>
+                <StudentModuleProgress module={module} />
+                <span className="student-card-action">
+                  <Play size={11} fill="currentColor" aria-hidden="true" />{" "}
+                  {module.progress ? "Continuar módulo" : "Começar módulo"}
+                </span>
+              </button>
+            ))}
+            {visibleStudentModules.length === 0 && (
+              <StudentModuleEmptyState
+                query={query}
+                tab={tab}
+                hasModules={modules.length > 0}
+                onClearSearch={() => setQuery("")}
+                onShowTab={setTab}
+                nextModule={upcoming[0]}
+                upcomingCount={upcoming.length}
+                onStart={onOpen}
+              />
+            )}
           </div>
         </div>
         <div className="student-schedule">

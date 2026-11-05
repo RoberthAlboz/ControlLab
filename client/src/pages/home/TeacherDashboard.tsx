@@ -14,8 +14,10 @@ import type {
   StudentBadge,
 } from "@shared/competencies";
 import TeacherBadgeManager from "@/components/TeacherBadgeManager";
+import { HalfGauge, PillGauge, TickBars } from "@/components/forge/HomeMeters";
 import {
   ArrowRight,
+  ArrowUpRight,
   Check,
   CircleHelp,
   Clock,
@@ -620,6 +622,13 @@ export function TeacherDashboard({
       )
     : 0;
   const stockAlerts = inventorySummary?.alerts ?? [];
+  const stockHealthy = inventorySummary?.totals.items
+    ? Math.round(
+        ((inventorySummary.totals.items - stockAlerts.length) /
+          inventorySummary.totals.items) *
+          100
+      )
+    : 0;
   const overdueLoans = inventorySummary?.totals.overdueLoans ?? 0;
   const firstName = teacherName.split(" ")[0] || "docente";
   const goTo = (next: TeacherTab) => {
@@ -708,29 +717,133 @@ export function TeacherDashboard({
   ];
 
   return (
-    <main className="clean-content teacher-dashboard-content td">
-      <header className="td-hero">
-        <div>
-          <span className="eyebrow">
-            {showModules ? "CENTRAL DOCENTE" : "VISÃO GERAL"}
-          </span>
-          <h1>Olá, {firstName}.</h1>
-          <p>
-            {showModules
-              ? "O que precisa da sua atenção, a turma e as próximas aulas."
-              : "Veja o que precisa da sua atenção, acompanhe as turmas, a agenda e o estoque."}
-          </p>
-        </div>
-        <div className="td-hero-actions">
-          <button type="button" className="td-btn" onClick={onOpenNotes}>
-            <FileText size={15} aria-hidden="true" /> Anotações
-          </button>
-          {showModules && (
-            <button type="button" className="td-btn is-primary" onClick={onNew}>
-              <Plus size={15} aria-hidden="true" /> Novo módulo
+    <main className="clean-content teacher-dashboard-content td hd-home">
+      <header className="td-hero hd-hero">
+        <div className="hd-hero-copy">
+          <div>
+            <span className="eyebrow">
+              {showModules ? "CENTRAL DOCENTE" : "VISÃO GERAL"}
+            </span>
+            <h1>Olá, {firstName}.</h1>
+            <p>
+              {showModules
+                ? "O que precisa da sua atenção, a turma e as próximas aulas."
+                : "Veja o que precisa da sua atenção, acompanhe as turmas, a agenda e o estoque."}
+            </p>
+          </div>
+          <div className="td-hero-actions">
+            <button type="button" className="td-btn" onClick={onOpenNotes}>
+              <FileText size={15} aria-hidden="true" /> Anotações
             </button>
-          )}
+            {showModules && (
+              <button type="button" className="td-btn is-primary" onClick={onNew}>
+                <Plus size={15} aria-hidden="true" /> Novo módulo
+              </button>
+            )}
+          </div>
         </div>
+        {tab === "hoje" && (
+          <section className="td-summary" aria-label="Resumo">
+            <button
+              type="button"
+              className="td-stat"
+              onClick={() => goTo("turma")}
+            >
+              <b className="hd-go" aria-hidden="true">
+                <ArrowUpRight size={16} />
+              </b>
+              <b className="td-stat-icon" aria-hidden="true">
+                <UsersRound size={18} />
+              </b>
+              <span className="td-stat-label">Alunos</span>
+              <strong>{supervision.length}</strong>
+              <em>progresso médio {averageProgress}%</em>
+              <HalfGauge value={averageProgress} />
+            </button>
+            {showModules && (
+              <button
+                type="button"
+                className="td-stat"
+                onClick={() => goTo("modulos")}
+              >
+                <b className="hd-go" aria-hidden="true">
+                  <ArrowUpRight size={16} />
+                </b>
+                <b className="td-stat-icon" aria-hidden="true">
+                  <Layers3 size={18} />
+                </b>
+                <span className="td-stat-label">Módulos publicados</span>
+                <strong>
+                  {published}
+                  <small>/{modules.length}</small>
+                </strong>
+                <em>
+                  {drafts
+                    ? `${drafts} ${drafts === 1 ? "rascunho" : "rascunhos"} · `
+                    : ""}
+                  {steps} etapas
+                </em>
+                <PillGauge
+                  value={modules.length ? (published / modules.length) * 100 : 0}
+                />
+              </button>
+            )}
+            <button
+              type="button"
+              className="td-stat"
+              onClick={() => goTo("agenda")}
+            >
+              <b className="hd-go" aria-hidden="true">
+                <ArrowUpRight size={16} />
+              </b>
+              <b className="td-stat-icon" aria-hidden="true">
+                <CalendarClock size={18} />
+              </b>
+              <span className="td-stat-label">Próximas aulas</span>
+              <strong>{upcomingActivities.length}</strong>
+              <em>{activities.length} no calendário</em>
+              <TickBars
+                filled={
+                  activities.length
+                    ? Math.ceil((upcomingActivities.length / activities.length) * 9)
+                    : 0
+                }
+                total={9}
+                start="Calendário"
+                end="Próximas"
+              />
+            </button>
+            <button
+              type="button"
+              className={`td-stat ${stockAlerts.length || overdueLoans ? "has-alert" : ""}`}
+              onClick={onOpenInventory}
+            >
+              <b className="hd-go" aria-hidden="true">
+                <ArrowUpRight size={16} />
+              </b>
+              <b className="td-stat-icon" aria-hidden="true">
+                <Warehouse size={18} />
+              </b>
+              <span className="td-stat-label">Estoque</span>
+              <strong>
+                {inventoryLoading
+                  ? "…"
+                  : inventoryError
+                    ? "—"
+                    : (inventorySummary?.totals.items ?? 0)}
+                <small> itens</small>
+              </strong>
+              <em>
+                {inventoryError
+                  ? "não foi possível carregar"
+                  : stockAlerts.length || overdueLoans
+                    ? `${stockAlerts.length} com estoque baixo · ${overdueLoans} atrasos`
+                    : `${inventorySummary?.totals.activeLoans ?? 0} empréstimos ativos`}
+              </em>
+              <HalfGauge value={stockHealthy} />
+            </button>
+          </section>
+        )}
       </header>
 
       <nav className="td-nav" role="tablist" aria-label="Seções da central docente">
@@ -768,80 +881,6 @@ export function TeacherDashboard({
 
       {tab === "hoje" && (
       <>
-      <section className="td-summary" aria-label="Resumo">
-        <button
-          type="button"
-          className="td-stat"
-          onClick={() => goTo("turma")}
-        >
-          <b className="td-stat-icon" aria-hidden="true">
-            <UsersRound size={18} />
-          </b>
-          <span className="td-stat-label">Alunos</span>
-          <strong>{supervision.length}</strong>
-          <em>progresso médio {averageProgress}%</em>
-        </button>
-        {showModules && (
-          <button
-            type="button"
-            className="td-stat"
-            onClick={() => goTo("modulos")}
-          >
-            <b className="td-stat-icon" aria-hidden="true">
-              <Layers3 size={18} />
-            </b>
-            <span className="td-stat-label">Módulos publicados</span>
-            <strong>
-              {published}
-              <small>/{modules.length}</small>
-            </strong>
-            <em>
-              {drafts
-                ? `${drafts} ${drafts === 1 ? "rascunho" : "rascunhos"} · `
-                : ""}
-              {steps} etapas
-            </em>
-          </button>
-        )}
-        <button
-          type="button"
-          className="td-stat"
-          onClick={() => goTo("agenda")}
-        >
-          <b className="td-stat-icon" aria-hidden="true">
-            <CalendarClock size={18} />
-          </b>
-          <span className="td-stat-label">Próximas aulas</span>
-          <strong>{upcomingActivities.length}</strong>
-          <em>{activities.length} no calendário</em>
-        </button>
-        <button
-          type="button"
-          className={`td-stat ${stockAlerts.length || overdueLoans ? "has-alert" : ""}`}
-          onClick={onOpenInventory}
-        >
-          <b className="td-stat-icon" aria-hidden="true">
-            <Warehouse size={18} />
-          </b>
-          <span className="td-stat-label">Estoque</span>
-          <strong>
-            {inventoryLoading
-              ? "…"
-              : inventoryError
-                ? "—"
-                : (inventorySummary?.totals.items ?? 0)}
-            <small> itens</small>
-          </strong>
-          <em>
-            {inventoryError
-              ? "não foi possível carregar"
-              : stockAlerts.length || overdueLoans
-                ? `${stockAlerts.length} com estoque baixo · ${overdueLoans} atrasos`
-                : `${inventorySummary?.totals.activeLoans ?? 0} empréstimos ativos`}
-          </em>
-        </button>
-      </section>
-
       <section
         id="td-atencao"
         className="td-section td-todo"
