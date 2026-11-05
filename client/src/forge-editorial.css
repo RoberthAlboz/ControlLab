@@ -718,30 +718,30 @@ html.dark .bench-chuck { fill: #5b6166; stroke: #2c3033; }
 }
 
 /* Tema escuro com as mesmas relações de contraste. */
-html.dark { color-scheme: dark; background: #151312; }
-html.dark, html.dark body, html.dark #root { background: #151312; color: #eee9e2; }
+html.dark { color-scheme: dark; background: #0e0a09; }
+html.dark, html.dark body, html.dark #root { background: #0e0a09; color: #efe6e0; }
 /* O editor de módulo (.me-shell) é renderizado fora do .clean-app: sem ele aqui, as cores escuras ficavam indefinidas. */
 html.dark .clean-app, html.dark .me-shell {
-  --theme-bg: #171514;
-  --theme-surface: #211e1b;
-  --theme-surface-soft: #2a2622;
-  --theme-border: #403a35;
-  --theme-border-strong: #5c534c;
-  --theme-text: #eee9e2;
-  --theme-heading: #fffaf3;
-  --theme-muted: #c0b8ae;
-  --theme-subtle: #a49b91;
-  --theme-accent-soft: #2f1d1f;
+  --theme-bg: #0e0a09;
+  --theme-surface: #181211;
+  --theme-surface-soft: #221a18;
+  --theme-border: #322824;
+  --theme-border-strong: #4a3c36;
+  --theme-text: #efe6e0;
+  --theme-heading: #fff7f2;
+  --theme-muted: #bdaea6;
+  --theme-subtle: #a39388;
+  --theme-accent-soft: #2e1a13;
   --theme-shadow: rgba(0,0,0,.2);
-  --forge-red: #f0575c;
-  --forge-red-deep: #ff8a8e;
-  --forge-red-wash: #2f1d1f;
-  --forge-red-rgb: 240, 87, 92;
-  --profile-glow-rgb: 240, 87, 92;
+  --forge-red: #ff6a3d;
+  --forge-red-deep: #ff8f6b;
+  --forge-red-wash: #2e1a13;
+  --forge-red-rgb: 255, 106, 61;
+  --profile-glow-rgb: 255, 106, 61;
   background: var(--theme-bg);
   color: var(--theme-text);
 }
-html.dark .student-profile-panel { background: #100f0e; }
+html.dark .student-profile-panel { background: #0e0a09; }
 html.dark .student-module-card, html.dark .student-stat-card, html.dark .stat-highlight { background-color: var(--theme-surface) !important; border-color: var(--theme-border) !important; }
 html.dark .student-stat-card { background-color: transparent !important; }
 html.dark .student-module-card strong, html.dark .student-stat-card strong, html.dark .student-stat-card span,
@@ -756,22 +756,22 @@ html.dark .clean-sidebar { background: var(--theme-surface); }
 html.dark .focus-session { border-color: var(--theme-border); background: var(--theme-surface); }
 html.dark .focus-session-copy strong, html.dark .focus-timer { color: var(--theme-heading); }
 html.dark .focus-control { border-color: var(--theme-border-strong); background: var(--theme-surface); color: var(--theme-text); }
-html.dark .focus-control-primary { border-color: var(--forge-red); background: var(--forge-red); color: #171514; }
-html.dark .teacher-modal-hero { background: #100f0e; }
+html.dark .focus-control-primary { border-color: var(--forge-red); background: var(--forge-red); color: #0e0a09; }
+html.dark .teacher-modal-hero { background: #0e0a09; }
 html.dark .notification-popover, html.dark .notification-popover-head, html.dark .notification-footer,
 html.dark .notification-item { background: var(--theme-surface); color: var(--theme-text); }
 html.dark .clean-app .sidebar-course {
-  border-color: rgba(197,210,235,.14);
-  background: rgba(177,194,230,.055);
+  border-color: rgba(255,240,230,.1);
+  background: rgba(255,240,230,.04);
   box-shadow: inset 0 1px rgba(255,255,255,.045), 0 10px 24px rgba(0,0,0,.16);
 }
 html.dark .clean-app .sidebar-course .course-title { color: var(--theme-heading); }
-html.dark .clean-app .sidebar-course .course-title span { color: #d98791; }
-html.dark .clean-app .sidebar-course .course-bar { background: rgba(197,210,235,.12); }
-html.dark .clean-app .sidebar-course .course-bar i { background: #f0575c; }
+html.dark .clean-app .sidebar-course .course-title span { color: #ff8f6b; }
+html.dark .clean-app .sidebar-course .course-bar { background: rgba(255,240,230,.1); }
+html.dark .clean-app .sidebar-course .course-bar i { background: #ff6a3d; }
 html.dark .clean-app .sidebar-course p { color: var(--theme-muted); }
-html.dark .clean-app .sidebar-course button { color: #e596a0; }
-html.dark .clean-app .sidebar-course button:hover { color: #ffc0c5; }
+html.dark .clean-app .sidebar-course button { color: #ff8f6b; }
+html.dark .clean-app .sidebar-course button:hover { color: #ffb79f; }
 
 /* Perfil do aluno: painel de identidade com linguagem de console editorial. */
 .clean-app .student-profile-panel {
@@ -812,23 +812,23 @@ html.dark .clean-app .sidebar-course button:hover { color: #ffc0c5; }
 .clean-app .resource-model-link:hover, .clean-app .resource-model-link:focus-visible { color: var(--forge-red-deep); text-decoration: underline; }
 
 html.dark .clean-app .student-profile-panel {
-  --profile-bg: #171925;
-  --profile-bg-deep: #0a0c12;
-  --profile-text: #f7f8fc;
-  --profile-muted: #aeb5c5;
-  --profile-faint: #737c90;
-  --profile-line: rgba(197,210,235,.16);
-  --profile-card: rgba(177,194,230,.075);
-  --profile-card-strong: rgba(177,194,230,.12);
-  --profile-accent: #ef9ca8;
-  --profile-accent-strong: #b94b6b;
-  background: radial-gradient(180px 140px at 50% 8%, rgba(143,78,128,.34), transparent 72%), radial-gradient(220px 180px at 10% 52%, rgba(48,78,135,.18), transparent 72%), linear-gradient(155deg, var(--profile-bg) 0%, var(--profile-bg-deep) 82%);
-  border-right-color: rgba(197,210,235,.18);
+  --profile-bg: #181211;
+  --profile-bg-deep: #0e0a09;
+  --profile-text: #fff7f2;
+  --profile-muted: #bdaea6;
+  --profile-faint: #a39388;
+  --profile-line: rgba(255,240,230,.1);
+  --profile-card: rgba(255,240,230,.04);
+  --profile-card-strong: rgba(255,240,230,.08);
+  --profile-accent: #ff8f6b;
+  --profile-accent-strong: #dd3410;
+  background: radial-gradient(180px 140px at 50% 8%, rgba(244,89,43,.2), transparent 72%), linear-gradient(155deg, var(--profile-bg) 0%, var(--profile-bg-deep) 82%);
+  border-right-color: rgba(255,240,230,.1);
 }
-html.dark .clean-app .student-profile-panel::before { background-image: linear-gradient(rgba(184,202,236,.055) 1px, transparent 1px), linear-gradient(90deg, rgba(184,202,236,.055) 1px, transparent 1px); mask-image: linear-gradient(to bottom, rgba(0,0,0,.8), transparent 70%); }
-html.dark .clean-app .student-profile-panel::after { background: linear-gradient(90deg, transparent, #e596a8, #8499d7, transparent); }
-html.dark .clean-app .student-avatar-large { background: linear-gradient(145deg, #f0a0ad, #8d315d 76%); box-shadow: 0 0 0 7px rgba(239,156,168,.1), 0 16px 42px rgba(0,0,0,.56); }
-html.dark .clean-app .level-ring { background: radial-gradient(circle at 30% 20%, rgba(221,231,255,.13), transparent 40%), var(--profile-card); box-shadow: inset 0 1px rgba(224,232,255,.1), 0 14px 38px rgba(0,0,0,.42); }
+html.dark .clean-app .student-profile-panel::before { background-image: linear-gradient(rgba(255,240,230,.04) 1px, transparent 1px), linear-gradient(90deg, rgba(255,240,230,.04) 1px, transparent 1px); mask-image: linear-gradient(to bottom, rgba(0,0,0,.8), transparent 70%); }
+html.dark .clean-app .student-profile-panel::after { background: linear-gradient(90deg, transparent, #ff8f6b, #c4080c, transparent); }
+html.dark .clean-app .student-avatar-large { background: linear-gradient(145deg, #ff8f6b, #a90a0c 76%); box-shadow: 0 0 0 7px rgba(255,143,107,.1), 0 16px 42px rgba(0,0,0,.56); }
+html.dark .clean-app .level-ring { background: radial-gradient(circle at 30% 20%, rgba(255,240,230,.1), transparent 40%), var(--profile-card); box-shadow: inset 0 1px rgba(255,240,230,.08), 0 14px 38px rgba(0,0,0,.42); }
 
 /* Fundo ambiente do perfil: mesh lento inspirado em gradientes animados e beams de grade. */
 .clean-app .student-profile-panel::before {
@@ -1947,7 +1947,7 @@ html.dark .teacher-student-status.is-completed { color: #86efac; }
 .teacher-analytics-note { color: var(--theme-muted); font-size: .75rem !important; }
 /* Cores dos gráficos, validadas (CVD, luminosidade, contraste) para cada superfície */
 .teacher-analytics { --chart-ord-1: #eba3a6; --chart-ord-2: #d9474c; --chart-ord-3: #8f0609; --chart-cat-1: #c4080c; --chart-cat-2: #2a78d6; --chart-cat-3: #1baf7a; }
-html.dark .teacher-analytics { --chart-ord-1: #8a3438; --chart-ord-2: #c94a4f; --chart-ord-3: #f39a9d; --chart-cat-1: #f0575c; --chart-cat-2: #3987e5; --chart-cat-3: #199e70; }
+html.dark .teacher-analytics { --chart-ord-1: #8a3438; --chart-ord-2: #c94a4f; --chart-ord-3: #f39a9d; --chart-cat-1: #f4592b; --chart-cat-2: #3987e5; --chart-cat-3: #199e70; }
 .teacher-chart-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
 .teacher-chart-card { min-width: 0; padding: 17px; border: 1px solid var(--theme-border); border-radius: 12px; background: var(--theme-surface); box-shadow: 0 8px 24px var(--theme-shadow); }
 .teacher-chart-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
@@ -2244,21 +2244,21 @@ html.dark .teacher-analytics { --chart-ord-1: #8a3438; --chart-ord-2: #c94a4f; -
 .clean-app .teacher-modal-actions { background: var(--theme-surface); }
 .clean-app .teacher-modal-actions button:not(.primary) { border-color: var(--theme-border); background: var(--theme-surface-soft); color: var(--theme-text); }
 .clean-app .teacher-modal-actions button:not(.primary):hover { border-color: var(--forge-red); background: var(--theme-accent-soft); color: var(--theme-heading); }
-html.dark .clean-app .teacher-row { background: #25211f; border-color: #4b433d; }
-html.dark .clean-app .teacher-row:hover { background: #34272a; }
+html.dark .clean-app .teacher-row { background: #1e1715; border-color: #3a2e29; }
+html.dark .clean-app .teacher-row:hover { background: #2a1e1a; }
 html.dark .clean-app .teacher-row b { color: #fffaf3; }
 html.dark .clean-app .teacher-row small { color: #d2c8be; }
 html.dark .clean-app .teacher-row em { background: #4b292d; color: #f0a1a7; }
-html.dark .clean-app .teacher-modal { background: #211e1b; border-color: #5c534c; }
-html.dark .clean-app .teacher-modal-body { background: #403a35; }
-html.dark .clean-app .teacher-profile-stat { background: #292522; }
+html.dark .clean-app .teacher-modal { background: #181211; border-color: #4a3c36; }
+html.dark .clean-app .teacher-modal-body { background: #322824; }
+html.dark .clean-app .teacher-profile-stat { background: #1e1715; }
 html.dark .clean-app .teacher-profile-stat strong { color: #f08b93; }
 html.dark .clean-app .teacher-profile-stat span { color: #d2c8be; }
 html.dark .clean-app .teacher-modal-section,
-html.dark .clean-app .teacher-modal-actions { background: #211e1b; }
+html.dark .clean-app .teacher-modal-actions { background: #181211; }
 html.dark .clean-app .teacher-modal-section p { color: #d2c8be; }
-html.dark .clean-app .teacher-modal-actions { border-color: #403a35; }
-html.dark .clean-app .teacher-modal-actions button:not(.primary) { background: #2a2622; color: #f5eee7; border-color: #5c534c; }
+html.dark .clean-app .teacher-modal-actions { border-color: #322824; }
+html.dark .clean-app .teacher-modal-actions button:not(.primary) { background: #221a18; color: #f5eee7; border-color: #4a3c36; }
 
 /* Recursos do módulo: grade equilibrada, ordem visual previsível e leitura responsiva. */
 @media (min-width: 1181px) {

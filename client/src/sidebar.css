@@ -56,17 +56,17 @@
 
 /* Tema escuro do app: o menu acompanha as superfícies escuras. */
 html.dark .cl-nav {
-  --nav-bg: #211b1d;
-  --nav-text: #fff6f6;
-  --nav-muted: #a99b9d;
-  --nav-line: #3b3033;
-  --nav-hover: #2a2224;
-  --nav-soft: #261f21;
-  --nav-accent: #ff5a5f;
+  --nav-bg: #120d0c;
+  --nav-text: #fff7f2;
+  --nav-muted: #a39388;
+  --nav-line: #2a201d;
+  --nav-hover: #1e1715;
+  --nav-soft: #181211;
+  --nav-accent: #ff6a3d;
   --nav-active-bg: linear-gradient(90deg, rgba(196, 8, 12, 0.28), rgba(142, 7, 7, 0.1) 70%, transparent);
-  --nav-ring-track: #3b3033;
-  --nav-ring-hole: #261f21;
-  --nav-avatar-bg: #3b2426;
+  --nav-ring-track: #322824;
+  --nav-ring-hole: #181211;
+  --nav-avatar-bg: #2e1a13;
   --nav-shadow: 18px 0 50px rgba(0, 0, 0, 0.4);
   --nav-glow: rgba(196, 8, 12, 0.22);
 }

@@ -32,19 +32,19 @@
 }
 
 html.dark {
-  --fl-paper: #151312;
-  --fl-surface: #211e1b;
-  --fl-surface-2: #2a2622;
-  --fl-line: #403a35;
-  --fl-line-strong: #5c534c;
-  --fl-ink: #fffaf3;
-  --fl-ink-soft: #eee9e2;
-  --fl-muted: #c0b8ae;
-  --fl-subtle: #a49b91;
-  --fl-red: #f0575c;
-  --fl-red-deep: #ff8a8e;
-  --fl-red-wash: #2f1d1f;
-  --fl-red-rgb: 240, 87, 92;
+  --fl-paper: #0e0a09;
+  --fl-surface: #181211;
+  --fl-surface-2: #221a18;
+  --fl-line: #322824;
+  --fl-line-strong: #4a3c36;
+  --fl-ink: #fff7f2;
+  --fl-ink-soft: #efe6e0;
+  --fl-muted: #bdaea6;
+  --fl-subtle: #a39388;
+  --fl-red: #ff6a3d;
+  --fl-red-deep: #ff8f6b;
+  --fl-red-wash: #2e1a13;
+  --fl-red-rgb: 255, 106, 61;
   --fl-ok: #82c7a3;
   --fl-ok-wash: #1d3127;
   --fl-warn: #e6b65e;
@@ -88,7 +88,7 @@ html.dark {
 .fl-button:focus-visible, .fl-icon-button:focus-visible { outline: 2px solid rgba(var(--fl-red-rgb), 0.72); outline-offset: 3px; }
 .fl-button-primary { border-color: var(--fl-ink); background: var(--fl-ink); color: var(--fl-paper); box-shadow: inset 0 -2px 0 var(--fl-red); }
 .fl-button-primary:not(:disabled):hover { border-color: var(--fl-red-deep); background: var(--fl-red-deep); color: #fff; }
-html.dark .fl-button-primary { border-color: var(--fl-red); background: var(--fl-red); color: #171514; box-shadow: none; }
+html.dark .fl-button-primary { border-color: var(--fl-red); background: var(--fl-red); color: #0e0a09; box-shadow: none; }
 html.dark .fl-button-primary:not(:disabled):hover { border-color: var(--fl-red-deep); background: var(--fl-red-deep); }
 .fl-button-secondary { border-color: var(--fl-line-strong); background: var(--fl-surface); color: var(--fl-ink-soft); }
 .fl-button-secondary:not(:disabled):hover { border-color: var(--fl-red); color: var(--fl-red-deep); background: var(--fl-red-wash); }

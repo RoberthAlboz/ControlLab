@@ -79,8 +79,8 @@
 
 /* Tema escuro: a cor de capa vem do módulo (estilo inline, pensada para o tema claro);
    uma sombra interna a escurece, ficando entre o fundo e o conteúdo. */
-html.dark .clean-app .library-content .module-cover { box-shadow: inset 0 0 0 999px rgba(24, 19, 18, 0.8); }
-html.dark .clean-app .library-content .module-cover-icon { background: #211e1b; color: #ff5a5f; }
+html.dark .clean-app .library-content .module-cover { box-shadow: inset 0 0 0 999px rgba(30, 23, 21, 0.94); }
+html.dark .clean-app .library-content .module-cover-icon { background: #0e0a09; color: #ff6a3d; }
 
 @media (max-width: 600px) {
   .clean-app .library-content .search-box { width: 100%; }

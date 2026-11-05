@@ -8,9 +8,33 @@
   --cl-scroll-firefox: #c4080c #fde6e6;
 }
 html.dark {
-  --cl-scroll-track: #151312;
-  --cl-scroll-firefox: #c4080c #211e1b;
+  --cl-scroll-track: #0e0a09;
+  --cl-scroll-firefox: #c4080c #181211;
 }
+
+/* Tema escuro: brasa discreta nos cantos, fixa ao rolar, atrás das telas internas. */
+html.dark .clean-app:not(:has(.hd-home)) {
+  background:
+    radial-gradient(40% 36% at 100% 0%, rgba(196, 8, 12, 0.16) 0%, rgba(196, 8, 12, 0) 100%) fixed,
+    radial-gradient(34% 44% at 0% 100%, rgba(244, 89, 43, 0.14) 0%, rgba(244, 89, 43, 0) 100%) fixed,
+    #0e0a09;
+}
+html.dark .clean-app:not(:has(.hd-home)) :is(.clean-main, .clean-content) { background: transparent; }
+html.dark .clean-app:not(:has(.hd-home)) .clean-header { border-color: rgba(255, 240, 230, 0.1); background: rgba(14, 10, 9, 0.6); }
+html.dark .clean-app .library-hero {
+  border: 1px solid rgba(255, 240, 230, 0.1);
+  background:
+    radial-gradient(circle at 88% 15%, rgba(244, 89, 43, 0.42), transparent 34%),
+    linear-gradient(125deg, #181211 0%, #1e1412 52%, #5a1109 100%);
+  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.42);
+}
+html.dark .clean-app .library-hero h1 em { color: #ff8f6b; }
+html.dark .clean-app .library-hero .breadcrumb { color: #ffb79f; }
+html.dark .clean-app .small-icon-button.danger { border-color: rgba(255, 106, 61, 0.4); background: rgba(255, 106, 61, 0.1); color: #ff8f6b; }
+/* Botão principal e dia ativo com o mesmo degradê do Início; texto branco com contraste AA. */
+html.dark .fl-button-primary { border-color: transparent; background: linear-gradient(135deg, #a90a0c, #dd3410); color: #ffffff; }
+html.dark .fl-button-primary:not(:disabled):hover { border-color: transparent; background: linear-gradient(135deg, #a90a0c, #dd3410); color: #ffffff; filter: brightness(1.1); }
+html.dark .nt-day.is-active { background: linear-gradient(135deg, #a90a0c, #dd3410); box-shadow: 0 10px 22px rgba(0, 0, 0, 0.4); }
 
 /* Barras de rolagem — Chrome, Edge, Safari */
 ::-webkit-scrollbar { width: 12px; height: 12px; }
