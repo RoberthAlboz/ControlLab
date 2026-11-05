@@ -2,8 +2,9 @@
 
 Plataforma web para o ensino de ferramentaria. Reúne dois contextos em um único sistema:
 
-- **Área educacional** (alunos e docentes): biblioteca de módulos, leitor com etapas sequenciais, progresso real gravado no banco, cronômetro por etapa, recursos técnicos, agenda de aulas, anotações, notificações, competências (badges), tema claro/escuro e painel de perfil com engrenagens.
-- **Estoque da ferramentaria** (somente docentes): ferramentas, máquinas, materiais e peças com saldo físico/reservado/disponível, localização, estado de conservação, entradas e saídas, ajustes justificados, empréstimos com reserva → retirada → devolução, alertas de estoque baixo, histórico imutável e vínculo com os recursos dos módulos.
+- **Área educacional**: biblioteca e editor de módulos; leitor de etapas com quizzes, progresso e cronômetro registrados no servidor; recursos técnicos com anexos e vínculo ao estoque; agenda escolar, diário de aula e notificações; competências (badges), painéis de acompanhamento e perfil do aluno.
+- **Gestão escolar**: administração de contas, papéis e turmas; docentes acompanham alunos das próprias turmas, enquanto a administração gerencia os acessos e supervisiona o estoque.
+- **Estoque da ferramentaria** (docentes operam; administração supervisiona): ferramentas, máquinas, materiais e peças com saldo físico/reservado/disponível, localização, conservação, entradas e saídas, ajustes justificados, empréstimos com reserva → retirada → devolução, alertas, auditoria e vínculo com os recursos dos módulos.
 
 Projeto resultante da unificação do **ForgeLab** (base técnica) com as regras de negócio do protótipo **ControlLab**. O porquê de cada decisão está em [`docs/AUDITORIA_INTEGRACAO_DOIS_PROJETOS.md`](docs/AUDITORIA_INTEGRACAO_DOIS_PROJETOS.md).
 
@@ -14,11 +15,27 @@ Projeto resultante da unificação do **ForgeLab** (base técnica) com as regras
 | | Aluno (`student`) | Docente (`teacher`) | Administração (`admin`) |
 |---|---|---|---|
 | Biblioteca e leitor (módulos publicados) | ✅ | ✅ (inclui rascunhos) | ✅ |
-| Registrar progresso e cronômetro | ✅ | — (pré-visualiza sem alterar) | — |
-| Editor de módulos, agenda, badges, supervisão | — | ✅ | ✅ |
-| **Estoque** (tela, URL e API) | ❌ bloqueado | ✅ | ✅ |
+| Quizzes, progresso e cronômetro próprios | ✅ | — (pré-visualiza sem alterar) | — |
+| Diário pessoal e competências próprias | ✅ | — | — |
+| Editor de módulos | — | ✅ | ✅ |
+| Agenda de aulas | — | ✅ (gerencia) | ✅ (visualiza) |
+| Acompanhar alunos e atribuir competências | — | ✅ (próprias turmas) | ✅ (todos) |
+| Operar estoque (cadastro, movimentações e empréstimos) | ❌ | ✅ | ✅ |
+| Gerir contas e turmas | ❌ | ❌ | ✅ |
+| Supervisionar estoque | ❌ | ❌ | ✅ |
 
 O papel vem **sempre** da sessão validada no servidor. Detalhes em [`docs/PERMISSOES_E_ACESSOS.md`](docs/PERMISSOES_E_ACESSOS.md).
+
+## Recursos essenciais
+
+- **Acesso e segurança**: login por e-mail e senha, sessão persistente e revogável, contas ativáveis/desativáveis e permissões verificadas no servidor. A administração cria contas, define papéis e associa alunos a turmas.
+- **Ensino e aprendizagem**: módulos publicados organizados em etapas sequenciais; quizzes por etapa; progresso e tempo registrados no servidor; biblioteca e leitor para estudo, além de editor e pré-visualização docente.
+- **Acompanhamento escolar**: agenda de aulas, diário de anotações do aluno, consulta docente aos diários dos alunos de suas turmas, acompanhamento de progresso/tempo e atribuição de competências. A administração cadastra turmas e supervisiona operações de estoque.
+- **Conteúdo técnico**: recursos por módulo, imagens e anexos; docentes podem associar recursos a itens do estoque. Dados de disponibilidade são exibidos somente a docentes e à administração.
+- **Estoque**: cadastro e arquivamento de itens/categorias, controle de saldo e reservas, movimentações auditáveis, empréstimos e devoluções, alertas e supervisão administrativa por turma e docente.
+- **Perfil e interface**: foto de perfil, notificações, tema claro/escuro e interface responsiva.
+
+As regras de acesso e o escopo dos dados por papel estão detalhados em [`docs/PERMISSOES_E_ACESSOS.md`](docs/PERMISSOES_E_ACESSOS.md); os percursos funcionais estão em [`docs/FLUXOS_DO_SISTEMA.md`](docs/FLUXOS_DO_SISTEMA.md).
 
 ## Como o estoque funciona
 
@@ -40,7 +57,7 @@ Fluxos completos em [`docs/FLUXOS_DO_SISTEMA.md`](docs/FLUXOS_DO_SISTEMA.md).
 
 ## Primeira execução (VS Code)
 
-No Windows, deixe o projeto em um caminho curto (por exemplo `C:ControlLab`): em pastas muito fundas, o `node_modules` ultrapassa o limite de caminho do sistema e o build falha.
+No Windows, deixe o projeto em um caminho curto (por exemplo `C:\ControlLab`): em pastas muito fundas, o `node_modules` ultrapassa o limite de caminho do sistema e o build falha.
 
 Abra a pasta do projeto no VS Code e, no terminal integrado:
 
@@ -71,7 +88,7 @@ Se o banco não puder ser aberto ou ainda não tiver tabelas, o servidor mostra 
 
 ### Contas de desenvolvimento
 
-A seed cria três contas **apenas para desenvolvimento**, com e-mail e senha definidos no seu `.env` (`SEED_TEACHER_*`, `SEED_STUDENT_*` e `SEED_ADMIN_*`). Com o `.env.example` sem alterações:
+A seed cria contas **apenas para desenvolvimento**: docente e aluno são obrigatórios; a conta de administração só é criada quando `SEED_ADMIN_PASSWORD` está definido. E-mails e senhas vêm do seu `.env` (`SEED_TEACHER_*`, `SEED_STUDENT_*` e `SEED_ADMIN_*`). Com o `.env.example` sem alterações:
 
 - Docente: valor de `SEED_TEACHER_EMAIL` / `SEED_TEACHER_PASSWORD`
 - Aluno: valor de `SEED_STUDENT_EMAIL` / `SEED_STUDENT_PASSWORD`
