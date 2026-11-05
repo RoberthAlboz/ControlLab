@@ -21,6 +21,7 @@ import "./teacher.css";
 import "./quiz.css";
 import "./theme-ux.css";
 import "./workshop.css";
+import "./dashboard-home.css";
 
 const queryClient = new QueryClient({
   defaultOptions: {

@@ -25,6 +25,7 @@ import ThemeSunMoon from "@/components/forge/ThemeSunMoon";
 import BrandLogo from "@/components/forge/BrandLogo";
 import NotesPage from "@/components/notes/NotesPage";
 import AppSidebar from "@/components/forge/AppSidebar";
+import HomeBackdrop from "@/components/forge/HomeBackdrop";
 import NotificationCenter, { type AppNotification } from "@/components/forge/NotificationCenter";
 import { ArrowLeft, Menu } from "lucide-react";
 import {
@@ -598,6 +599,7 @@ export default function Home({
         }}
         loggingOut={loggingOut}
       />
+      {view === "dashboard" && <HomeBackdrop />}
       <div className="clean-main">
         <header className="clean-header">
           <div className="header-left">

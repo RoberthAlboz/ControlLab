@@ -1,0 +1,514 @@
+/* Control Lab — Início (aluno, docente e administração).
+   Fundo branco com brilho vermelho e engrenagens desfocadas que surgem com a rolagem,
+   título em Sifonn, texto em Gotham, painéis de vidro e uma fileira de quatro indicadores.
+   Só muda a apresentação: os blocos viram itens de uma única grade com display: contents.
+   O CSS antigo força tamanhos, bordas e fundos com !important, por isso algumas regras
+   repetem o !important. */
+
+/* ------------------------------------------------------------------ */
+/* Fundo e tokens                                                      */
+/* ------------------------------------------------------------------ */
+/* isolate + z-index negativo: o fundo fica atrás sem criar contexto no conteúdo, e os modais
+   continuam acima do menu. O brilho e as engrenagens vêm de HomeBackdrop, guiados pela rolagem. */
+.clean-app:has(.hd-home) { --hd-accent: linear-gradient(135deg, #8e0707, #c4080c); position: relative; isolation: isolate; background: #ffffff; }
+.hd-backdrop {
+  --hd-u: 0.11vmax;
+  --hd-gear-fill: #c4080c;
+  --hd-gear-alpha: 0.17;
+  position: fixed;
+  z-index: -1;
+  inset: 0;
+  overflow: hidden;
+  background: linear-gradient(180deg, #ffffff 0%, #ffffff 55%, #fff6f6 100%);
+  pointer-events: none;
+}
+.hd-backdrop-glow {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(85% 44% at 50% 106%, rgba(196, 8, 12, 0.6) 0%, rgba(196, 8, 12, 0.24) 50%, rgba(196, 8, 12, 0) 100%);
+  opacity: 0;
+}
+.hd-gears { position: absolute; width: 0; height: 0; }
+/* À direita do título, no espaço livre da primeira tela. */
+.hd-gears.is-right { top: 28vh; right: 13vw; }
+.hd-gears.is-left { bottom: 8vh; left: 9vw; }
+/* Cada engrenagem é uma camada: girar e esmaecer não refaz o desfoque a cada quadro. */
+.hd-gear { position: absolute; display: block; opacity: 0; will-change: transform, opacity; }
+.hd-gear svg { display: block; width: 100%; height: 100%; fill: var(--hd-gear-fill); filter: blur(9px); opacity: var(--hd-gear-alpha); }
+/* Modo noturno: quase preto quente, com brasa nos cantos e no pé da página. */
+html.dark .clean-app:has(.hd-home) { --hd-accent: linear-gradient(135deg, #a90a0c, #dd3410); background: #0e0a09; }
+html.dark .hd-backdrop {
+  --hd-gear-fill: #ff5a2c;
+  --hd-gear-alpha: 0.07;
+  background:
+    radial-gradient(46% 42% at 100% 0%, rgba(196, 8, 12, 0.3) 0%, rgba(196, 8, 12, 0) 100%),
+    radial-gradient(38% 52% at 0% 78%, rgba(244, 89, 43, 0.26) 0%, rgba(244, 89, 43, 0) 100%),
+    #0e0a09;
+}
+html.dark .hd-backdrop-glow { background: radial-gradient(70% 40% at 60% 108%, rgba(244, 89, 43, 0.42) 0%, rgba(196, 8, 12, 0.16) 55%, rgba(196, 8, 12, 0) 100%); }
+.clean-app:has(.hd-home) > .clean-main { background: transparent; }
+/* A entrada termina sem deixar contexto de empilhamento: senão o menu cobre os modais. */
+.clean-app .hd-home { animation-fill-mode: backwards; }
+.clean-app:has(.hd-home) .clean-header { border-bottom: 0; background: transparent; box-shadow: none; }
+
+.clean-app .hd-home {
+  --hd-card: rgba(255, 255, 255, 0.82);
+  --hd-glass: rgba(255, 255, 255, 0.7);
+  --hd-pill: rgba(255, 255, 255, 0.78);
+  --hd-edge: rgba(255, 255, 255, 0.9);
+  --hd-row: rgba(255, 255, 255, 0.66);
+  --hd-chip: #ffffff;
+  --hd-shadow: 0 8px 24px rgba(142, 7, 7, 0.08), 0 2px 6px rgba(142, 7, 7, 0.04);
+  --hd-track: rgba(142, 7, 7, 0.13);
+  --hd-red-a: #8e0707;
+  --hd-red-b: #c4080c;
+  --fl-surface: var(--hd-card);
+  --theme-surface: var(--hd-card);
+  --fl-line: rgba(0, 0, 0, 0.09);
+  --theme-border: rgba(0, 0, 0, 0.09);
+  background: transparent;
+}
+html.dark .clean-app .hd-home {
+  --hd-card: rgba(24, 18, 17, 0.78);
+  --hd-glass: rgba(24, 18, 17, 0.72);
+  --hd-pill: rgba(14, 10, 9, 0.62);
+  --hd-edge: rgba(255, 240, 230, 0.1);
+  --hd-row: rgba(255, 240, 230, 0.04);
+  --hd-chip: rgba(255, 240, 230, 0.08);
+  --hd-shadow: 0 18px 44px rgba(0, 0, 0, 0.42);
+  --hd-track: rgba(255, 240, 230, 0.1);
+  --hd-red-a: #c4080c;
+  --hd-red-b: #ff6a3d;
+  --fl-line: rgba(255, 240, 230, 0.1);
+  --theme-border: rgba(255, 240, 230, 0.1);
+}
+
+/* ------------------------------------------------------------------ */
+/* Tipografia: Sifonn nos títulos, Gotham em todo o resto              */
+/* ------------------------------------------------------------------ */
+.clean-app .hd-home,
+.clean-app .hd-home * { font-family: var(--fl-body) !important; }
+.clean-app .hd-home :is(h1, h2, h3, .student-module-card > strong, .rc-notes-copy > strong) { font-family: var(--fl-display) !important; font-weight: 700 !important; }
+.clean-app .hd-home :is(h2, h3) { letter-spacing: -0.005em; }
+
+/* ------------------------------------------------------------------ */
+/* Menu e cabeçalho: botões circulares, ativo em vermelho              */
+/* ------------------------------------------------------------------ */
+.clean-app:has(.hd-home) .cl-nav { --nav-bg: transparent; --nav-line: rgba(0, 0, 0, 0.09); --nav-hover: transparent; --nav-soft: rgba(255, 255, 255, 0.82); }
+html.dark .clean-app:has(.hd-home) .cl-nav { --nav-line: rgba(255, 240, 230, 0.1); --nav-soft: rgba(14, 10, 9, 0.62); }
+.clean-app:has(.hd-home) .cl-nav::after,
+.clean-app:has(.hd-home) .cl-nav-glow,
+.clean-app:has(.hd-home) .cl-nav-active::before { display: none; }
+.clean-app:has(.hd-home) .cl-nav-active { border: 0; background: transparent; box-shadow: none; }
+.clean-app:has(.hd-home) .cl-nav-mark { border: 1px solid rgba(255, 255, 255, 0.9); border-radius: 50%; background: rgba(255, 255, 255, 0.82); box-shadow: 0 8px 22px rgba(142, 7, 7, 0.1); }
+.clean-app:has(.hd-home) .cl-nav-icon { width: 44px; height: 44px; margin-left: 4px; border: 1px solid rgba(255, 255, 255, 0.9); border-radius: 50%; background: rgba(255, 255, 255, 0.82); box-shadow: 0 6px 16px rgba(142, 7, 7, 0.08); transition: background-color 160ms ease, color 160ms ease, transform 200ms var(--fl-ease); }
+html.dark .clean-app:has(.hd-home) :is(.cl-nav-mark, .cl-nav-icon) { border-color: rgba(255, 240, 230, 0.1); background: rgba(14, 10, 9, 0.62); }
+.clean-app:has(.hd-home) .cl-nav-item:hover .cl-nav-icon { color: var(--nav-accent); }
+.clean-app:has(.hd-home) .cl-nav-item.is-active .cl-nav-icon { border-color: transparent; background: var(--hd-accent); box-shadow: 0 8px 20px rgba(196, 8, 12, 0.34); color: #fff6f6; }
+.clean-app:has(.hd-home) .cl-nav-dot { border-color: #ffffff; }
+.clean-app:has(.hd-home) .cl-nav-catalog { border-color: rgba(255, 255, 255, 0.9); border-radius: 999px; }
+.clean-app:has(.hd-home) .cl-nav-user { border-top: 0; }
+/* Aberto, o menu fica sobre o conteúdo e precisa de superfície própria. */
+@media (min-width: 861px) {
+  .clean-app:has(.hd-home) .cl-nav:is(:hover, :focus-within, .is-pinned) { --nav-bg: rgba(255, 255, 255, 0.86); -webkit-backdrop-filter: blur(24px); backdrop-filter: blur(24px); }
+  html.dark .clean-app:has(.hd-home) .cl-nav:is(:hover, :focus-within, .is-pinned) { --nav-bg: rgba(18, 13, 12, 0.9); }
+}
+@media (max-width: 860px) {
+  .clean-app:has(.hd-home) .cl-nav { --nav-bg: rgba(255, 255, 255, 0.94); -webkit-backdrop-filter: blur(24px); backdrop-filter: blur(24px); }
+  html.dark .clean-app:has(.hd-home) .cl-nav { --nav-bg: rgba(18, 13, 12, 0.96); }
+}
+.clean-app:has(.hd-home) .clean-header .cl-header-icon { border-color: rgba(255, 255, 255, 0.9); border-radius: 50%; background: rgba(255, 255, 255, 0.82); box-shadow: 0 6px 16px rgba(142, 7, 7, 0.08); }
+html.dark .clean-app:has(.hd-home) .clean-header .cl-header-icon { border-color: rgba(255, 240, 230, 0.1); background: rgba(14, 10, 9, 0.62); }
+.clean-app:has(.hd-home) .clean-header .cl-header-icon:hover { color: var(--fl-red); }
+
+/* ------------------------------------------------------------------ */
+/* Painéis                                                             */
+/* ------------------------------------------------------------------ */
+.clean-app .hd-home :is(.student-stat-card, .td-stat, .hd-modules, .student-profile-panel.sp-panel, .rc-card, #ah-turmas, #ah-calendario, #td-modulos) {
+  position: relative;
+  border: 1px solid var(--hd-edge) !important;
+  border-radius: 22px;
+  background: var(--hd-card) !important;
+  box-shadow: var(--hd-shadow) !important;
+  -webkit-backdrop-filter: blur(18px) saturate(1.2);
+  backdrop-filter: blur(18px) saturate(1.2);
+}
+/* Modo escuro: painéis de vidro escuro com fio claro no topo, sobre o brilho de brasa do fundo. */
+html.dark .clean-app .hd-home :is(.student-stat-card, .td-stat, .hd-modules, .student-profile-panel.sp-panel, .rc-card, #ah-turmas, #ah-calendario, #td-modulos, .student-schedule, .td-todo, .teacher-analytics, .teacher-supervision, .teacher-badge-manager, .schedule-manager) {
+  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.42), inset 0 1px 0 rgba(255, 240, 230, 0.06) !important;
+}
+/* Vidro flutuando sobre as engrenagens */
+.clean-app .hd-home :is(.student-schedule, .td-todo) {
+  border: 1px solid var(--hd-edge);
+  border-radius: 26px;
+  background: var(--hd-glass);
+  box-shadow: 0 24px 60px rgba(142, 7, 7, 0.16);
+  -webkit-backdrop-filter: blur(22px) saturate(1.3);
+  backdrop-filter: blur(22px) saturate(1.3);
+}
+
+/* ------------------------------------------------------------------ */
+/* Título, pílulas e botões                                            */
+/* ------------------------------------------------------------------ */
+.clean-app .hd-hero { margin: 0; padding: 0; border: 0; background: transparent; }
+.clean-app .hd-home .hd-hero .eyebrow { color: var(--fl-red) !important; font-size: 0.72rem !important; font-weight: 500; letter-spacing: 0.1em; }
+.clean-app .hd-home .hd-hero h1 {
+  max-width: 13ch;
+  margin: 12px 0 14px;
+  width: fit-content;
+  padding-bottom: 0.08em;
+  background: linear-gradient(100deg, #8e0707, #c4080c);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  font-size: clamp(2.7rem, 4.3vw, 4.1rem) !important;
+  line-height: 1.04 !important;
+  letter-spacing: -0.015em;
+}
+html.dark .clean-app .hd-home .hd-hero h1 { background: none; color: #ffffff; -webkit-text-fill-color: #ffffff; }
+.clean-app .hd-home .hd-hero p { max-width: 34ch; margin: 0; color: var(--fl-ink-soft); font-size: 0.95rem !important; line-height: 1.5; }
+
+.clean-app .hd-home .student-search,
+.clean-app .hd-home .hd-hero-stats .period-select,
+.clean-app .hd-home .student-tab-filters,
+.clean-app .td.hd-home .td-nav {
+  border: 1px solid var(--hd-edge);
+  border-radius: 999px;
+  background: var(--hd-pill);
+  box-shadow: 0 8px 22px rgba(142, 7, 7, 0.07);
+}
+.clean-app .hd-home .student-search { display: flex; width: 100%; height: 46px; align-items: center; gap: 10px; padding: 0 18px; }
+.clean-app .hd-home .student-search svg { flex: none; color: var(--fl-ink); }
+.clean-app .hd-home .student-search input { width: 100%; border: 0; outline: 0; background: transparent; color: var(--fl-ink); }
+.clean-app .hd-home .student-search input::placeholder { color: var(--fl-ink-soft); opacity: 0.85; }
+.clean-app .hd-home :is(.student-search, .hd-hero-stats .period-select):focus-within { box-shadow: 0 0 0 2px var(--fl-red); }
+.clean-app .hd-home .hd-hero-stats .period-select { display: flex; width: 100%; height: 46px; align-items: center; justify-content: space-between; gap: 6px; padding: 0 18px; }
+.clean-app .hd-home .hd-hero-stats .period-select :is(span, svg, select) { color: var(--fl-ink); }
+.clean-app .hd-home .hd-hero-stats .period-select select { min-width: 0; flex: 1; border: 0; outline: 0; background: transparent; }
+.clean-app .hd-home .hd-hero-stats .period-select option { color: #000000; }
+html.dark .clean-app .hd-home .hd-hero-stats .period-select option { background: #181211; color: #fff7f2; }
+
+/* Abas: trilho de vidro, aba ativa em vermelho */
+.clean-app .hd-home .student-tabs { margin: 0 0 14px; padding: 0; border: 0; }
+.clean-app .hd-home .student-tabs .student-tab-filters { padding: 4px; }
+.clean-app .hd-home .student-tabs .student-tab-filters button { padding: 7px 14px; color: var(--fl-ink-soft); }
+.clean-app .hd-home .student-tabs .student-tab-filters button.active { background: var(--hd-accent); box-shadow: none; color: #fff6f6; }
+.clean-app .hd-home .student-tabs button.active .student-tab-count { border-color: rgba(255, 246, 246, 0.5); background: transparent; color: #fff6f6; }
+.clean-app .td.hd-home .td-nav { position: static; display: flex; width: fit-content; max-width: 100%; gap: 2px; margin: 0; padding: 4px; }
+.clean-app .td.hd-home .td-nav button { margin: 0; padding: 8px 16px; border: 0; border-radius: 999px; color: var(--fl-ink); font-weight: 500; }
+.clean-app .td.hd-home .td-nav button.is-active { background: var(--hd-accent); box-shadow: none; color: #fff6f6; }
+.clean-app .td.hd-home .td-nav .td-nav-count { background: rgba(0, 0, 0, 0.08); color: inherit; }
+.clean-app .td.hd-home .td-nav button.is-active .td-nav-count { background: rgba(255, 246, 246, 0.2); color: #fff6f6; }
+html.dark .clean-app .td.hd-home .td-nav .td-nav-count { background: rgba(255, 240, 230, 0.1); }
+
+.clean-app .td.hd-home .td-hero-actions { gap: 8px; }
+.clean-app .td.hd-home .td-btn { min-height: 42px; border: 1px solid var(--hd-edge); border-radius: 999px; background: var(--hd-pill); box-shadow: 0 8px 22px rgba(142, 7, 7, 0.07); font-weight: 500; }
+.clean-app .td.hd-home .td-btn { transition: background-color 160ms ease, box-shadow 160ms ease, transform 160ms var(--fl-ease); }
+/* forge-editorial.css zera o movimento de botões e links com !important; aqui ele volta só no Início. */
+.clean-app .td.hd-home .td-btn:hover { background: var(--hd-chip); transform: translateY(-1px) !important; }
+.clean-app .td.hd-home .td-btn.is-primary:hover { background: var(--hd-accent); box-shadow: 0 8px 20px rgba(196, 8, 12, 0.3) !important; }
+.clean-app .td.hd-home .td-btn:active { transform: scale(0.98) !important; }
+.clean-app .td.hd-home .td-btn.is-primary { border-color: transparent; background: var(--hd-accent); color: #fff6f6; }
+.clean-app .td.hd-home :is(.td-stat, .td-todo-item, .td-btn):focus-visible { outline: 2px solid var(--fl-red); outline-offset: 2px; }
+
+/* Seta fina no canto: o cartão inteiro é clicável */
+.clean-app .hd-home .hd-go { position: absolute; top: 20px; right: 18px; display: grid; width: 24px; height: 24px; place-items: center; color: var(--fl-ink); transition: color 160ms ease, transform 200ms var(--fl-ease); }
+.clean-app .hd-home :is(.td-stat, .student-module-card):hover .hd-go { color: var(--fl-red); transform: translate(1px, -1px); }
+
+/* ------------------------------------------------------------------ */
+/* Indicadores                                                         */
+/* ------------------------------------------------------------------ */
+/* Resumo centralizado: ícone e rótulo, número dentro do medidor, uma linha de apoio. */
+.clean-app .hd-home :is(.student-stat-grid, .td-summary) {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  grid-area: 3 / 1 / 4 / -1;
+  grid-template-columns: none;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 320px);
+  justify-content: center;
+  gap: 12px;
+}
+.clean-app .hd-home :is(.student-stat-grid, .td-summary) > * { grid-area: auto !important; }
+.clean-app .hd-home :is(.student-stat-card, .td-stat) {
+  display: grid;
+  order: 0 !important;
+  min-height: 0;
+  grid-template-columns: 42px minmax(0, 1fr);
+  grid-template-rows: 42px auto auto auto;
+  align-items: center;
+  align-content: start;
+  column-gap: 12px;
+  row-gap: 0;
+  padding: 16px 18px 18px;
+  color: var(--fl-ink);
+  text-align: left;
+}
+.clean-app .hd-home :is(.student-stat-card .stat-icon, .td-stat .td-stat-icon) {
+  display: grid;
+  width: 42px;
+  height: 42px;
+  margin: 0;
+  place-items: center;
+  border: 0 !important;
+  border-radius: 50%;
+  background: var(--hd-chip);
+  box-shadow: 0 4px 12px rgba(142, 7, 7, 0.1);
+  color: var(--fl-ink);
+}
+.clean-app .td.hd-home .td-stat.has-alert .td-stat-icon { background: var(--hd-accent); color: #fff6f6; }
+.clean-app .hd-home :is(.student-stat-card > span:not(.hd-meter, .hd-ticks), .td-stat .td-stat-label) { margin: 0; padding-right: 22px; color: var(--fl-ink); font-size: 0.92rem !important; font-weight: 500; }
+.clean-app .hd-home :is(.student-stat-card > strong, .td-stat > strong) { margin: 0; grid-area: 3 / 1 / 4 / -1; align-self: end; justify-self: center; color: var(--fl-ink); font-size: clamp(1.8rem, 2.4vw, 2.3rem) !important; font-weight: 400 !important; font-variant-numeric: tabular-nums; line-height: 1.1; letter-spacing: -0.02em; }
+.clean-app .hd-home :is(.student-stat-card:has(.hd-pill) > strong, .td-stat:has(.hd-pill) > strong) { grid-area: 2 / 1 / 4 / -1; align-self: center; margin-top: 14px; }
+.clean-app .hd-home :is(.student-stat-card:has(.hd-ticks) > strong, .td-stat:has(.hd-ticks) > strong) { grid-area: 2 / 1 / 3 / -1; margin-top: 12px; }
+.clean-app .hd-home .student-stat-card > strong * { color: inherit; font-size: inherit !important; font-weight: 400 !important; }
+.clean-app .td.hd-home .td-stat strong small { margin-left: 0.15em; font-size: 0.5em !important; font-weight: 400 !important; }
+.clean-app .hd-home :is(.student-stat-card > small, .td-stat > em) { margin-top: 12px; grid-area: 4 / 1 / 5 / -1; justify-self: center; text-align: center; color: var(--fl-muted); font-size: 0.78rem !important; font-style: normal; font-weight: 400; line-height: 1.4; }
+.clean-app .td.hd-home .td-stat:hover { box-shadow: 0 22px 52px rgba(142, 7, 7, 0.16) !important; transform: translateY(-2px) !important; }
+
+/* Medidores */
+.clean-app .hd-home .hd-meter,
+.clean-app .hd-home .hd-ticks { position: relative; display: block; width: 100%; margin-top: 14px; }
+.clean-app .hd-home .hd-meter { grid-area: 2 / 1 / 4 / -1; }
+.clean-app .hd-home .hd-ticks { grid-area: 3 / 1 / 4 / -1; }
+.clean-app .hd-home .hd-half { max-width: 210px; justify-self: center; }
+.clean-app .hd-home .hd-pill { max-width: 230px; justify-self: center; }
+.clean-app .hd-home .hd-meter svg { display: block; width: 100% !important; max-width: none !important; height: auto !important; margin: 0; overflow: visible; }
+.hd-meter-track,
+.hd-meter-value { fill: none; stroke-linecap: round; stroke-width: 11; }
+.hd-meter-track { stroke: var(--hd-track); }
+.hd-meter-value { transition: stroke-dasharray 500ms var(--fl-ease); }
+.clean-app .hd-home .hd-ticks-bars { display: flex; height: 44px; justify-content: space-between; gap: 4px; }
+.clean-app .hd-home .hd-ticks-bars i { display: block; width: 7px; border-radius: 999px; background: var(--hd-track); }
+.clean-app .hd-home .hd-ticks-bars i.is-on { background: linear-gradient(0deg, #8e0707, #c4080c); }
+html.dark .clean-app .hd-home .hd-ticks-bars i.is-on { background: linear-gradient(0deg, #c4080c, #ff6a3d); }
+.clean-app .hd-home .hd-ticks-axis { display: flex; justify-content: space-between; margin-top: 8px; }
+.clean-app .hd-home .hd-ticks-axis span { color: var(--fl-muted); font-size: 0.72rem !important; line-height: 1.2; }
+
+/* ------------------------------------------------------------------ */
+/* Conteúdo dos cartões                                                */
+/* ------------------------------------------------------------------ */
+/* Painel de módulos */
+.clean-app .hd-home .hd-modules { padding: 16px; }
+.clean-app .hd-home .student-module-cards { min-height: 0; margin: 0; gap: 10px; }
+.clean-app .hd-home .student-main-column .student-module-card { position: relative; min-height: 0; padding: 16px; border: 1px solid var(--fl-line) !important; border-radius: 18px; background: var(--hd-row) !important; box-shadow: none !important; }
+.clean-app .hd-home .student-main-column .student-module-card { transition: border-color 160ms ease, transform 180ms var(--fl-ease); }
+.clean-app .hd-home .student-main-column .student-module-card:hover { border-color: rgba(196, 8, 12, 0.45) !important; transform: translateY(-2px) !important; }
+.clean-app .hd-home .student-main-column .student-module-card:active { transform: scale(0.99) !important; }
+.clean-app .td.hd-home .td-stat { transition: box-shadow 180ms ease, transform 180ms var(--fl-ease); }
+.clean-app .td.hd-home .td-stat:active { transform: scale(0.99) !important; }
+.clean-app .hd-home .rc-notes { transition: transform 180ms var(--fl-ease); }
+.clean-app .hd-home .rc-notes:hover { transform: translateY(-2px) !important; }
+.clean-app .hd-home .rc-notes:active { transform: scale(0.99) !important; }
+.clean-app .hd-home .student-main-column .student-card-icon { width: 38px; height: 38px; border: 0; border-radius: 50%; background: var(--hd-chip); box-shadow: 0 4px 12px rgba(142, 7, 7, 0.1); color: var(--fl-ink); }
+.clean-app .hd-home .student-main-column .student-card-kind { color: var(--fl-muted); font-weight: 500; letter-spacing: 0.04em; }
+.clean-app .hd-home .student-main-column .student-card-action { padding-left: 0; color: var(--fl-red-deep); }
+.clean-app .hd-home .student-main-column .student-module-card:hover .student-card-action { padding-left: 10px; }
+.clean-app .hd-home .student-card-progress-fill { background: linear-gradient(90deg, var(--hd-red-a), var(--hd-red-b)); }
+.clean-app .hd-home .student-empty-state,
+.clean-app .hd-home .student-empty-bench { border-radius: 18px; }
+
+/* Cronograma em vidro */
+.clean-app .hd-home .student-main-column .student-schedule { max-height: 520px; margin: 0; padding: 18px; overflow: auto; border-top: 1px solid var(--hd-edge); }
+.clean-app .hd-home .student-schedule .student-section-heading { margin: 0 0 12px; align-items: center; }
+.clean-app .hd-home .student-schedule .eyebrow { color: var(--fl-red); font-size: 0.72rem !important; letter-spacing: 0.08em; }
+.clean-app .hd-home .student-schedule .student-section-heading h2 { margin-top: 2px; color: var(--fl-ink); font-size: 1.35rem !important; line-height: 1.2; }
+.clean-app .hd-home .student-main-column .student-schedule .student-section-heading button { flex: none; padding: 6px 11px; border: 1px solid var(--fl-line); border-radius: 999px; background: var(--hd-row); color: var(--fl-ink); }
+.clean-app .hd-home .student-main-column .schedule-row { grid-template-columns: 48px minmax(0, 1fr); gap: 8px; margin-top: 6px; border: 0; }
+.clean-app .hd-home .student-main-column .schedule-day { border-radius: 14px; background: var(--hd-row); color: var(--fl-muted); }
+.clean-app .hd-home .student-main-column .schedule-day strong { color: var(--fl-ink); font: 400 1.1rem/1.1 var(--fl-body); }
+.clean-app .hd-home .student-main-column .schedule-line::before { display: none; }
+.clean-app .hd-home .student-main-column .schedule-line { padding: 0; border: 0; }
+.clean-app .hd-home .student-main-column .schedule-block { border: 0; border-radius: 14px; background: var(--hd-row) !important; color: var(--fl-ink); }
+.clean-app .hd-home .student-main-column .schedule-block:hover { box-shadow: 0 0 0 1px rgba(196, 8, 12, 0.45); transform: none; }
+.clean-app .hd-home .student-main-column .schedule-block :is(b, svg) { color: var(--fl-ink); font-weight: 500; }
+.clean-app .hd-home .student-main-column .schedule-block small { color: var(--fl-muted); }
+.clean-app .hd-home .student-main-column .schedule-empty { border-color: var(--fl-line-strong); background: transparent; }
+
+/* Perfil no mesmo cartão, sem engrenagens próprias: elas já estão no fundo */
+.clean-app .hd-home .student-profile-panel.sp-panel {
+  --profile-text: var(--fl-ink);
+  --profile-muted: var(--fl-muted);
+  --profile-faint: var(--fl-subtle);
+  --profile-line: var(--fl-line);
+  --profile-card: var(--hd-row);
+  --profile-card-strong: var(--hd-row);
+  --profile-accent: var(--fl-red);
+  overflow: hidden;
+  min-height: 0;
+  padding: 22px 16px 18px;
+}
+.clean-app .hd-home .student-profile-panel.sp-panel::before,
+.clean-app .hd-home .student-profile-panel.sp-panel::after { display: none; }
+.clean-app .hd-home .sp-panel .sp-avatar-upload { border: 1px solid rgba(0, 0, 0, 0.14); background: #ffffff; color: #000000; }
+.clean-app .hd-home .sp-panel .sp-avatar-upload svg { color: #000000; }
+.clean-app .hd-home .sp-panel h2.sp-hello { font-size: 1.35rem !important; line-height: 1.2; }
+.clean-app .hd-home .sp-panel h2.sp-hello strong { font-family: inherit !important; font-weight: inherit; }
+
+/* Coluna lateral */
+.clean-app .hd-home .rc-card { overflow: hidden; }
+.clean-app .hd-home .rc-head h2 { color: var(--fl-ink); font-size: 1.15rem !important; }.clean-app .hd-home .rc-notes { align-content: start; }
+.clean-app .hd-home .rc-notes-icon { width: 42px; height: 42px; border: 0; border-radius: 50%; background: var(--hd-chip); box-shadow: 0 4px 12px rgba(142, 7, 7, 0.1); color: var(--fl-ink); }
+.clean-app .hd-home .rc-notes-go { background: transparent; color: var(--fl-ink); }
+.clean-app .hd-home .rc-notes:hover .rc-notes-go { background: transparent; color: var(--fl-red); }
+.clean-app .hd-home .rc-notes::after { display: none; }
+
+/* Para fazer agora em vidro */
+.clean-app .td.hd-home .td-todo { margin: 0; padding: 18px; overflow: auto; align-self: start; }
+.clean-app .td.hd-home .td-todo .td-section-head { margin-bottom: 12px; }
+.clean-app .td.hd-home .td-todo .eyebrow { color: var(--fl-red); font-size: 0.72rem !important; font-weight: 500; letter-spacing: 0.08em; }
+.clean-app .td.hd-home .td-todo h2 { margin-top: 2px; font-size: 1.35rem !important; }
+.clean-app .td.hd-home .td-todo ul { gap: 6px; }
+.clean-app .td.hd-home .td-todo-item { grid-template-columns: 34px minmax(0, 1fr) auto; gap: 10px; padding: 9px 12px 9px 9px; border: 0; border-radius: 16px; background: var(--hd-row); }
+.clean-app .td.hd-home .td-todo-item:hover { box-shadow: 0 0 0 1px rgba(196, 8, 12, 0.45); }
+.clean-app .td.hd-home .td-todo-icon { width: 34px; height: 34px; border-radius: 50%; }
+.clean-app .td.hd-home .td-todo-copy strong { color: var(--fl-ink); font: 500 0.86rem/1.25 var(--fl-body); white-space: normal; }
+.clean-app .td.hd-home .td-todo-copy em { font-size: 0.75rem; font-style: normal; font-weight: 400; }
+.clean-app .td.hd-home .td-todo-action { font-size: 0.76rem; font-weight: 600; }
+.clean-app .td.hd-home .td-empty { border-radius: 16px; }
+
+/* Seções abaixo da grade */
+.clean-app .td.hd-home .td-section { margin: 0; }
+.clean-app .td.hd-home :is(#ah-turmas, #ah-calendario, #td-modulos) { padding: 20px; }
+.clean-app .td.hd-home :is(.td-section-head, #ah-calendario) h2 { color: var(--fl-ink); font-size: 1.35rem !important; line-height: 1.2; }
+.clean-app .td.hd-home :is(#ah-turmas, #ah-calendario, #td-modulos) .eyebrow { color: var(--fl-red) !important; font-size: 0.72rem !important; font-weight: 500; letter-spacing: 0.08em; }
+.clean-app .td.hd-home #ah-turmas .fl-table-wrap { overflow: auto; border-radius: 14px; }
+/* Sem backdrop-filter: estes painéis contêm modais fixos, que ficariam presos dentro deles. */
+.clean-app .td.hd-home :is(.teacher-analytics, .teacher-supervision, .teacher-badge-manager, .schedule-manager) { margin: 0 0 10px; border-color: var(--hd-edge) !important; border-radius: 22px; background: var(--hd-card); box-shadow: var(--hd-shadow); }
+.clean-app .td.hd-home #ah-calendario > * { margin: 0; padding: 0; border: 0 !important; background: transparent; box-shadow: none; }
+.clean-app .td.hd-home .teacher-data-status:not(:empty) { width: fit-content; padding: 8px 16px; border: 1px solid var(--hd-edge); border-radius: 999px; background: var(--hd-card); }
+
+/* Modais: acima do menu e com superfície opaca, sem herdar o vidro dos painéis. */
+.clean-app .hd-home :is(.teacher-modal-backdrop, .calendar-modal-backdrop) { z-index: 60; }
+.clean-app .hd-home :is(.teacher-modal, .calendar-modal, .tp-modal) { --fl-surface: #ffffff; --theme-surface: #ffffff; --hd-card: #ffffff; }
+html.dark .clean-app .hd-home :is(.teacher-modal, .calendar-modal, .tp-modal) { --fl-surface: #181211; --theme-surface: #181211; --hd-card: #181211; }
+.clean-app .hd-home .teacher-modal-close { border-color: var(--fl-line); background: var(--fl-surface); color: var(--fl-ink); }
+
+/* ------------------------------------------------------------------ */
+/* Grade do aluno                                                      */
+/* ------------------------------------------------------------------ */
+.clean-app .student-dashboard.hd-home {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  align-items: stretch;
+  gap: 12px;
+  max-width: 1600px;
+  min-height: 0;
+  margin: 0 auto;
+  padding: 10px clamp(14px, 2vw, 28px) 40px;
+}
+.clean-app .student-dashboard.hd-home :is(.hd-hero-copy, .hd-hero-stats, .hd-hero-stats > .student-section-heading, .student-main-column, .student-right-column) { display: contents; }
+/* Primeira tela só com o resumo: busca e filtro no topo, título no meio, indicadores na base. */
+.clean-app .student-dashboard.hd-home > .hd-hero {
+  display: grid;
+  min-height: calc(100svh - 107px);
+  grid-area: 1 / 1 / 2 / 13;
+  grid-template-columns: minmax(0, 420px) 260px 1fr;
+  grid-template-rows: auto 1fr auto;
+  gap: 12px;
+}
+.clean-app .hd-home .hd-hero-copy > div:not(.student-top-actions) { grid-area: 2 / 1 / 3 / -1; align-self: center; padding: 18px 0; }
+.clean-app .hd-home .student-top-actions { display: block; width: 100%; grid-area: 1 / 1 / 2 / 2; }
+.clean-app .hd-home .hd-hero-stats > .student-section-heading > div { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.clean-app .hd-home .hd-hero-stats .period-select { grid-area: 1 / 2 / 2 / 3; }
+/* Ao buscar, o resumo sai da frente e os resultados sobem para logo abaixo do campo. */
+.clean-app .student-dashboard.hd-home:has(.student-search input:not(:placeholder-shown)) > .hd-hero { min-height: 0; grid-template-rows: auto; }
+.clean-app .student-dashboard.hd-home:has(.student-search input:not(:placeholder-shown)) :is(.student-stat-grid, .hd-hero-copy > div:not(.student-top-actions)) { display: none; }
+/* Abaixo da dobra: módulos na largura toda; cronograma, lateral e, na direita, o card do aluno. */
+.clean-app .hd-home .hd-modules { grid-area: 2 / 1 / 3 / 13; }
+.clean-app .hd-home .student-main-column > .student-schedule { grid-area: 3 / 1 / 6 / 7; }
+.clean-app .student-dashboard.hd-home > .student-profile-panel { grid-area: 3 / 10 / 6 / 13; align-self: stretch; }
+.clean-app .hd-home .student-right-column > .rc-teachers { grid-area: 3 / 7 / 4 / 10; }
+.clean-app .hd-home .student-right-column > .rc-notes { grid-area: 4 / 7 / 5 / 10; }
+.clean-app .hd-home .student-right-column > .rc-loans { grid-area: 5 / 7 / 6 / 10; }
+
+/* ------------------------------------------------------------------ */
+/* Grade do docente e da administração                                 */
+/* ------------------------------------------------------------------ */
+.clean-app main.td.hd-home {
+  display: grid;
+  width: min(1600px, 100%);
+  max-width: none;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: 12px;
+  padding: 10px clamp(14px, 2vw, 28px) 40px;
+}
+.clean-app main.td.hd-home > * { grid-column: 1 / -1; }
+/* Abas e ações no topo, título no meio, indicadores na base da primeira tela. */
+.clean-app main.td.hd-home > .td-nav { order: -1; }
+.clean-app main.td.hd-home > .hd-hero { position: relative; display: grid; margin: 0; padding: 0; border: 0; grid-template-rows: auto 1fr auto; gap: 12px; }
+.clean-app main.td.hd-home > .hd-hero:has(.td-summary) { min-height: calc(100svh - 107px); }
+.clean-app main.td.hd-home:has(> .td-nav) > .hd-hero:has(.td-summary) { min-height: calc(100svh - 165px); }
+.clean-app main.td.hd-home .hd-hero-copy { display: contents; }
+.clean-app main.td.hd-home .hd-hero-copy > div:not(.td-hero-actions) { grid-area: 2 / 1 / 3 / -1; align-self: center; padding: 18px 0; }
+.clean-app main.td.hd-home .td-hero-actions { display: flex; grid-area: 1 / 1 / 2 / -1; }
+.clean-app main.td.hd-home > .teacher-data-status { min-height: 0; }
+
+/* ------------------------------------------------------------------ */
+/* Larguras menores                                                    */
+/* ------------------------------------------------------------------ */
+/* Com espaço, busca, filtro e abas sobem para o cabeçalho, centralizados entre a logo e as notificações. */
+@media (min-width: 1101px) {
+  .clean-app .student-dashboard.hd-home > .hd-hero { position: relative; --hd-bar: min(640px, calc(100% - 540px)); grid-template-rows: 0 1fr auto; }
+  .clean-app .hd-home .student-top-actions,
+  .clean-app .hd-home .hd-hero-stats .period-select { position: absolute; z-index: 5; top: -70px; grid-area: 1 / 1 / 2 / -1; }
+  .clean-app .hd-home .student-top-actions { left: calc(50% - var(--hd-bar) / 2); width: calc(var(--hd-bar) * 0.55); }
+  .clean-app .hd-home .hd-hero-stats .period-select { left: calc(50% - var(--hd-bar) / 2 + var(--hd-bar) * 0.55 + 12px); width: calc(var(--hd-bar) * 0.45 - 12px); }
+  .clean-app main.td.hd-home { position: relative; }
+  .clean-app main.td.hd-home > .td-nav { position: absolute; z-index: 5; top: -59px; left: 50%; transform: translateX(-50%); }
+  .clean-app main.td.hd-home:has(> .td-nav) > .hd-hero:has(.td-summary) { min-height: calc(100svh - 107px); }
+}
+@media (min-width: 1101px) and (max-width: 1240px) {
+  /* Sem espaço para o rótulo visível; ele continua nomeando o seletor para leitores de tela. */
+  .clean-app .hd-home .hd-hero-stats .period-select > span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+}
+@media (max-width: 1240px) {
+  .clean-app .hd-home .hd-modules { grid-area: 2 / 1 / 3 / 13; }
+  .clean-app .hd-home .student-main-column > .student-schedule { grid-area: 3 / 1 / 4 / 13; }
+  .clean-app .student-dashboard.hd-home > .student-profile-panel { grid-area: 4 / 7 / 7 / 13; }
+  .clean-app .hd-home .student-right-column > .rc-teachers { grid-area: 4 / 1 / 5 / 7; }
+  .clean-app .hd-home .student-right-column > .rc-notes { grid-area: 5 / 1 / 6 / 7; }
+  .clean-app .hd-home .student-right-column > .rc-loans { grid-area: 6 / 1 / 7 / 7; }
+}
+@media (max-width: 1100px) {
+  .clean-app .hd-home .td-summary { grid-auto-flow: row; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-columns: auto; justify-content: stretch; }
+}
+/* Telas estreitas: uma coluna; as engrenagens recuam para não competir com o texto. */
+@media (max-width: 760px) {
+  .hd-backdrop { --hd-u: 0.085vmax; }
+  .hd-gears.is-right { top: 26vh; right: 4vw; }
+  .clean-app .student-dashboard.hd-home { grid-template-rows: auto; }
+  .clean-app .student-dashboard.hd-home > .hd-hero { min-height: 0; grid-template-columns: minmax(0, 1fr); grid-template-rows: auto; }
+  .clean-app .hd-home .student-top-actions { order: -2; }
+  .clean-app .hd-home .hd-hero-stats .period-select { order: -1; }
+  .clean-app main.td.hd-home > .hd-hero:has(.td-summary),
+  .clean-app main.td.hd-home:has(> .td-nav) > .hd-hero:has(.td-summary) { min-height: 0; }
+  .clean-app .hd-home :is(.student-stat-grid, .td-summary) { grid-area: auto / 1 / auto / -1; grid-auto-flow: row; grid-template-columns: minmax(0, 1fr); grid-auto-columns: auto; justify-content: stretch; }
+  .clean-app .student-dashboard.hd-home > *,
+  .clean-app .hd-home :is(.hd-hero-copy > div, .student-top-actions, .hd-hero-stats .period-select, .student-right-column > *, .hd-modules, .student-main-column > .student-schedule) { grid-area: auto / 1 / auto / -1 !important; margin: 0; }
+  .clean-app .hd-home .student-tabs { flex-wrap: wrap; gap: 8px; }
+  .clean-app .hd-home .student-tabs .student-tab-filters { width: 100%; flex-wrap: wrap; justify-content: center; border-radius: 24px; }
+  .clean-app .hd-home .student-tabs .student-tab-filters button { padding: 7px 10px; }
+  /* Mesma leitura de sempre: indicadores, módulos e cronograma antes do perfil. */
+  .clean-app .hd-home .hd-modules { order: 1; }
+  .clean-app .hd-home .student-main-column > .student-schedule { order: 2; max-height: none; }
+  .clean-app .student-dashboard.hd-home > .student-profile-panel { order: 3; }
+  .clean-app .hd-home .student-right-column > * { order: 4; }
+  .clean-app .hd-home .hd-hero h1 { max-width: none; }
+  .clean-app .hd-home .hd-hero p { max-width: none; }
+  .clean-app .hd-home .student-main-column .student-module-cards { grid-template-columns: minmax(0, 1fr); }
+  .clean-app .td.hd-home .td-nav { width: 100%; border-radius: 24px; flex-wrap: wrap; justify-content: center; }
+  .clean-app .td.hd-home .td-todo-item { grid-template-columns: 34px minmax(0, 1fr); }
+  .clean-app .td.hd-home .td-todo-action { grid-column: 2; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .clean-app .hd-home .hd-go,
+  .hd-meter-value { transition: none; }
+  .clean-app .hd-home :is(.td-stat, .student-module-card):hover .hd-go,
+  .clean-app .td.hd-home :is(.td-stat, .td-btn):is(:hover, :active),
+  .clean-app .hd-home .rc-notes:is(:hover, :active) { transform: none !important; }
+  .clean-app .hd-home .student-main-column .student-module-card:is(:hover, :active) { transform: none !important; }
+}
