@@ -8,6 +8,14 @@ Plataforma web para o ensino de ferramentaria. Reúne dois contextos em um únic
 
 Projeto resultante da unificação do **ForgeLab** (base técnica) com as regras de negócio do protótipo **ControlLab**. O porquê de cada decisão está em [`docs/AUDITORIA_INTEGRACAO_DOIS_PROJETOS.md`](docs/AUDITORIA_INTEGRACAO_DOIS_PROJETOS.md).
 
+## Linha do tempo do design
+
+[Assista ao vídeo](docs/design/linha-do-tempo-design.mp4) (1min51, sem áudio) com as cinco versões do design, de 23/10 a 05/11/2026. O resumo de cada versão está em [`docs/design/HISTORICO_DO_DESIGN.md`](docs/design/HISTORICO_DO_DESIGN.md).
+
+![Início do aluno, tema claro](docs/design/telas/inicio-aluno-claro.jpg)
+
+![Início do docente, tema escuro](docs/design/telas/inicio-docente-escuro.jpg)
+
 ---
 
 ## Aluno × docente
