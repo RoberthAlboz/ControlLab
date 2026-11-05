@@ -53,7 +53,7 @@ Data: 22/10/2026. Escopo: unificar o **ForgeLab** (projeto educacional) e o **Co
 
 **Base: ForgeLab.** Critérios: única base com backend, banco, autenticação com revogação, transações e testes; menor risco de regressão no que já funcionava (progresso, cronômetro, editor). O ControlLab não tem código reaproveitável no servidor; dele foram migradas **as regras de domínio, os estados e os textos**, reimplementados em TypeScript (`shared/inventory.ts`) e no banco.
 
-Não foi feita cópia de pastas: o `dist/app.js` do ControlLab não entra no projeto. Seus documentos foram preservados em `docs/historico/controllab/` para rastreabilidade.
+Não foi feita cópia de pastas: o `dist/app.js` do ControlLab não entra no projeto. Seus documentos foram preservados em `docs/historico/controllab/` na tag `design-v5`, para rastreabilidade.
 
 ## 3. Funcionalidades preservadas
 
@@ -85,7 +85,7 @@ Não foi feita cópia de pastas: o `dist/app.js` do ControlLab não entra no pro
 ## 6. Decisões de banco
 
 - **SQLite** (decisão revista em 22/10/2026, a pedido): o banco é o arquivo `data/forgelab.db` dentro do projeto, usando o `node:sqlite` embutido no Node 22.16+. Sem Docker, XAMPP ou dependência nativa para compilar — basta `pnpm install`, `pnpm db:setup`, `pnpm dev`. O Drizzle foi mantido (driver `sqlite-proxy`).
-- **Rebaseline das migrations**: `drizzle/0000_forgelab_baseline.sql` cria o schema completo em SQLite; as migrations MariaDB antigas (com a 0004 ausente) ficaram em `drizzle/legacy/` apenas como histórico.
+- **Rebaseline das migrations**: `drizzle/0000_forgelab_baseline.sql` cria o schema completo em SQLite; as migrations MariaDB antigas (com a 0004 ausente) ficaram em `drizzle/legacy/` na tag `design-v5`, apenas como histórico.
 - Tabelas do estoque com **chaves estrangeiras** (verificação ligada por `PRAGMA foreign_keys`), **`CHECK`** de saldo não negativo e reserva ≤ físico, **índices únicos** para código patrimonial, nome de categoria e chaves de idempotência.
 - **Sem exclusão física** de itens: arquivamento (`archivedAt`, `archivedBy`, `archiveReason`). Movimentações são imutáveis; correções são novos ajustes.
 - Concorrência: uma conexão por processo e transações serializadas por mutex (substitui o `SELECT … FOR UPDATE` do MariaDB). Adequado a uma instância do servidor — o cenário do TCC.

@@ -48,7 +48,6 @@ Convenções de tipos: datas em `INTEGER` (milissegundos, convertidas em `Date` 
 
 - `pnpm db:migrate` aplica as pendentes (tabela `__drizzle_migrations`, mesmo formato do Drizzle).
 - Para mudar o schema: edite `drizzle/schema.ts` → `pnpm db:generate` → revise o SQL gerado → `pnpm db:migrate`.
-- `drizzle/legacy/` guarda as migrations MariaDB do ForgeLab original, só como histórico (fora do pacote de entrega; disponível no GitHub).
 
 ## Seed (idempotente)
 

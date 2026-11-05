@@ -8,7 +8,6 @@
   },
   "search.exclude": {
     "pnpm-lock.yaml": true,
-    "drizzle/meta": true,
-    "drizzle/legacy": true
+    "drizzle/meta": true
   }
 }

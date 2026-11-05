@@ -17,8 +17,7 @@
     "db:setup": "tsx scripts/db-setup.ts",
     "db:reset": "tsx scripts/db-reset.ts",
     "uploads:clean": "tsx scripts/uploads-clean.ts",
-    "user:create": "tsx scripts/create-user.ts",
-    "entrega": "git -c core.autocrlf=false archive --format=zip --prefix=ControlLab/ -o ../ControlLab-entrega.zip HEAD"
+    "user:create": "tsx scripts/create-user.ts"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.15",
