@@ -40,6 +40,8 @@ Fluxos completos em [`docs/FLUXOS_DO_SISTEMA.md`](docs/FLUXOS_DO_SISTEMA.md).
 
 ## Primeira execução (VS Code)
 
+No Windows, deixe o projeto em um caminho curto (por exemplo `C:ControlLab`): em pastas muito fundas, o `node_modules` ultrapassa o limite de caminho do sistema e o build falha.
+
 Abra a pasta do projeto no VS Code e, no terminal integrado:
 
 ```bash
