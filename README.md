@@ -69,10 +69,11 @@ Se o banco não puder ser aberto ou ainda não tiver tabelas, o servidor mostra 
 
 ### Contas de desenvolvimento
 
-A seed cria duas contas **apenas para desenvolvimento**, com e-mail e senha definidos no seu `.env` (`SEED_TEACHER_*` e `SEED_STUDENT_*`). Com o `.env.example` sem alterações:
+A seed cria três contas **apenas para desenvolvimento**, com e-mail e senha definidos no seu `.env` (`SEED_TEACHER_*`, `SEED_STUDENT_*` e `SEED_ADMIN_*`). Com o `.env.example` sem alterações:
 
 - Docente: valor de `SEED_TEACHER_EMAIL` / `SEED_TEACHER_PASSWORD`
 - Aluno: valor de `SEED_STUDENT_EMAIL` / `SEED_STUDENT_PASSWORD`
+- Administração: valor de `SEED_ADMIN_EMAIL` / `SEED_ADMIN_PASSWORD`
 
 A interface nunca exibe senhas; em desenvolvimento ela mostra o selo **DEV** e indica onde encontrar as contas. Para contas reais:
 
@@ -140,12 +141,12 @@ No navegador, “Sair” encerra e revoga a sessão no servidor.
 ## Estrutura
 
 ```
-client/        React 19 + Vite + Tailwind 4 + Framer Motion (telas, login, estoque)
+client/        React 19 + Vite + Tailwind 4 + Framer Motion (telas, login, estoque; estilos em src/styles/)
 server/        Express + tRPC (autenticação, módulos, progresso, estoque)
 shared/        regras e validações usadas pelo cliente e pelo servidor
 drizzle/       schema SQLite, migration base, versão Postgres/Supabase (postgres/) e histórico MariaDB (legacy/)
 scripts/       setup, migração, seed, reset e criação de usuários
-docs/          auditoria, permissões, banco e fluxos (+ histórico dos dois projetos)
+docs/          auditoria, permissões, banco e fluxos (+ histórico dos dois projetos e do design)
 ```
 
 ## Documentação
@@ -154,6 +155,7 @@ docs/          auditoria, permissões, banco e fluxos (+ histórico dos dois pro
 - [Permissões e acessos](docs/PERMISSOES_E_ACESSOS.md)
 - [Banco de dados](docs/BANCO_DE_DADOS.md)
 - [Fluxos do sistema](docs/FLUXOS_DO_SISTEMA.md)
+- [Histórico do design, com vídeo da linha do tempo](docs/design/HISTORICO_DO_DESIGN.md)
 - Histórico dos projetos de origem: `docs/historico/`
 
 > Nunca coloque senhas reais no repositório ou neste README. O `.env` está no `.gitignore`.
