@@ -144,7 +144,7 @@ No navegador, “Sair” encerra e revoga a sessão no servidor.
 client/        React 19 + Vite + Tailwind 4 + Framer Motion (telas, login, estoque; estilos em src/styles/)
 server/        Express + tRPC (autenticação, módulos, progresso, estoque)
 shared/        regras e validações usadas pelo cliente e pelo servidor
-drizzle/       schema SQLite, migration base, versão Postgres/Supabase (postgres/) e histórico MariaDB (legacy/)
+drizzle/       schema SQLite, migration base, versão Postgres/Supabase (postgres/) e histórico MariaDB (legacy/, só no GitHub)
 scripts/       setup, migração, seed, reset e criação de usuários
 docs/          auditoria, permissões, banco e fluxos (+ histórico dos dois projetos e do design)
 ```
@@ -156,6 +156,6 @@ docs/          auditoria, permissões, banco e fluxos (+ histórico dos dois pro
 - [Banco de dados](docs/BANCO_DE_DADOS.md)
 - [Fluxos do sistema](docs/FLUXOS_DO_SISTEMA.md)
 - [Histórico do design, com vídeo da linha do tempo](docs/design/HISTORICO_DO_DESIGN.md)
-- Histórico dos projetos de origem: `docs/historico/`
+- Histórico dos projetos de origem: `docs/historico/` (só no GitHub)
 
 > Nunca coloque senhas reais no repositório ou neste README. O `.env` está no `.gitignore`.

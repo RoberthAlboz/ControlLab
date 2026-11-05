@@ -1,3 +1,11 @@
 # Scripts das skills rodam no bash: sempre LF, em qualquer máquina
 *.sh text eol=lf
 *.py text eol=lf
+
+# Fora do pacote de entrega (pnpm entrega): ferramentas do agente e histórico que o sistema não usa
+.claude/ export-ignore
+CLAUDE.md export-ignore
+skills-lock.json export-ignore
+docs/historico/ export-ignore
+drizzle/legacy/ export-ignore
+.gitattributes export-ignore

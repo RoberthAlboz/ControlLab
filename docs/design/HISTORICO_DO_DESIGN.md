@@ -23,10 +23,6 @@ pnpm dev
 
 Use uma cópia separada do projeto: as versões têm dependências e migrations diferentes, e `pnpm db:setup` altera o banco em `data/`. Para voltar, use `git checkout main`.
 
-## Referência visual
-
-[`referencia-fundo-inicio.jpg`](referencia-fundo-inicio.jpg) é uma imagem de fundo considerada para o Início da V5. Ela não é usada no sistema: o fundo final é desenhado por `HomeBackdrop`, sem imagem.
-
 ## Organização do histórico
 
 Em 05/11/2026 os commits originais foram separados em etapas, com novas mensagens. Autoria e datas foram mantidas, e o conteúdo final de cada uma das versões V1 a V4 é idêntico ao do commit original. O corpo de cada mensagem cita o commit de origem.
