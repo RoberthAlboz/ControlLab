@@ -1,6 +1,6 @@
 # Histórico do design
 
-Vídeo: [`linha-do-tempo-design.mp4`](linha-do-tempo-design.mp4) (1min51, 1920×1080, sem áudio).
+Vídeo: [`linha-do-tempo-design.mp4`](linha-do-tempo-design.mp4) (58 segundos, 1920×1080, sem áudio).
 
 As imagens do vídeo são capturas do sistema em execução em cada versão, com os dados de demonstração da seed. Cada versão tem uma tag no repositório.
 

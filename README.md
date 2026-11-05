@@ -10,7 +10,7 @@ Projeto resultante da unificação do **ForgeLab** (base técnica) com as regras
 
 ## Linha do tempo do design
 
-[Assista ao vídeo](docs/design/linha-do-tempo-design.mp4) (1min51, sem áudio) com as cinco versões do design, de 23/10 a 05/11/2026. O resumo de cada versão está em [`docs/design/HISTORICO_DO_DESIGN.md`](docs/design/HISTORICO_DO_DESIGN.md).
+[Assista ao vídeo](docs/design/linha-do-tempo-design.mp4) (58 segundos, sem áudio) com as cinco versões do design, de 23/10 a 05/11/2026. O resumo de cada versão está em [`docs/design/HISTORICO_DO_DESIGN.md`](docs/design/HISTORICO_DO_DESIGN.md).
 
 ![Início do aluno, tema claro](docs/design/telas/inicio-aluno-claro.jpg)
 
