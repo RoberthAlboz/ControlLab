@@ -2,7 +2,7 @@
  * Mini-quiz de verificação ao fim de uma etapa.
  *
  * O docente escreve uma pergunta de múltipla escolha (2 a 4 alternativas) por
- * etapa; o aluno só conclui a etapa depois de acertá-la. A alternativa correta
+ * etapa; responder é opcional e não bloqueia a conclusão. A alternativa correta
  * e a explicação ficam no servidor: o aluno recebe apenas pergunta e opções.
  */
 

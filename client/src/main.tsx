@@ -6,6 +6,7 @@ import { createRoot } from "react-dom/client";
 import superjson from "superjson";
 import App from "./App";
 import { LOGIN_PATH, loginUrl } from "./const";
+// A ordem importa: cada folha pode sobrescrever as anteriores (ver client/src/styles/).
 import "./styles/index.css";
 import "./styles/forge-editorial.css";
 import "./styles/forge-platform.css";

@@ -6,6 +6,7 @@ type NumberTickerProps = {
   unit?: "h" | "min";
 };
 
+/** Anima o número exibido até o valor confirmado, em horas ou minutos. */
 export default function NumberTicker({ value, ready, unit = "h" }: NumberTickerProps) {
   const confirmedValue = Number.isFinite(value) ? Math.max(0, Math.floor(value)) : 0;
   const [displayValue, setDisplayValue] = useState(confirmedValue);

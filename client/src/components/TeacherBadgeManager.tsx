@@ -25,6 +25,7 @@ type TeacherBadgeManagerProps = {
   onRetry?: () => void;
 };
 
+/** Docente atribui e remove competências (badges) dos alunos. */
 export default function TeacherBadgeManager({
   students,
   badges,

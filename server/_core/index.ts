@@ -1,3 +1,4 @@
+/** Entrada do servidor: Express, política de segurança, API tRPC, uploads e frontend no mesmo endereço. */
 import "dotenv/config";
 import express from "express";
 import { createServer } from "http";

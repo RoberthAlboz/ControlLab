@@ -1,3 +1,4 @@
+/** Consultas e regras de dados do ensino: módulos, etapas, progresso e cronômetro. */
 import { and, asc, desc, eq, gt, gte, inArray, isNotNull, isNull, like, lt, sql } from "drizzle-orm";
 import { drizzle, type SqliteRemoteDatabase } from "drizzle-orm/sqlite-proxy";
 import type { DatabaseSync } from "node:sqlite";

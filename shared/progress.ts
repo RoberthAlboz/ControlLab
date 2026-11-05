@@ -1,3 +1,4 @@
+/** Regras de progresso do aluno usadas pelo cliente e pelo servidor: normalização e validação de etapas e tempo. */
 export type ProgressUpdate = { stepIndex: number; progress: number };
 
 /** Upper bound accepted for one client-reported study session. */

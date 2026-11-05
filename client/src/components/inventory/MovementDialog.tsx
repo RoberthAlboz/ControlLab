@@ -23,6 +23,7 @@ const TYPE_HELP: Record<ManualMovementType, string> = {
   ajuste_saida: "Correção de saldo para menos, com justificativa obrigatória.",
 };
 
+/** Registra entrada, saída ou ajuste manual de saldo; ajustes exigem justificativa. */
 export default function MovementDialog({
   open,
   onOpenChange,

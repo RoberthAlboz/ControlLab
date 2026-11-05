@@ -66,6 +66,7 @@ function describeChanges(changes: unknown) {
   return reason ? `Motivo: ${reason}` : "";
 }
 
+/** Ficha de um item do estoque: dados, ações e histórico de alterações. */
 export default function ItemDetailSheet({
   itemId,
   onClose,

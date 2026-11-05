@@ -121,6 +121,7 @@ function IconChoice({
   );
 }
 
+/** Formulário de cadastro e edição de um item do estoque. */
 export default function ItemFormDialog({
   open,
   onOpenChange,

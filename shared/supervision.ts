@@ -1,3 +1,4 @@
+/** Visão de supervisão: progresso por módulo e tempo de estudo de cada aluno. */
 import { isValidStoredElapsedSeconds, sanitizeStoredElapsedSeconds, selectCanonicalProgressRows } from "./progress";
 
 export type StudentModuleProgressInput = {

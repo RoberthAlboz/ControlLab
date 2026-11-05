@@ -19,6 +19,7 @@ function useInvalidateInventory() {
   };
 }
 
+/** Cria a reserva de um empréstimo; a retirada é confirmada depois e só então desconta o saldo físico. */
 export function CreateLoanDialog({
   open,
   onOpenChange,
@@ -214,6 +215,7 @@ export function CreateLoanDialog({
   );
 }
 
+/** Registra a devolução, parcial ou total; unidades com avaria não voltam ao disponível. */
 export function ReturnLoanDialog({ loan, onClose, onSaved }: { loan: InventoryLoanRow | null; onClose: () => void; onSaved: (message: string) => void }) {
   const invalidate = useInvalidateInventory();
   const mutation = trpc.inventory.loans.return.useMutation();
@@ -299,6 +301,7 @@ export function ReturnLoanDialog({ loan, onClose, onSaved }: { loan: InventoryLo
   );
 }
 
+/** Cancela um empréstimo. */
 export function CancelLoanDialog({ loan, onClose, onSaved }: { loan: InventoryLoanRow | null; onClose: () => void; onSaved: (message: string) => void }) {
   const invalidate = useInvalidateInventory();
   const mutation = trpc.inventory.loans.cancel.useMutation();

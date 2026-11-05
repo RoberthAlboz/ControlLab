@@ -1,3 +1,4 @@
+/* Control Lab — base: Tailwind e estilos globais; as demais folhas de styles/ refinam cada área. */
 @import "tailwindcss";
 @import "tw-animate-css";
 @custom-variant dark (&:is(.dark *));

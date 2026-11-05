@@ -18,6 +18,7 @@ type ReaderTimelineProps = {
   onSelect: (index: number) => void;
 };
 
+/** Trilha de etapas do leitor (concluída, atual ou bloqueada), acompanhada da peça em usinagem. */
 export default function ReaderTimeline({
   moduleId,
   steps,

@@ -178,6 +178,7 @@ const scheduleInput = z.array(scheduleEntryInput).max(250).superRefine((entries,
   });
 });
 
+/** Roteador raiz da API tRPC; o tipo `AppRouter` é o contrato usado pelo cliente. */
 export const appRouter = router({
   system: systemRouter,
   auth: authRouter,

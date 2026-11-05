@@ -27,6 +27,7 @@ import {
   newContentId,
 } from "./shared";
 
+/** Agenda de aulas: o docente agenda e remove atividades; com `readOnly`, a administração só consulta. */
 export function ScheduleManager({
   activities,
   onChange,

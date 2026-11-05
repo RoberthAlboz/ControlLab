@@ -71,6 +71,7 @@ const AdminClassroomsPage = lazy(() => import("@/pages/AdminClassrooms"));
 const AdminOversightPage = lazy(() => import("@/pages/AdminOversight"));
 const AdminHome = lazy(() => import("@/pages/AdminHome"));
 
+/** Casca autenticada do sistema: escolhe a tela pela URL e pelo papel do usuário e carrega o catálogo. */
 export default function Home({
   user,
   onLogout,
