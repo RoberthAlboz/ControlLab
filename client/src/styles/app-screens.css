@@ -1,0 +1,414 @@
+/* Control Lab — telas internas com a mesma linguagem do Início (dashboard-home.css):
+   títulos em Sifonn com degradê, painéis de vidro, pílulas e ativo em vermelho.
+   Cada tela mantém um diferencial próprio, na seção com o nome dela.
+   Só muda a apresentação. O CSS antigo força tamanhos e fontes com !important, por isso
+   algumas regras repetem o !important. */
+
+/* Botões com texto só para leitores de tela: o .sr-only é absoluto e, sem isto, escapava
+   da faixa de abas (que rola) e alargava a página no celular. */
+.clean-app :is(.library-tabs button, .nt-day, .rc-teacher) { position: relative; }
+
+/* Fora da tela até receber o foco do teclado. */
+.skip-link { position: fixed; z-index: 100; top: 8px; left: 8px; padding: 10px 16px; border-radius: 999px; background: #8e0707; color: #fff6f6; font-weight: 600; transform: translateY(-200%); }
+.skip-link:focus { transform: none; }
+.clean-main main:focus { outline: 0; }
+
+/* ------------------------------------------------------------------ */
+/* Base: fundo transparente, títulos e canto arredondado                */
+/* ------------------------------------------------------------------ */
+.clean-app[data-screen] > .clean-main > main { --fl-radius: 22px; background: transparent; }
+.clean-app[data-screen] > .clean-main > main :is(h1, h2, h3) { font-family: var(--fl-display) !important; font-weight: 700 !important; }
+.clean-app :is(.inventory-hero, .nt-header, .rd .reader-title, .access-denied-card, .module-empty-state) h1 {
+  width: fit-content;
+  padding-bottom: 0.08em;
+  background: linear-gradient(100deg, #8e0707, #c4080c);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  line-height: 1.04 !important;
+  letter-spacing: -0.015em;
+}
+html.dark .clean-app :is(.inventory-hero, .nt-header, .rd .reader-title, .access-denied-card, .module-empty-state) h1 { background: none; color: #ffffff; -webkit-text-fill-color: #ffffff; }
+/* Telas de trabalho: título em uma linha, para o conteúdo aparecer logo. */
+.clean-app .inventory-hero { padding-bottom: 6px; }
+.clean-app .inventory-hero h1 { margin: 6px 0 4px; font-size: clamp(1.9rem, 2.6vw, 2.5rem) !important; }
+.clean-app .inventory-hero h1 em { color: inherit; -webkit-text-fill-color: inherit; }
+.clean-app .inventory-hero .breadcrumb { color: var(--fl-red); font-size: 0.75rem !important; font-weight: 500; letter-spacing: 0.1em; }
+.clean-app .inventory-hero .breadcrumb span { color: var(--fl-subtle); }
+
+/* Telas de trabalho têm texto sobre o fundo: engrenagens e brilho mais discretos que no Início. */
+.clean-app[data-screen]:not([data-screen="dashboard"]) .hd-backdrop { --hd-gear-alpha: 0.06; }
+html.dark .clean-app[data-screen]:not([data-screen="dashboard"]) .hd-backdrop { --hd-gear-alpha: 0.05; }
+.clean-app[data-screen]:not([data-screen="dashboard"]) .hd-backdrop-glow { background: radial-gradient(85% 30% at 50% 106%, rgba(196, 8, 12, 0.3) 0%, rgba(196, 8, 12, 0.1) 55%, rgba(196, 8, 12, 0) 100%); }
+html.dark .clean-app[data-screen]:not([data-screen="dashboard"]) .hd-backdrop-glow { background: radial-gradient(70% 30% at 60% 108%, rgba(244, 89, 43, 0.26) 0%, rgba(196, 8, 12, 0.1) 55%, rgba(196, 8, 12, 0) 100%); }
+
+/* ------------------------------------------------------------------ */
+/* Painéis de vidro                                                     */
+/* ------------------------------------------------------------------ */
+/* Lista simples, sem :is(): cada seletor mantém a própria especificidade e as telas podem sobrescrever. */
+.clean-app .inventory-metric,
+.clean-app .inventory-category-list,
+.clean-app .oversight-ok,
+.clean-app .oversight-alerts li,
+.clean-app .nt-week,
+.clean-app .nt-side,
+.clean-app .nt-editor,
+.clean-app .rd .reader-timeline,
+.clean-app .rd .main-analysis,
+.clean-app .rd .rd-resources .resource-card-light,
+.clean-app .library-content .module-card,
+.clean-app .access-denied-card {
+  border: 1px solid var(--hd-edge);
+  border-radius: 22px;
+  background: var(--hd-card);
+  box-shadow: var(--hd-shadow);
+  -webkit-backdrop-filter: blur(18px) saturate(1.2);
+  backdrop-filter: blur(18px) saturate(1.2);
+}
+html.dark .clean-app .inventory-metric,
+html.dark .clean-app .inventory-category-list,
+html.dark .clean-app .oversight-ok,
+html.dark .clean-app .oversight-alerts li,
+html.dark .clean-app .nt-week,
+html.dark .clean-app .nt-side,
+html.dark .clean-app .nt-editor,
+html.dark .clean-app .rd .reader-timeline,
+html.dark .clean-app .rd .main-analysis,
+html.dark .clean-app .rd .rd-resources .resource-card-light,
+html.dark .clean-app .library-content .module-card,
+html.dark .clean-app .access-denied-card {
+  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.42), inset 0 1px 0 rgba(255, 240, 230, 0.06);
+}
+/* A lista vira cartões no celular: o vidro fica em cada linha (ver Larguras menores). */
+@media (min-width: 761px) {
+  .clean-app .fl-table-wrap {
+    border: 1px solid var(--hd-edge);
+    border-radius: 22px;
+    background: var(--hd-card);
+    box-shadow: var(--hd-shadow);
+    -webkit-backdrop-filter: blur(18px) saturate(1.2);
+    backdrop-filter: blur(18px) saturate(1.2);
+  }
+  html.dark .clean-app .fl-table-wrap { box-shadow: 0 18px 44px rgba(0, 0, 0, 0.42), inset 0 1px 0 rgba(255, 240, 230, 0.06); }
+}
+.clean-app .fl-table th { background: transparent; }
+.clean-app .fl-table tbody tr:hover td { background: var(--hd-row); }
+
+/* Indicadores: cartões soltos, número leve como no Início */
+.clean-app .inventory-metrics { grid-template-columns: repeat(auto-fit, minmax(min(100%, 150px), 1fr)); gap: 12px; border: 0; background: transparent; box-shadow: none; }
+.clean-app .inventory-metric { align-content: start; gap: 2px; padding: 12px 18px; border-left: 1px solid var(--hd-edge) !important; border-top: 1px solid var(--hd-edge) !important; }
+.clean-app .inventory-metric span { color: var(--fl-ink); font-size: 0.92rem !important; font-weight: 500; }
+.clean-app .inventory-metric strong { margin-top: 2px; font: 400 clamp(1.5rem, 1.9vw, 1.85rem)/1.1 var(--fl-body); letter-spacing: -0.02em; }
+.clean-app .inventory-metric.is-alert { border-color: rgba(196, 8, 12, 0.45) !important; }
+.clean-app button.inventory-metric { transition: box-shadow 180ms ease, transform 180ms var(--fl-ease); }
+.clean-app button.inventory-metric:hover { background: var(--hd-card); box-shadow: 0 22px 52px rgba(142, 7, 7, 0.16); transform: translateY(-2px) !important; }
+.clean-app button.inventory-metric:active { transform: scale(0.99) !important; }
+.clean-app button.inventory-metric:focus-visible { outline: 2px solid var(--fl-red); outline-offset: 2px; }
+
+/* ------------------------------------------------------------------ */
+/* Pílulas e botões                                                     */
+/* ------------------------------------------------------------------ */
+/* Globais: valem também nos modais, que saem em portal. */
+.fl-button { border-radius: 999px; }
+.fl-icon-button { border-radius: 50%; }
+.fl-button-primary { border-color: transparent; background: linear-gradient(135deg, #8e0707, #c4080c); box-shadow: none; color: #fff6f6; }
+.fl-button-primary:not(:disabled):hover { border-color: transparent; background: linear-gradient(135deg, #8e0707, #c4080c); box-shadow: 0 8px 20px rgba(196, 8, 12, 0.3); color: #fff6f6; }
+.fl-modal { border-top: 1px solid var(--fl-line); border-radius: 22px; overflow: hidden; }
+.fl-modal.is-sheet { border-radius: 22px 0 0 22px; }
+.fl-modal .fl-modal-title { font-family: var(--fl-display); }
+
+.clean-app .fl-button { transition: background-color 160ms ease, box-shadow 160ms ease, transform 160ms var(--fl-ease); }
+.clean-app .fl-button:not(:disabled):hover { transform: translateY(-1px) !important; }
+.clean-app .fl-button:not(:disabled):active { transform: scale(0.98) !important; }
+.clean-app .fl-button-secondary { border-color: var(--hd-edge); background: var(--hd-pill); box-shadow: 0 8px 22px rgba(142, 7, 7, 0.07); color: var(--fl-ink); }
+.clean-app .fl-button-secondary:not(:disabled):hover { border-color: var(--hd-edge); background: var(--hd-chip); color: var(--fl-red-deep); }
+.clean-app .fl-icon-button:not(:disabled):hover { border-color: transparent; background: var(--hd-chip); color: var(--fl-red-deep); }
+
+.clean-app .fl-search,
+.clean-app .inventory-toolbar select,
+.clean-app .inventory-view-toggle,
+.clean-app .library-content .search-box,
+.clean-app .nt-search,
+.clean-app .nt-student {
+  min-height: 44px;
+  border: 1px solid var(--hd-edge);
+  border-radius: 999px;
+  background-color: var(--hd-pill);
+  box-shadow: 0 8px 22px rgba(142, 7, 7, 0.07);
+}
+.clean-app .fl-search { padding: 0 18px; }
+.clean-app .inventory-toolbar select { padding: 0 16px; }
+html.dark .clean-app .inventory-toolbar option { background: #181211; color: #fff7f2; }
+.clean-app :is(.fl-search, .library-content .search-box, .nt-search, .nt-student):focus-within { border-color: transparent; box-shadow: 0 0 0 2px var(--fl-red); }
+.clean-app .inventory-toolbar select:focus-visible { outline: 0; box-shadow: 0 0 0 2px var(--fl-red); }
+
+/* Abas: trilho de vidro, aba ativa em vermelho */
+.clean-app .inventory-tabs {
+  width: fit-content;
+  max-width: 100%;
+  gap: 2px;
+  padding: 4px;
+  border: 1px solid var(--hd-edge);
+  border-radius: 999px;
+  background: var(--hd-pill);
+  box-shadow: 0 8px 22px rgba(142, 7, 7, 0.07);
+}
+.clean-app .inventory-tabs button { min-height: 38px; flex: none; padding: 0 16px; border: 0; border-radius: 999px; color: var(--fl-ink); font-weight: 500; }
+.clean-app .inventory-tabs button:hover { color: var(--fl-red-deep); }
+.clean-app .inventory-tabs button.is-active { background: var(--hd-accent); color: #fff6f6; }
+.clean-app .admin-users-page .inventory-tabs .is-active .admin-users-count { background: rgba(255, 246, 246, 0.2); color: #fff6f6; }
+.clean-app .inventory-view-toggle { min-height: 0; padding: 4px; }
+.clean-app .inventory-view-toggle button { min-height: 36px; font-weight: 500; }
+.clean-app .inventory-view-toggle button.is-selected,
+html.dark .clean-app .inventory-view-toggle button.is-selected { background: var(--hd-accent); color: #fff6f6; }
+.clean-app .fl-chip-group button { min-height: 36px; border-color: var(--hd-edge); background: var(--hd-pill); box-shadow: 0 8px 22px rgba(142, 7, 7, 0.07); color: var(--fl-ink); font-weight: 500; }
+.clean-app .fl-chip-group button:is(.is-selected, [aria-pressed="true"]),
+html.dark .clean-app .fl-chip-group button:is(.is-selected, [aria-pressed="true"]) { border-color: transparent; background: var(--hd-accent); color: #fff6f6; }
+
+/* ------------------------------------------------------------------ */
+/* Biblioteca: o único banner vermelho e a capa na cor de cada módulo   */
+/* ------------------------------------------------------------------ */
+.clean-app .library-hero { overflow: hidden; border-radius: 26px; background: linear-gradient(118deg, #8e0707 0%, #c4080c 62%, #8e0707 100%); box-shadow: 0 24px 60px rgba(142, 7, 7, 0.22); }
+.clean-app .library-hero h1 { font-family: var(--fl-display) !important; font-weight: 700 !important; letter-spacing: -0.015em; }
+.clean-app .library-hero .library-stat b { font-weight: 400; letter-spacing: -0.02em; }
+.clean-app .library-content .library-tabs button { border-color: var(--hd-edge); background: var(--hd-pill); box-shadow: 0 8px 22px rgba(142, 7, 7, 0.07); color: var(--fl-ink); font-weight: 500; }
+.clean-app .library-content .library-tabs button:not(.selected):hover { border-color: rgba(196, 8, 12, 0.45); }
+.clean-app .library-content .library-tabs button.selected,
+.clean-app .library-content .library-tabs button.selected:hover { border-color: transparent; background: var(--hd-accent); box-shadow: none; color: #fff6f6; }
+.clean-app .library-content .module-card { overflow: hidden; }
+.clean-app .library-content .module-card:hover { border-color: rgba(196, 8, 12, 0.45); transform: translateY(-2px) !important; }
+.clean-app .library-content .module-cover-icon { border-radius: 50%; box-shadow: 0 4px 12px rgba(142, 7, 7, 0.1); }
+.clean-app .library-content .module-progress i { height: 6px; background: var(--hd-track); }
+.clean-app .library-content .module-progress i em { background: linear-gradient(90deg, var(--hd-red-a), var(--hd-red-b)); }
+
+/* ------------------------------------------------------------------ */
+/* Diário de aula: faixa da semana e folha pautada                      */
+/* ------------------------------------------------------------------ */
+.clean-app .nt-page .nt-header h1 { font-size: clamp(2rem, 3vw, 2.8rem) !important; }
+.clean-app .nt-page p.nt-eyebrow { color: var(--fl-red); font-size: 0.75rem !important; font-weight: 500 !important; letter-spacing: 0.1em; }
+.clean-app .nt-primary { border-radius: 999px; background: var(--hd-accent); }
+.clean-app .nt-icon { border-color: var(--fl-line); border-radius: 50%; background: var(--hd-chip); }
+.clean-app .nt-week-nav p { font-weight: 500 !important; }
+.clean-app .nt-day { border-color: var(--fl-line); border-radius: 16px; background: var(--hd-row); }
+.clean-app .nt-day.is-active { border-color: transparent; background: var(--hd-accent); box-shadow: 0 8px 20px rgba(196, 8, 12, 0.3); }
+.clean-app .nt-progress-bar { background: var(--hd-track); }
+.clean-app .nt-progress strong,
+.clean-app .nt-day strong { font-family: var(--fl-body); font-weight: 400; }
+.clean-app .nt-period { border-radius: 16px; }
+.clean-app .nt-period:hover { background: var(--hd-row); }
+.clean-app .nt-period .nt-period-time { font-family: var(--fl-body); font-weight: 500; }
+.clean-app .nt-tabs button { border-color: var(--hd-edge); background: var(--hd-row); color: var(--fl-ink); font-weight: 500; }
+.clean-app .nt-tabs button.is-active { border-color: transparent; background: var(--hd-accent); color: #fff6f6; }
+.clean-app .nt-empty { border-radius: 18px; background: var(--hd-row); }
+.clean-app .nt-empty-icon { border-radius: 50%; background: var(--hd-chip); box-shadow: 0 4px 12px rgba(142, 7, 7, 0.1); }
+/* Folha de caderno: pauta acompanha o texto ao rolar e a margem fica em vermelho. */
+.clean-app .nt-page .nt-body {
+  --nt-rule: rgba(0, 0, 0, 0.08);
+  padding: 16px 16px 16px 56px;
+  border-color: var(--fl-line);
+  border-radius: 18px;
+  background-color: var(--hd-row);
+  background-image:
+    linear-gradient(90deg, transparent 39px, rgba(196, 8, 12, 0.32) 39px, rgba(196, 8, 12, 0.32) 40px, transparent 40px),
+    repeating-linear-gradient(180deg, transparent 0, transparent calc(1.7rem - 1px), var(--nt-rule) calc(1.7rem - 1px), var(--nt-rule) 1.7rem);
+  background-attachment: local;
+  background-position: 0 0, 0 16px;
+  line-height: 1.7rem;
+}
+html.dark .clean-app .nt-page .nt-body { --nt-rule: rgba(255, 240, 230, 0.08); }
+
+/* ------------------------------------------------------------------ */
+/* Leitor: fundo de prancheta, paquímetro e peça usinada                */
+/* ------------------------------------------------------------------ */
+.clean-app[data-screen="reader"] .hd-backdrop::before {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(196, 8, 12, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(196, 8, 12, 0.06) 1px, transparent 1px);
+  background-size: 28px 28px;
+  content: "";
+}
+html.dark .clean-app[data-screen="reader"] .hd-backdrop::before { background-image: linear-gradient(rgba(255, 240, 230, 0.035) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 240, 230, 0.035) 1px, transparent 1px); }
+.clean-app .rd .back-library { color: var(--fl-red-deep); }
+.clean-app .rd .reader-title .breadcrumb,
+.clean-app .rd .reader-objective .eyebrow,
+.clean-app .rd .reader-carousel-heading .eyebrow { color: var(--fl-red); font-size: 0.75rem !important; font-weight: 500; letter-spacing: 0.1em; }
+.clean-app .rd .reader-title h1 { font-size: clamp(2rem, 3vw, 2.8rem) !important; }
+.clean-app .rd .edit-module-button { border-color: var(--hd-edge); background: var(--hd-pill); box-shadow: 0 8px 22px rgba(142, 7, 7, 0.07); }
+.clean-app .rd .reader-timeline-step { border-radius: 16px; }
+.clean-app .rd .reader-timeline-step:not(:disabled):hover { background: var(--hd-row); }
+.clean-app .rd .reader-carousel-previous { border-color: var(--hd-edge); border-radius: 999px; background: var(--hd-pill); }
+.clean-app .rd .reader-action-button { border-radius: 999px; background: var(--hd-accent); }
+.clean-app .rd .reader-action-button.is-next { background: var(--hd-accent); box-shadow: 0 8px 20px rgba(196, 8, 12, 0.3); color: #fff6f6; }
+.clean-app .rd .reader-action-button.is-complete { background: var(--fl-surface-2); box-shadow: none; color: var(--fl-muted); }
+.clean-app .rd .step-timer-widget,
+.clean-app .rd .step-timer-widget.is-complete { border-color: var(--hd-edge); background: var(--hd-pill); }
+.clean-app .rd .step-timer-widget.is-running { border-color: rgba(196, 8, 12, 0.35); background: var(--fl-red-wash); }
+.clean-app .rd .reader-image-panel { border-radius: 18px; background: var(--hd-row); }
+.clean-app .rd .rd-resources .category-tabs button { border-color: var(--hd-edge); background: var(--hd-pill); box-shadow: 0 8px 22px rgba(142, 7, 7, 0.07); color: var(--fl-ink); font-weight: 500; }
+.clean-app .rd .rd-resources .category-tabs button.selected { border-color: transparent; background: var(--hd-accent); color: #fff6f6; }
+.clean-app .rd .rd-resources .category-tabs button.selected .category-tab-count { background: rgba(255, 246, 246, 0.2); color: #fff6f6; }
+.clean-app .rd .rd-resources .resource-icon { border-radius: 50%; background: var(--hd-chip); box-shadow: 0 4px 12px rgba(142, 7, 7, 0.1); }
+
+/* ------------------------------------------------------------------ */
+/* Estoque: fundo liso; o destaque são as figuras das ferramentas        */
+/* ------------------------------------------------------------------ */
+.clean-app .inventory-item-glyph { width: 40px; height: 46px; border: 0; border-radius: 14px; background: var(--hd-chip); box-shadow: 0 4px 12px rgba(142, 7, 7, 0.1); }
+
+/* ------------------------------------------------------------------ */
+/* Supervisão: régua de medição sob o título e barras de consumo        */
+/* ------------------------------------------------------------------ */
+.clean-app .admin-oversight .inventory-hero { position: relative; padding-bottom: 26px; }
+.clean-app .admin-oversight .inventory-hero::after {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 14px;
+  background:
+    repeating-linear-gradient(90deg, rgba(196, 8, 12, 0.55) 0, rgba(196, 8, 12, 0.55) 1px, transparent 1px, transparent 80px) bottom left / 100% 14px no-repeat,
+    repeating-linear-gradient(90deg, rgba(196, 8, 12, 0.3) 0, rgba(196, 8, 12, 0.3) 1px, transparent 1px, transparent 16px) bottom left / 100% 7px no-repeat;
+  content: "";
+}
+.clean-app .oversight-bar { height: 6px; border-radius: 999px; background: var(--hd-track); }
+.clean-app .oversight-bar i { border-radius: inherit; background: linear-gradient(90deg, var(--hd-red-a), var(--hd-red-b)); }
+
+/* ------------------------------------------------------------------ */
+/* Turmas: cartões com selo redondo                                     */
+/* ------------------------------------------------------------------ */
+.clean-app[data-screen="classrooms"] .inventory-category-list {
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 440px), 1fr));
+  gap: 12px;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+.clean-app[data-screen="classrooms"] .inventory-category-list li {
+  position: relative;
+  min-height: 96px;
+  align-items: flex-start;
+  padding: 20px 18px 20px 76px;
+  border: 1px solid var(--hd-edge);
+  border-radius: 22px;
+  background: var(--hd-card);
+  box-shadow: var(--hd-shadow);
+  -webkit-backdrop-filter: blur(18px) saturate(1.2);
+  backdrop-filter: blur(18px) saturate(1.2);
+}
+.clean-app[data-screen="classrooms"] .inventory-category-list li::before {
+  position: absolute;
+  top: 20px;
+  left: 18px;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--hd-accent);
+  box-shadow: 0 8px 20px rgba(196, 8, 12, 0.3);
+  content: "";
+}
+.clean-app[data-screen="classrooms"] .inventory-category-list li::after {
+  position: absolute;
+  top: 31px;
+  left: 29px;
+  width: 22px;
+  height: 22px;
+  background: #fff6f6;
+  content: "";
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2'/%3E%3Ccircle cx='9' cy='7' r='4'/%3E%3Cpath d='M22 21v-2a4 4 0 0 0-3-3.87'/%3E%3Cpath d='M16 3.13a4 4 0 0 1 0 7.75'/%3E%3C/svg%3E") center / contain no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2'/%3E%3Ccircle cx='9' cy='7' r='4'/%3E%3Cpath d='M22 21v-2a4 4 0 0 0-3-3.87'/%3E%3Cpath d='M16 3.13a4 4 0 0 1 0 7.75'/%3E%3C/svg%3E") center / contain no-repeat;
+}
+.clean-app[data-screen="classrooms"] .inventory-category-list strong { font-family: var(--fl-display); font-size: 1.15rem; }
+.clean-app[data-screen="classrooms"] .inventory-category-list li > div:first-child { min-width: 0; flex: 1 1 auto; }
+.clean-app[data-screen="classrooms"] .inventory-category-list small { display: block; margin-top: 4px; line-height: 1.4; white-space: normal; }
+.clean-app[data-screen="classrooms"] .fl-row-actions { flex: none; flex-wrap: nowrap; }
+
+/* ------------------------------------------------------------------ */
+/* Logins: cada conta é uma cápsula com o filete do seu perfil          */
+/* ------------------------------------------------------------------ */
+.clean-app .admin-user-list { gap: 8px; border: 0; background: transparent; box-shadow: none; -webkit-backdrop-filter: none; backdrop-filter: none; }
+.clean-app .admin-user-list li,
+.clean-app .admin-user-list li + li {
+  --role-edge: var(--fl-muted);
+  position: relative;
+  padding: 14px 18px 14px 28px;
+  border: 1px solid var(--hd-edge);
+  border-radius: 22px;
+  background: var(--hd-card);
+  box-shadow: var(--hd-shadow);
+  -webkit-backdrop-filter: blur(18px) saturate(1.2);
+  backdrop-filter: blur(18px) saturate(1.2);
+}
+.clean-app .admin-user-list li::before { position: absolute; top: 14px; bottom: 14px; left: 12px; width: 4px; border-radius: 999px; background: var(--role-edge); content: ""; }
+.clean-app .admin-user-list li:has(.is-teacher) { --role-edge: var(--fl-red); }
+.clean-app .admin-user-list li:has(.is-admin) { --role-edge: var(--fl-warn); }
+.clean-app .admin-user-list strong { font-weight: 500; }
+
+/* ------------------------------------------------------------------ */
+/* Editor: tela cheia, com barra fixa de ações e trilho numerado de etapas */
+/* ------------------------------------------------------------------ */
+/* Fica fora de .clean-app, por isso traz o próprio vidro nos tokens --me-*. */
+.me-shell { --me-surface: rgba(255, 255, 255, 0.82); --me-line: rgba(0, 0, 0, 0.09); --me-field: rgba(255, 255, 255, 0.66); background: transparent; }
+html.dark .me-shell { --me-surface: rgba(24, 18, 17, 0.78); --me-line: rgba(255, 240, 230, 0.1); --me-field: rgba(255, 240, 230, 0.04); }
+.hd-backdrop:has(+ .me-shell) { --hd-gear-alpha: 0.06; }
+html.dark .hd-backdrop:has(+ .me-shell) { --hd-gear-alpha: 0.05; }
+.hd-backdrop:has(+ .me-shell) .hd-backdrop-glow { background: radial-gradient(85% 30% at 50% 106%, rgba(196, 8, 12, 0.3) 0%, rgba(196, 8, 12, 0.1) 55%, rgba(196, 8, 12, 0) 100%); }
+html.dark .hd-backdrop:has(+ .me-shell) .hd-backdrop-glow { background: radial-gradient(70% 30% at 60% 108%, rgba(244, 89, 43, 0.26) 0%, rgba(196, 8, 12, 0.1) 55%, rgba(196, 8, 12, 0) 100%); }
+.me-topbar { border-bottom: 0; background: rgba(255, 255, 255, 0.72); box-shadow: 0 8px 24px rgba(142, 7, 7, 0.08); -webkit-backdrop-filter: blur(22px) saturate(1.3); backdrop-filter: blur(22px) saturate(1.3); }
+html.dark .me-topbar { background: rgba(14, 10, 9, 0.72); box-shadow: 0 18px 44px rgba(0, 0, 0, 0.42); }
+.me-shell h1, .me-shell h2, .me-shell h3 { font-family: var(--fl-display); font-weight: 700; }
+.me-back, .me-icon-btn { border-radius: 50%; }
+.me-btn { border-radius: 999px; }
+.me-btn-primary { background: linear-gradient(135deg, #8e0707, #c4080c); box-shadow: 0 8px 20px rgba(196, 8, 12, 0.3); }
+.me-btn-primary:hover:not(:disabled) { background: linear-gradient(135deg, #8e0707, #c4080c); filter: brightness(1.1); }
+html.dark .me-btn-primary { background: linear-gradient(135deg, #a90a0c, #dd3410); }
+html.dark .me-btn-primary:hover:not(:disabled) { background: linear-gradient(135deg, #a90a0c, #dd3410); }
+.me-card, .me-summary {
+  border-color: rgba(255, 255, 255, 0.9);
+  border-radius: 22px;
+  box-shadow: 0 8px 24px rgba(142, 7, 7, 0.08), 0 2px 6px rgba(142, 7, 7, 0.04);
+  -webkit-backdrop-filter: blur(18px) saturate(1.2);
+  backdrop-filter: blur(18px) saturate(1.2);
+}
+html.dark .me-card, html.dark .me-summary { border-color: rgba(255, 240, 230, 0.1); box-shadow: 0 18px 44px rgba(0, 0, 0, 0.42), inset 0 1px 0 rgba(255, 240, 230, 0.06); }
+.me-shell .me-input { border-radius: 14px; }
+.me-step-body, .me-add-row, .me-empty, .me-resource, .me-cover { border-radius: 18px; }
+.me-tip { border-radius: 14px; }
+.me-empty-icon, .me-resource-icon { border-radius: 50%; }
+
+/* ------------------------------------------------------------------ */
+/* Avisos                                                               */
+/* ------------------------------------------------------------------ */
+.clean-app .access-denied-card { padding: 28px; }
+.clean-app .access-denied-icon { background: var(--hd-chip); box-shadow: 0 4px 12px rgba(142, 7, 7, 0.1); }
+
+/* ------------------------------------------------------------------ */
+/* Larguras menores                                                     */
+/* ------------------------------------------------------------------ */
+/* Toque: links de texto ganham altura de dedo sem mudar a aparência. */
+@media (max-width: 860px), (pointer: coarse) {
+  .clean-app :is(.open-module, .fl-row-title, .nt-back, .back-library, .resource-model-link) { display: inline-flex; min-height: 44px; align-items: center; }
+}
+@media (max-width: 860px) {
+  .clean-app .clean-header .mobile-menu { border-color: var(--hd-edge, rgba(0, 0, 0, 0.09)); border-radius: 50%; }
+}
+@media (max-width: 760px) {
+  .clean-app .inventory-toolbar select { width: auto; min-width: 0; flex: 1 1 calc(50% - 5px); }
+  .clean-app .fl-chip-group { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
+  .clean-app .fl-chip-group button { flex: none; }
+  .clean-app .inventory-tabs { width: 100%; border-radius: 24px; }
+  .clean-app .fl-table tr { border: 1px solid var(--hd-edge); border-left: 1px solid var(--hd-edge); border-radius: 18px; background: var(--hd-card); box-shadow: var(--hd-shadow); }
+  .clean-app .fl-table td { grid-template-columns: 92px minmax(0, 1fr); padding: 3px 0; }
+  /* Ações e abas em uma linha só: a lista começa mais perto do topo. */
+  .clean-app .inventory-hero-actions { width: 100%; flex-wrap: nowrap; gap: 6px; }
+  .clean-app .inventory-hero-actions .fl-button { min-width: 0; min-height: 44px; flex: 1 1 auto; justify-content: center; padding: 0 6px; font-size: 0.82rem !important; white-space: nowrap; }
+  .clean-app .inventory-hero-actions .fl-button svg { display: none; }
+  .clean-app .inventory-metric { padding: 10px 14px; }
+  .clean-app .inventory-tabs { flex-wrap: nowrap; justify-content: flex-start; overflow-x: auto; scrollbar-width: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .clean-app :is(.fl-button, button.inventory-metric, .library-content .module-card):is(:hover, :active) { transform: none !important; }
+}

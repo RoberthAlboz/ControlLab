@@ -86,7 +86,6 @@ export function StudentDashboard({
   const studiedValue = studiedInHours
     ? Math.floor(studiedSeconds / 3600)
     : Math.floor(studiedSeconds / 60);
-  const minutesThisHour = Math.floor((studiedSeconds % 3600) / 60);
   const streakDays = catalog?.stats.streakDays ?? 0;
   const level = catalog?.stats.level ?? 1;
   const levelProgress = catalog?.stats.levelProgress ?? 0;
@@ -123,6 +122,7 @@ export function StudentDashboard({
   );
   const upcoming = modules.filter(module => module.progress === 0);
   const completed = modules.filter(module => module.progress >= 100);
+  const resumeModule = inProgress[0] ?? upcoming[0];
   const moduleActivities = activities.filter(activity =>
     modules.some(module => module.id === activity.moduleId)
   );
@@ -182,6 +182,24 @@ export function StudentDashboard({
             <span className="eyebrow">PAINEL DO ALUNO</span>
             <h1>Retome sua formação.</h1>
             <p>Acesse seus módulos, próximas aulas e anotações da turma.</p>
+            <button
+              type="button"
+              className="hd-resume"
+              onClick={() =>
+                resumeModule ? onOpen(resumeModule) : onOpenLibrary()
+              }
+            >
+              <Play size={14} fill="currentColor" aria-hidden="true" />
+              {resumeModule ? (
+                <span>
+                  {resumeModule.progress > 0 ? "Continuar" : "Começar"}:{" "}
+                  <b>{resumeModule.title}</b>
+                </span>
+              ) : (
+                <span>Rever módulos</span>
+              )}
+              <ArrowRight size={15} aria-hidden="true" />
+            </button>
           </div>
           <div className="student-top-actions">
             <label className="student-search">
@@ -250,7 +268,6 @@ export function StudentDashboard({
                 />
               </strong>
               <small>{formatStudyDuration(studiedSeconds)} cronometrados</small>
-              <HalfGauge value={(minutesThisHour / 60) * 100} />
             </div>
             <div className="student-stat-card">
               <div className="stat-icon dark">
@@ -568,8 +585,8 @@ export function StudentDashboard({
                       type="button"
                       className="rc-teacher"
                       onClick={() => setSelectedTeacher(teacher)}
-                      aria-label={`Ver perfil de ${teacher.name}`}
                     >
+                      <span className="sr-only">Ver perfil:</span>
                       <b className="rc-teacher-avatar" aria-hidden="true">
                         {teacher.avatarUrl ? (
                           <img src={teacher.avatarUrl} alt="" />

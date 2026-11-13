@@ -399,7 +399,7 @@ html.dark span.brand-logo-default > span.brand-logo-lab { background: none; colo
   background-size: 32px 32px;
   mask-image: radial-gradient(circle at 30% 40%, #000 0%, transparent 75%);
 }
-.auth-brand-panel::after { position: absolute; right: 0; bottom: 0; left: 0; height: 4px; background: linear-gradient(90deg, #8e0707, #c4080c 40%, transparent); content: ""; }
+.auth-brand-panel::after { position: absolute; z-index: 2; right: 0; bottom: 0; left: 0; height: 4px; background: linear-gradient(90deg, #8e0707, #c4080c 40%, transparent); content: ""; }
 .auth-gears { --gear-px: 0; --gear-py: 0; --gear-energy: 0; position: absolute; inset: 0; pointer-events: none; }
 .auth-gears svg { position: absolute; overflow: visible; }
 .auth-gears-train {
@@ -411,7 +411,7 @@ html.dark span.brand-logo-default > span.brand-logo-lab { background: none; colo
 }
 .auth-gears-ghost {
   top: -70px;
-  left: -90px;
+  right: -90px;
   width: 260px;
   height: 260px;
   transform: translate(calc(var(--gear-px) * 22px), calc(var(--gear-py) * 16px));
@@ -460,8 +460,9 @@ html.dark button:hover > .theme-sunmoon { color: #ff8a8e; }
 .auth-kicker { color: #ff9ea1; font: 700 0.75rem var(--fl-body); letter-spacing: 0.16em; text-transform: uppercase; }
 .auth-brand-copy h2 { max-width: 13ch; margin: 14px 0 16px; color: #fff6f6; font: 600 clamp(2.2rem, 4.2vw, 3.6rem)/1.04 var(--fl-display); letter-spacing: -0.045em; }
 .auth-brand-copy h2 em { color: #c4080c; font-style: normal; }
-.auth-brand-copy p { max-width: 44ch; margin: 0; color: rgba(255, 246, 246, 0.72); font-size: 1rem; line-height: 1.6; }
-.auth-brand-spec { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0; margin: 0; border-top: 1px solid rgba(255, 246, 246, 0.16); }
+.auth-brand-copy p { max-width: 34ch; margin: 0; color: rgba(255, 246, 246, 0.72); font-size: 1rem; line-height: 1.6; }
+/* Rodapé opaco: as engrenagens passam atrás e o texto continua legível. */
+.auth-brand-spec { --auth-pad: clamp(28px, 4vw, 56px); display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0; margin: 0 calc(var(--auth-pad) * -1) calc(var(--auth-pad) * -1); padding: 0 var(--auth-pad) var(--auth-pad); border-top: 1px solid rgba(255, 246, 246, 0.16); background: #000000; }
 .auth-brand-spec div { padding: 16px 16px 0 0; }
 .auth-brand-spec div + div { padding-left: 16px; border-left: 1px solid rgba(255, 246, 246, 0.16); }
 .auth-brand-spec dt { color: #f0575c; font: 700 0.75rem var(--fl-body); letter-spacing: 0.12em; text-transform: uppercase; }

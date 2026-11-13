@@ -55,7 +55,7 @@ export default function ReaderTimeline({
         <span style={{ width: `${steps.length ? (completedCount / steps.length) * 100 : 0}%` }} />
       </div>
 
-      {steps.length > 0 && <MachinedPart seed={moduleId} total={steps.length} completed={completedCount} />}
+      {steps.length > 0 && <MachinedPart seed={moduleId} total={steps.length} completed={completedCount} running={isRunning} />}
 
       {steps.length > 0 ? (
         <ol className="reader-timeline-list">

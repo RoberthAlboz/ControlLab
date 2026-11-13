@@ -2731,6 +2731,8 @@ html.dark .schedule-manager .week-day-head em { color: #1d1b1a; }
 html.dark .schedule-manager .week-activity.is-laboratorio .week-activity-open b { color: #e6b65e; }
 html.dark .schedule-manager .week-activity.is-avaliacao .week-activity-open b { color: #a3bce6; }
 .schedule-manager .week-activity-open small { color: var(--theme-muted); font-size: 0.75rem !important; }
+/* Tema claro: o cinza com opacidade ficava em 4,3:1 sobre o rosa das aulas. */
+html:not(.dark) .schedule-manager .week-activity-type { color: #5f5853; opacity: 1; }
 .schedule-manager .week-activity-type { justify-self: start; margin-top: 3px; padding: 1px 7px; border: 1px solid currentColor; border-radius: 999px; color: var(--theme-muted); font-size: 0.75rem !important; font-style: normal; opacity: .85; }
 .schedule-manager .week-activity-remove { position: absolute; top: 6px; right: 6px; display: inline-flex; width: 24px; height: 24px; align-items: center; justify-content: center; border: 0; border-radius: 6px; background: transparent; color: var(--theme-muted); cursor: pointer; opacity: .55; transition: opacity .15s, color .15s, background .15s; }
 .schedule-manager .week-activity:hover .week-activity-remove, .schedule-manager .week-activity-remove:focus-visible { opacity: 1; }

@@ -215,14 +215,14 @@ export function ReaderView({
             title="Arquivos da etapa"
             attachments={step?.attachments ?? []}
           />
+          {/* O aluno só vê a verificação depois de concluir a etapa; o timer não interfere. */}
           {step?.quiz &&
-            (isTeacher || !isStepCompleted(stepIndex, completedStepCount)) && (
+            (isTeacher || timer.completed) && (
               <StepQuizPanel
                 key={`quiz-${module.id}-${step.id || stepIndex}`}
                 quiz={step.quiz}
                 mode={isTeacher ? "teacher" : "student"}
                 passed={quiz.passed}
-                locked={!timer.running}
                 pending={quiz.pending}
                 onAnswer={quiz.onAnswer}
               />

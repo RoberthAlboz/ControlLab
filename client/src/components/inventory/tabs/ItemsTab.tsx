@@ -277,7 +277,7 @@ export function ItemsTab({
                             {item.code}
                             {item.sapCode ? ` · SAP ${item.sapCode}` : ""}
                             {item.linkedModules
-                              ? ` · ${item.linkedModules} módulo(s)`
+                              ? ` · ${item.linkedModules} ${item.linkedModules === 1 ? "módulo" : "módulos"}`
                               : ""}
                           </small>
                         </div>
@@ -296,7 +296,10 @@ export function ItemsTab({
                         {formatQuantity(item.available, item.unit)}
                       </strong>
                       {item.quantityReserved > 0 && (
-                        <small>{item.quantityReserved} reservado(s)</small>
+                        <small>
+                          {item.quantityReserved}{" "}
+                          {item.quantityReserved === 1 ? "reservado" : "reservados"}
+                        </small>
                       )}
                     </td>
                     <td data-label="Situação">

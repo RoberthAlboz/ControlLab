@@ -19,6 +19,8 @@
 
 /* Grade */
 .clean-app .library-content .module-grid { grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr)); gap: 20px; }
+/* Três colunas fixas: a grade termina na mesma linha do banner. */
+@media (min-width: 1101px) { .clean-app .library-content .module-grid { max-width: none; grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 
 /* Card */
 .clean-app .library-content .module-card {
@@ -79,7 +81,9 @@
 
 /* Tema escuro: a cor de capa vem do módulo (estilo inline, pensada para o tema claro);
    uma sombra interna a escurece, ficando entre o fundo e o conteúdo. */
-html.dark .clean-app .library-content .module-cover { box-shadow: inset 0 0 0 999px rgba(30, 23, 21, 0.94); }
+/* Mesma cor que a sombra interna de antes produzia sobre os tons claros, agora como fundo de verdade:
+   leitores de contraste não enxergam sombras e mediam o texto contra o tom claro. */
+html.dark .clean-app .library-content .module-cover { background: #2b2322 !important; box-shadow: none; }
 html.dark .clean-app .library-content .module-cover-icon { background: #0e0a09; color: #ff6a3d; }
 
 @media (max-width: 600px) {

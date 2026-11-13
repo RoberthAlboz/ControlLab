@@ -459,11 +459,13 @@ function NotesWorkspace({
                 type="button"
                 className={`nt-day ${active ? "is-active" : ""} ${key === todayKey ? "is-today" : ""}`}
                 aria-pressed={active}
-                aria-label={`${date.toLocaleDateString("pt-BR", { weekday: "long", day: "numeric", month: "long" })}${datesWithNotes.has(key) ? ", com anotações" : ""}`}
                 onClick={() => goTo(key)}
               >
-                <em>{date.toLocaleDateString("pt-BR", { weekday: "short" }).replace(".", "")}</em>
+                <em>{date.toLocaleDateString("pt-BR", { weekday: "short" }).replace(".", "")}</em>{" "}
                 <strong>{date.getDate()}</strong>
+                <span className="sr-only">
+                  {` — ${date.toLocaleDateString("pt-BR", { weekday: "long", day: "numeric", month: "long" })}${datesWithNotes.has(key) ? ", com anotações" : ""}`}
+                </span>
                 <i aria-hidden="true">{datesWithNotes.has(key) ? <b /> : null}</i>
               </button>
             );

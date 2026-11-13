@@ -26,6 +26,7 @@ import BrandLogo from "@/components/forge/BrandLogo";
 import NotesPage from "@/components/notes/NotesPage";
 import AppSidebar from "@/components/forge/AppSidebar";
 import HomeBackdrop from "@/components/forge/HomeBackdrop";
+import { machiningDuration } from "@/components/forge/MachinedPart";
 import NotificationCenter, { type AppNotification } from "@/components/forge/NotificationCenter";
 import { ArrowLeft, Menu } from "lucide-react";
 import {
@@ -55,16 +56,31 @@ import {
   toSaveModulePayload,
   toScheduleEntries,
 } from "./home/logic";
-import { Editor } from "./home/Editor";
-import { StudentDashboard } from "./home/StudentDashboard";
 import { ScheduleManager } from "./home/ScheduleManager";
-import { TeacherDashboard } from "./home/TeacherDashboard";
-import { LibraryView } from "./home/LibraryView";
-import { ReaderView } from "./home/ReaderView";
 import { CompletionOverlay, type CompletionCelebration } from "./home/CompletionOverlay";
 import { useToast } from "./home/useToast";
 
 // Telas só de docente/administração: o aluno nunca baixa esse código.
+// Cada papel baixa só as telas que usa.
+const Editor = lazy(() =>
+  import("./home/Editor").then(module => ({ default: module.Editor }))
+);
+const StudentDashboard = lazy(() =>
+  import("./home/StudentDashboard").then(module => ({
+    default: module.StudentDashboard,
+  }))
+);
+const TeacherDashboard = lazy(() =>
+  import("./home/TeacherDashboard").then(module => ({
+    default: module.TeacherDashboard,
+  }))
+);
+const LibraryView = lazy(() =>
+  import("./home/LibraryView").then(module => ({ default: module.LibraryView }))
+);
+const ReaderView = lazy(() =>
+  import("./home/ReaderView").then(module => ({ default: module.ReaderView }))
+);
 const InventoryPage = lazy(() => import("@/pages/Inventory"));
 const AdminUsersPage = lazy(() => import("@/pages/AdminUsers"));
 const AdminClassroomsPage = lazy(() => import("@/pages/AdminClassrooms"));
@@ -446,13 +462,23 @@ export default function Home({
           );
           await catalogQuery.refetch();
           if (stepIndex < activeModule.steps.length - 1) {
-            setStepIndex(completed);
-            notify("Etapa concluída. Atualizando sua missão e seu nível.");
+            // Com verificação, fica na etapa: o quiz aparece agora e "Próxima etapa" segue disponível.
+            if (activeModule.steps[stepIndex]?.quiz) {
+              notify("Etapa concluída. Responda à verificação ou siga para a próxima.");
+            } else {
+              setStepIndex(completed);
+              notify("Etapa concluída. Atualizando sua missão e seu nível.");
+            }
           } else {
-            setCompletionCelebration({
-              title: activeModule.title,
-              code: activeModule.code,
-            });
+            // O carimbo cobre a tela: entra depois de a ferramenta terminar o último trecho.
+            window.setTimeout(
+              () =>
+                setCompletionCelebration({
+                  title: activeModule.title,
+                  code: activeModule.code,
+                }),
+              machiningDuration()
+            );
             notify("Módulo concluído. Progresso salvo.");
           }
         },
@@ -555,21 +581,42 @@ export default function Home({
   if (isTeacher && view === "editor" && editing)
     return (
       <>
-        <Editor
-          module={editing}
-          onChange={setEditing}
-          onClose={() => setView("library")}
-          onDelete={() => deleteModule(editing)}
-          canDelete={modules.some(module => module.id === editing.id)}
-          saving={saveModuleMutation.isPending}
-          onSave={() => saveEditingModule(editing)}
-        />
+        <HomeBackdrop screen="editor" />
+        <Suspense
+          fallback={
+            <main className="clean-content">
+              <GearLoader label="Abrindo…" />
+            </main>
+          }
+        >
+          <Editor
+            module={editing}
+            onChange={setEditing}
+            onClose={() => setView("library")}
+            onDelete={() => deleteModule(editing)}
+            canDelete={modules.some(module => module.id === editing.id)}
+            saving={saveModuleMutation.isPending}
+            onSave={() => saveEditingModule(editing)}
+          />
+        </Suspense>
         {/* O editor ocupa a tela inteira: sem isto, erros de validação e de salvamento ficavam invisíveis. */}
         {toastBanner}
       </>
     );
   return (
-    <div className="clean-app">
+    <div className="clean-app" data-screen={view}>
+      <a
+        className="skip-link"
+        href="#conteudo"
+        onClick={event => {
+          event.preventDefault();
+          const main = document.querySelector<HTMLElement>(".clean-main main");
+          main?.setAttribute("tabindex", "-1");
+          main?.focus();
+        }}
+      >
+        Pular para o conteúdo
+      </a>
       <AppSidebar
         view={view}
         isTeacher={isTeacher}
@@ -600,7 +647,7 @@ export default function Home({
         }}
         loggingOut={loggingOut}
       />
-      {view === "dashboard" && <HomeBackdrop />}
+      <HomeBackdrop screen={view} />
       <div className="clean-main">
         <header className="clean-header">
           <div className="header-left">

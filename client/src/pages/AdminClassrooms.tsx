@@ -78,9 +78,7 @@ export default function AdminClassroomsPage({ onNotify }: { onNotify: (message: 
             ADMINISTRAÇÃO <span>/</span> TURMAS
           </div>
           <h1>
-            Turmas e
-            <br />
-            <em>responsáveis.</em>
+            Turmas e <em>responsáveis.</em>
           </h1>
           <p>Cada turma tem um docente responsável. Na supervisão do estoque, o consumo é mostrado por turma, e os alertas indicam qual docente acionar.</p>
         </div>
@@ -95,7 +93,8 @@ export default function AdminClassroomsPage({ onNotify }: { onNotify: (message: 
         <section className="inventory-alerts" role="status">
           <div>
             <strong>
-              {withoutTeacher} turma(s) sem docente responsável
+              {withoutTeacher}{" "}
+              {withoutTeacher === 1 ? "turma" : "turmas"} sem docente responsável
             </strong>
             Os alertas dessas turmas vão para quem registrou a operação no estoque.
           </div>
