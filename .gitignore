@@ -136,3 +136,6 @@ playwright-report/
 
 # Senhas das contas geradas por pnpm db:export-sql
 supabase/*.local.txt
+
+# Documento local com acessos de demonstração
+/documents/README.md
