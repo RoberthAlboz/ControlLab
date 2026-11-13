@@ -14,7 +14,11 @@ import type {
   StudentBadge,
 } from "@shared/competencies";
 import TeacherBadgeManager from "@/components/TeacherBadgeManager";
-import { HalfGauge, PillGauge, TickBars } from "@/components/forge/HomeMeters";
+import {
+  activeLoansLabel,
+  HalfGauge,
+  PillGauge,
+} from "@/components/forge/HomeMeters";
 import {
   ArrowRight,
   ArrowUpRight,
@@ -612,6 +616,7 @@ export function TeacherDashboard({
       (a, b) => new Date(a.startsAt).getTime() - new Date(b.startsAt).getTime()
     );
   const nextActivity = upcomingActivities[0];
+  const pastActivities = activities.length - upcomingActivities.length;
   const studentsWithoutStart = supervision.filter(
     student => student.modulesStarted === 0 && student.averageProgress === 0
   );
@@ -755,9 +760,12 @@ export function TeacherDashboard({
               <b className="td-stat-icon" aria-hidden="true">
                 <UsersRound size={18} />
               </b>
-              <span className="td-stat-label">Alunos</span>
-              <strong>{supervision.length}</strong>
-              <em>progresso médio {averageProgress}%</em>
+              <span className="td-stat-label">Progresso da turma</span>
+              <strong>{averageProgress}%</strong>
+              <em>
+                média de {supervision.length}{" "}
+                {supervision.length === 1 ? "aluno" : "alunos"}
+              </em>
               <HalfGauge value={averageProgress} />
             </button>
             {showModules && (
@@ -801,17 +809,13 @@ export function TeacherDashboard({
               </b>
               <span className="td-stat-label">Próximas aulas</span>
               <strong>{upcomingActivities.length}</strong>
-              <em>{activities.length} no calendário</em>
-              <TickBars
-                filled={
-                  activities.length
-                    ? Math.ceil((upcomingActivities.length / activities.length) * 9)
-                    : 0
-                }
-                total={9}
-                start="Calendário"
-                end="Próximas"
-              />
+              <em>
+                {!activities.length
+                  ? "nenhuma no calendário"
+                  : pastActivities
+                    ? `${pastActivities} já ${pastActivities === 1 ? "realizada" : "realizadas"}`
+                    : `${activities.length} no calendário`}
+              </em>
             </button>
             <button
               type="button"
@@ -838,7 +842,7 @@ export function TeacherDashboard({
                   ? "não foi possível carregar"
                   : stockAlerts.length || overdueLoans
                     ? `${stockAlerts.length} com estoque baixo · ${overdueLoans} atrasos`
-                    : `${inventorySummary?.totals.activeLoans ?? 0} empréstimos ativos`}
+                    : `${stockHealthy}% com saldo adequado · ${activeLoansLabel(inventorySummary?.totals.activeLoans ?? 0)}`}
               </em>
               <HalfGauge value={stockHealthy} />
             </button>

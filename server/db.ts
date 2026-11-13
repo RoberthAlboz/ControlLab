@@ -543,10 +543,11 @@ export async function getCatalog(userId?: number, period: "all" | "today" | "wee
   const quizFirstTry = summarizeQuizAttempts(quizAttempts).byStudent.get(userId ?? 0)?.firstTry ?? 0;
   const gamification = calculateGamification(lifetimeStudy.studiedMinutes, lifetimeCompletedSteps, quizFirstTry);
   const currentProgress = visibleModules.map((module) => progressMap.get(module.id)?.progress ?? 0);
-  // Uma etapa só conta o quiz como respondido se o acerto veio depois de a sessão atual começar.
-  const activeStartByStep = new Map(activeSessionRows.map((row) => [`${row.moduleId}:${row.stepIndex}`, row.startedAt] as const));
+  // Uma etapa só conta o quiz como respondido se o acerto veio depois de a sessão dela começar,
+  // concluída ou não: depois de um reset do docente, o acerto antigo não vale.
+  const startByStep = new Map([...sessionRows, ...activeSessionRows].map((row) => [`${row.moduleId}:${row.stepIndex}`, row.startedAt] as const));
   const quizPassedFor = (step: { id: string; moduleId: string; position: number }) => {
-    const startedAt = activeStartByStep.get(`${step.moduleId}:${step.position}`);
+    const startedAt = startByStep.get(`${step.moduleId}:${step.position}`);
     return quizAttempts.some((attempt) => attempt.stepId === step.id && attempt.correct && (!startedAt || attempt.createdAt >= startedAt));
   };
   const presentStep = ({ quiz: storedQuiz, imageUrl, attachments, ...step }: typeof stepRows[number]) => {
@@ -948,7 +949,7 @@ export async function updateProgress(userId: number, moduleId: string, stepIndex
 }
 
 /**
- * Registra a resposta do aluno ao quiz da etapa em andamento. Todas as
+ * Registra a resposta do aluno ao quiz de uma etapa já concluída. Todas as
  * tentativas ficam guardadas (métricas do docente); a explicação só é
  * devolvida no acerto, e o gabarito nunca vai para o aluno.
  */
@@ -965,11 +966,22 @@ export async function answerStepQuiz(userId: number, moduleId: string, stepIndex
     if (!Number.isInteger(selectedIndex) || selectedIndex < 0 || selectedIndex >= quiz.options.length) {
       throw new LearningDomainError("BAD_REQUEST", "Escolha uma das alternativas.");
     }
-    const [session] = await tx.select({ completedAt: studentStepSessions.completedAt }).from(studentStepSessions)
+    const [session] = await tx.select({ startedAt: studentStepSessions.startedAt, completedAt: studentStepSessions.completedAt }).from(studentStepSessions)
       .where(and(eq(studentStepSessions.userId, userId), eq(studentStepSessions.moduleId, moduleId), eq(studentStepSessions.stepIndex, stepIndex)))
       .limit(1);
-    if (!session) throw new LearningDomainError("BAD_REQUEST", "Inicie a etapa antes de responder à verificação.");
-    if (session.completedAt) throw new LearningDomainError("BAD_REQUEST", "Esta etapa já foi concluída.");
+    const [progress] = await tx.select({ stepIndex: studentProgress.stepIndex }).from(studentProgress)
+      .where(and(eq(studentProgress.userId, userId), eq(studentProgress.moduleId, moduleId)))
+      .limit(1);
+    // A conclusão vem da sessão ou do progresso salvo (nem toda etapa antiga tem sessão).
+    if (!session?.completedAt && (progress?.stepIndex ?? 0) <= stepIndex) {
+      throw new LearningDomainError("BAD_REQUEST", "Conclua a etapa antes de responder à verificação.");
+    }
+    const previousAttempts = await tx.select({ correct: studentQuizAttempts.correct, createdAt: studentQuizAttempts.createdAt }).from(studentQuizAttempts)
+      .where(and(eq(studentQuizAttempts.userId, userId), eq(studentQuizAttempts.stepId, step.id)));
+    // Mesma regra de quizPassedFor: depois de um reset do docente, o acerto antigo não vale.
+    if (previousAttempts.some((attempt) => attempt.correct && (!session || attempt.createdAt >= session.startedAt))) {
+      throw new LearningDomainError("BAD_REQUEST", "Esta verificação já foi respondida.");
+    }
     const correct = selectedIndex === quiz.correctIndex;
     await tx.insert(studentQuizAttempts).values({ userId, moduleId, stepId: step.id, selectedIndex, correct: correct ? 1 : 0 });
     return correct

@@ -157,9 +157,7 @@ export default function AdminUsersPage({ currentUserId, onNotify }: { currentUse
             ADMINISTRAÇÃO <span>/</span> USUÁRIOS
           </div>
           <h1>
-            Logins e
-            <br />
-            <em>acessos.</em>
+            Logins e <em>acessos.</em>
           </h1>
           <p>Crie contas, defina o tipo de acesso e desative quem saiu.</p>
         </div>

@@ -1,20 +1,18 @@
 # Banco de dados
 
-**SQLite**, usando o módulo nativo `node:sqlite` do Node.js 22.16+ (nenhum servidor de banco nem dependência nativa para instalar). O banco é um arquivo dentro do projeto: `data/forgelab.db` (variável `DATABASE_FILE`). Schema central: [`drizzle/schema.ts`](../drizzle/schema.ts). Migration base: [`drizzle/0000_forgelab_baseline.sql`](../drizzle/0000_forgelab_baseline.sql).
+**PostgreSQL no Supabase**. Schema central: [`drizzle/schema.ts`](../drizzle/schema.ts). Estrutura do Postgres: [`drizzle/postgres/`](../drizzle/postgres/). Script único para o Supabase (estrutura + seed): [`supabase/controllab-supabase.sql`](../supabase/controllab-supabase.sql).
 
-## Como executar no VS Code
+Os testes automáticos e o trabalho sem internet usam o mesmo código sobre um arquivo **SQLite** (`DATABASE_PROVIDER=sqlite`, módulo nativo `node:sqlite` do Node.js 22.16+).
 
-1. `cp .env.example .env` (o padrão `DATABASE_FILE=data/forgelab.db` já serve).
-2. `pnpm db:setup` — cria o arquivo, aplica as migrations e roda a seed.
-3. `pnpm dev`.
+## Preparar o Supabase
 
-Visualizar: extensão **SQLite Viewer** (sugerida em `.vscode/extensions.json`) — clique em `data/forgelab.db` no explorador do VS Code. Também funciona com o DB Browser for SQLite ou com o `sqlite3` de linha de comando.
+**Pelo navegador**: SQL Editor → New query → colar [`supabase/controllab-supabase.sql`](../supabase/controllab-supabase.sql) → Run. O script:
 
-Backup: copie `data/forgelab.db` com o servidor parado. Resetar (desenvolvimento): `pnpm db:reset` (pare o `pnpm dev` antes) ou apague a pasta `data/` e rode `pnpm db:setup`.
+- aplica as migrations de `drizzle/postgres/` e as registra em `__drizzle_migrations` (um `pnpm db:migrate` posterior reconhece o banco e só aplica as novas);
+- insere a seed de demonstração, gerada por `pnpm db:export-sql` a partir de `server/seed.ts`, com senhas sorteadas (em `supabase/CONTAS-SEED.local.txt`, fora do git);
+- é idempotente: rodar de novo não duplica tabelas nem linhas.
 
-## Postgres / Supabase (uso temporário)
-
-O SQLite continua sendo o banco principal. Para hospedar os dados no **Supabase** (ou em qualquer Postgres 14+), basta trocar a configuração; o código é o mesmo.
+**Pelo projeto**:
 
 ```env
 DATABASE_PROVIDER=postgres
@@ -22,14 +20,27 @@ DATABASE_URL=postgresql://postgres.<ref>:<senha>@aws-0-<região>.pooler.supabase
 DATABASE_SSL=require
 ```
 
-- **Connection string**: no Supabase, botão **Connect** → **Session pooler** (porta 5432). A conexão direta (`db.<ref>.supabase.co`) só funciona com IPv6. Senhas com caracteres especiais precisam de URL-encode.
-- **Criar as tabelas**: `pnpm db:setup` (ou `pnpm db:migrate`, sem seed). Alternativa: colar [`drizzle/postgres/0000_controllab_baseline.sql`](../drizzle/postgres/0000_controllab_baseline.sql) no **SQL Editor** do Supabase. O script é idempotente.
-- **Como funciona**: o Drizzle continua gerando SQL do SQLite e `server/_core/postgres.ts` o adapta (`?` → `$1`, `LIKE` → `ILIKE`). A estrutura Postgres (`drizzle/postgres/`) mantém as mesmas convenções: datas em `BIGINT` (ms), booleanos 0/1, a função `unixepoch()` e um gatilho que gera o `id` quando a aplicação envia `NULL`, como o SQLite faz.
-- **Segurança**: o script liga o RLS em todas as tabelas sem criar políticas. A API pública do Supabase (chave `anon`) não acessa nada; o servidor do Control Lab conecta como `postgres`, que ignora o RLS.
-- **Mudanças de schema**: altere `drizzle/schema.ts`, gere a migration do SQLite (`pnpm db:generate`) e escreva a equivalente em `drizzle/postgres/` (nova entrada em `meta/_journal.json`).
-- **Uploads** (fotos e imagens) continuam em disco (`UPLOAD_DIR`), não no Supabase.
+`pnpm db:setup` (migrations + seed com as senhas `SEED_*` do `.env`) ou `pnpm db:migrate` (sem seed).
 
-## Configuração da conexão
+- **Connection string**: no Supabase, botão **Connect**. No computador, **Session pooler** (porta 5432); na Vercel, **Transaction pooler** (porta 6543). A conexão direta (`db.<ref>.supabase.co`) só funciona com IPv6. Senhas com caracteres especiais precisam de URL-encode (`&` → `%26`).
+- **Rede bloqueada**: redes que barram a porta do Postgres (comum em escolas) deixam a conexão aberta sem resposta, e o erro aparece como `timeout`. Use o SQL Editor do Supabase ou outra rede.
+- **Como funciona**: o Drizzle gera o SQL e `server/_core/postgres.ts` o adapta ao Postgres (`?` → `$1`, `LIKE` → `ILIKE`). A estrutura (`drizzle/postgres/`) segue as mesmas convenções nos dois bancos: datas em `BIGINT` (ms), booleanos 0/1, a função `unixepoch()` e um gatilho que gera o `id` quando a aplicação envia `NULL`.
+- **Transações**: cada transação pega a trava `pg_advisory_xact_lock`, liberada no COMMIT/ROLLBACK. Assim fica uma transação de escrita por vez no banco todo, mesmo com várias instâncias da função na Vercel (o mutex de `db-lock.ts` só vale dentro de um processo).
+- **Segurança**: todas as tabelas têm RLS ligado e nenhuma política. A API pública do Supabase (chave `anon`) não acessa nada; o servidor do Control Lab conecta como `postgres`, que ignora o RLS.
+- **Mudanças de schema**: altere `drizzle/schema.ts`, gere a migration do SQLite (`pnpm db:generate`), escreva a equivalente em `drizzle/postgres/` (nova entrada em `meta/_journal.json`) e rode `pnpm db:export-sql` para atualizar o script do Supabase.
+
+## Arquivos enviados
+
+Fotos de perfil, imagens e anexos de módulos ficam na tabela `stored_files` (`STORAGE_DRIVER=database`, padrão com Postgres e obrigatório na Vercel, onde o disco não persiste). Os registros guardam só a URL `/uploads/...`; o servidor lê o arquivo do banco e o entrega com o tipo deduzido da extensão, `X-Content-Type-Options: nosniff` e download forçado para o que o navegador não exibe com segurança. Com SQLite o padrão é a pasta `UPLOAD_DIR` (`STORAGE_DRIVER=disk`). `pnpm uploads:clean` lista e apaga arquivos sem uso nos dois modos.
+
+## SQLite (testes e uso sem internet)
+
+1. No `.env`: `DATABASE_PROVIDER=sqlite` (arquivo em `DATABASE_FILE`, padrão `data/forgelab.db`).
+2. `pnpm db:setup` cria o arquivo, aplica as migrations de `drizzle/` e roda a seed.
+
+Visualizar: extensão **SQLite Viewer** (sugerida em `.vscode/extensions.json`). Backup: copie `data/forgelab.db` com o servidor parado. Resetar: `pnpm db:reset` (pare o `pnpm dev` antes).
+
+## Configuração da conexão SQLite
 
 `server/_core/sqlite.ts` abre o arquivo com:
 
@@ -74,6 +85,7 @@ Dados de demonstração — a interface mostra o selo **DEV** fora de produção
 |---|---|---|
 | `users` | Contas | `role` ∈ {student, teacher, admin}; `passwordHash` (scrypt); `active`; `email` único; `openId` único (identificador da sessão). |
 | `auth_sessions` | Sessões emitidas | `jti` (PK), `expiresAt`, `revokedAt`. Permite expirar e revogar JWTs. |
+| `stored_files` | Arquivos enviados (`STORAGE_DRIVER=database`) | `key` (PK, caminho depois de `/uploads/`), `contentType`, `size`, `data` (`bytea` no Postgres). |
 
 ### Área educacional (preservadas do ForgeLab)
 

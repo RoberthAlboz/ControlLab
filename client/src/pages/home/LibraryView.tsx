@@ -85,13 +85,13 @@ export function LibraryView({
               className={kindFilter === kind ? "selected" : ""}
               aria-pressed={kindFilter === kind}
               disabled={kindCounts[kind] === 0 && kindFilter !== kind}
-              aria-label={`${kind}: ${kindCounts[kind]} ${kindCounts[kind] === 1 ? "módulo" : "módulos"}`}
               key={kind}
               onClick={() => onKindFilterChange(kind)}
             >
-              <span>{kind}</span>
-              <span className="library-tab-count" aria-hidden="true">
-                {kindCounts[kind]}
+              <span>{kind}</span>{" "}
+              <span className="library-tab-count">{kindCounts[kind]}</span>
+              <span className="sr-only">
+                {kindCounts[kind] === 1 ? " módulo" : " módulos"}
               </span>
             </button>
           ))}

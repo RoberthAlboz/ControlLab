@@ -1,47 +1,11 @@
-/** Entrada do servidor: Express, política de segurança, API tRPC, uploads e frontend no mesmo endereço. */
+/** Entrada do servidor local (pnpm dev / pnpm start): API, uploads e frontend no mesmo endereço. */
 import "dotenv/config";
-import express from "express";
 import { createServer } from "http";
 import net from "net";
-import { createExpressMiddleware } from "@trpc/server/adapters/express";
-import { registerStorageProxy } from "./storageProxy";
-import { registerAttachmentUpload } from "../attachmentUpload";
-import { appRouter } from "../routers";
 import { checkDatabaseConnection } from "../db";
-import { createContext } from "./context";
+import { createApp } from "./app";
 import { assertServerEnv, ENV } from "./env";
 import { serveStatic, setupVite } from "./vite";
-import { sdk } from "./sdk";
-
-const SMALL_BODY_LIMIT = "1mb";
-// Imagens enviadas no editor chegam em base64; o limite cobre capa + etapas.
-const LARGE_BODY_LIMIT = "25mb";
-const LARGE_UPLOAD_PROCEDURES = new Set(["learning.saveModule", "profile.uploadAvatar"]);
-
-/**
- * Só executa scripts do próprio servidor (nenhum inline: o tema inicial vem de
- * /theme-init.js). Estilos inline ficam liberados porque o React e as animações
- * usam `style=`. Imagens e modelos 3D podem vir de links HTTPS que o docente cadastra.
- */
-const CONTENT_SECURITY_POLICY = [
-  "default-src 'self'",
-  "script-src 'self'",
-  "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-  "font-src 'self' data: https://fonts.gstatic.com",
-  "img-src 'self' data: blob: https:",
-  "connect-src 'self' https:",
-  "media-src 'self' blob: https:",
-  "object-src 'none'",
-  "base-uri 'self'",
-  "form-action 'self'",
-  "frame-ancestors 'self'",
-].join("; ");
-
-/** `/learning.saveModule` ou um lote (`/a,b`) em que todas as chamadas aceitam corpo grande. */
-function isLargeUploadPath(path: string) {
-  const procedures = path.replace(/^\//, "").split(",");
-  return procedures.length > 0 && procedures.every(name => LARGE_UPLOAD_PROCEDURES.has(name));
-}
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
@@ -85,46 +49,8 @@ async function startServer() {
     console.warn("[ControlLab] DATABASE_SSL=require criptografa a conexão, mas não confere o certificado do Postgres. Em produção prefira DATABASE_SSL=verify com DATABASE_SSL_CA.");
   }
 
-  const app = express();
-  app.disable("x-powered-by");
-  if (ENV.trustProxy !== undefined) app.set("trust proxy", ENV.trustProxy);
+  const app = createApp();
   const server = createServer(app);
-  app.use((_req, res, next) => {
-    res.setHeader("X-Content-Type-Options", "nosniff");
-    res.setHeader("Referrer-Policy", "same-origin");
-    res.setHeader("X-Frame-Options", "SAMEORIGIN");
-    // Em desenvolvimento o Vite injeta scripts inline (HMR); a CSP vale no build de produção.
-    if (ENV.isProduction) res.setHeader("Content-Security-Policy", CONTENT_SECURITY_POLICY);
-    next();
-  });
-  // Corpo pequeno por padrão. Só o editor e a foto de perfil (imagens em base64)
-  // aceitam corpos grandes, e apenas de quem apresenta uma sessão assinada: um
-  // visitante anônimo não consegue fazer o servidor ler 25 MB.
-  const smallJson = express.json({ limit: SMALL_BODY_LIMIT });
-  const largeJson = express.json({ limit: LARGE_BODY_LIMIT });
-  app.use("/api/trpc", (req, res, next) => {
-    if (!isLargeUploadPath(req.path)) return smallJson(req, res, next);
-    sdk.hasValidSignature(req).then(
-      signed => (signed ? largeJson : smallJson)(req, res, next),
-      next,
-    );
-  });
-  registerAttachmentUpload(app);
-  app.use(express.json({ limit: SMALL_BODY_LIMIT }));
-  app.use(express.urlencoded({ limit: "1mb", extended: false }));
-  registerStorageProxy(app);
-  app.use(
-    "/api/trpc",
-    createExpressMiddleware({
-      router: appRouter,
-      createContext,
-      maxBodySize: 25 * 1024 * 1024,
-      onError: ({ error, path }) => {
-        if (error.code === "INTERNAL_SERVER_ERROR") console.error(`[tRPC] ${path ?? "?"}:`, error);
-      },
-    }),
-  );
-  app.use("/api", (_req, res) => res.status(404).json({ error: "Rota de API inexistente" }));
 
   if (!ENV.isProduction) {
     await setupVite(app, server);

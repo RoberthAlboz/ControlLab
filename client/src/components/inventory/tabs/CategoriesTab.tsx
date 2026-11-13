@@ -139,7 +139,8 @@ export function CategoriesTab({
                 <strong>{category.name}</strong>
                 <small>
                   {category.description || "Sem descrição"} ·{" "}
-                  {category.itemCount} item(ns) ativo(s)
+                  {category.itemCount}{" "}
+                  {category.itemCount === 1 ? "item ativo" : "itens ativos"}
                   {category.archived ? " · arquivada" : ""}
                 </small>
               </div>

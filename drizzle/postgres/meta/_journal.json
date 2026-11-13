@@ -50,6 +50,13 @@
       "when": 1793400000000,
       "tag": "0006_step_quiz",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1794600000000,
+      "tag": "0007_stored_files",
+      "breakpoints": true
     }
   ]
 }

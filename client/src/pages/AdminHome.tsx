@@ -8,7 +8,11 @@
  * os números são por turma e por conta.
  */
 import type { ReactNode } from "react";
-import { HalfGauge, PillGauge, TickBars } from "@/components/forge/HomeMeters";
+import {
+  activeLoansLabel,
+  HalfGauge,
+  PillGauge,
+} from "@/components/forge/HomeMeters";
 import {
   AlertTriangle,
   ArrowRight,
@@ -272,7 +276,9 @@ export default function AdminHome({
             <em>
               {teachers} {teachers === 1 ? "docente" : "docentes"} ·{" "}
               {students.length} {students.length === 1 ? "aluno" : "alunos"}
-              {inactiveUsers ? ` · ${inactiveUsers} desativada(s)` : ""}
+              {inactiveUsers
+                ? ` · ${inactiveUsers} ${inactiveUsers === 1 ? "desativada" : "desativadas"}`
+                : ""}
             </em>
             <PillGauge value={users.length ? (activeUsers.length / users.length) * 100 : 0} />
           </button>
@@ -315,7 +321,7 @@ export default function AdminHome({
             <em>
               {stockAlerts.length
                 ? `${stockAlerts.length} com estoque baixo`
-                : `${inventorySummary?.totals.activeLoans ?? 0} empréstimos ativos`}
+                : `${stockHealthy}% com saldo adequado · ${activeLoansLabel(inventorySummary?.totals.activeLoans ?? 0)}`}
             </em>
             <HalfGauge value={stockHealthy} />
           </button>
@@ -339,12 +345,6 @@ export default function AdminHome({
               {urgentAlerts.length === 1 ? "grave" : "graves"} · {overdueLoans}{" "}
               {overdueLoans === 1 ? "atraso" : "atrasos"}
             </em>
-            <TickBars
-              filled={Math.min(urgentAlerts.length, 9)}
-              total={9}
-              start={`${OVERSIGHT_DAYS} dias`}
-              end="Graves"
-            />
           </button>
         </section>
       </header>
@@ -486,7 +486,7 @@ export default function AdminHome({
                         {usage?.outstanding ?? 0}
                         {usage?.overdue ? (
                           <small className="admin-home-missing">
-                            {usage.overdue} atrasado(s)
+                            {usage.overdue} {usage.overdue === 1 ? "atrasado" : "atrasados"}
                           </small>
                         ) : null}
                       </td>

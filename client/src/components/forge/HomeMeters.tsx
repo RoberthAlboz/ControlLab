@@ -10,6 +10,9 @@ type MeterProps = {
   valueText?: string;
 };
 
+export const activeLoansLabel = (total: number) =>
+  `${total} ${total === 1 ? "empréstimo ativo" : "empréstimos ativos"}`;
+
 const clampPercent = (value: number) =>
   Number.isFinite(value) ? Math.max(0, Math.min(100, Math.round(value))) : 0;
 

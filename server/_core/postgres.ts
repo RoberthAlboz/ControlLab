@@ -1,17 +1,18 @@
 /**
- * Conexão PostgreSQL (ex.: Supabase), usada quando DATABASE_PROVIDER=postgres.
+ * Conexão PostgreSQL (Supabase): o banco do sistema (DATABASE_PROVIDER=postgres, padrão).
  *
- * O SQLite continua sendo o banco principal: o schema e as consultas do Drizzle
- * são os do SQLite (`sqlite-proxy`). Este módulo recebe o SQL gerado para o
- * SQLite e o adapta ao Postgres, que entende quase tudo igual:
+ * O schema e as consultas do Drizzle usam o dialeto do SQLite (`sqlite-proxy`),
+ * o mesmo dos testes automáticos. Este módulo recebe esse SQL e o adapta ao
+ * Postgres, que entende quase tudo igual:
  *  - parâmetros `?` viram `$1, $2, …`;
  *  - `like` vira `ilike` (o LIKE do SQLite ignora maiúsculas/minúsculas);
  *  - `begin immediate` vira `begin`.
  * A estrutura das tabelas fica em drizzle/postgres/ (datas em BIGINT ms,
  * booleanos 0/1, gatilho que preenche ids nulos e a função `unixepoch()`).
  *
- * Assim como no SQLite, existe uma única conexão e as transações passam pelo
- * mutex de `db-lock.ts`.
+ * Existe uma única conexão por processo e as transações passam pelo mutex de
+ * `db-lock.ts`; entre processos (várias instâncias na Vercel) vale a trava
+ * `pg_advisory_xact_lock` tomada a cada BEGIN.
  */
 import { readFileSync } from "node:fs";
 import pg from "pg";
@@ -19,6 +20,8 @@ import { isInsideTransaction, normalizeParam, pendingTransaction, type DriverMet
 
 const INT8_OID = 20;
 const NUMERIC_OID = 1700;
+/** Chave da trava global de transações (pg_advisory_xact_lock). */
+const TRANSACTION_LOCK_KEY = 7_314_001;
 
 /** Troca os `?` por `$n` e adapta palavras do SQLite, sem mexer em textos entre aspas. */
 export function translateSql(sqlText: string): string {
@@ -175,6 +178,10 @@ export function createPostgresConnection(config: pg.ClientConfig = postgresConfi
       throw new Error("A conexão com o Postgres caiu durante a transação; nada foi gravado. Tente novamente.");
     }
     const result = await active.query({ text, values: params.map(normalizeParam), rowMode: "array" });
+    // O mutex de db-lock.ts só vale dentro deste processo. Na Vercel várias
+    // instâncias atendem ao mesmo tempo: esta trava do Postgres (liberada no
+    // COMMIT/ROLLBACK) mantém uma transação de escrita por vez no banco todo.
+    if (command.startsWith("begin")) await active.query("SELECT pg_advisory_xact_lock($1)", [TRANSACTION_LOCK_KEY]);
     if (command === "commit" || command === "rollback") transactionGeneration = null;
     if (method === "run") return { rows: [] as unknown[] };
     if (method === "get") return { rows: result.rows[0] as unknown[] };

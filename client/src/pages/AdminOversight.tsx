@@ -39,9 +39,7 @@ export default function AdminOversightPage() {
             ADMINISTRAÇÃO <span>/</span> SUPERVISÃO DO ESTOQUE
           </div>
           <h1>
-            O que entra,
-            <br />
-            <em>o que sai.</em>
+            O que entra, <em>o que sai.</em>
           </h1>
           <p>Consumo por turma e por docente, com alertas para acionar o responsável.</p>
         </div>
@@ -133,7 +131,7 @@ export default function AdminOversightPage() {
                       <tr key={row.id ?? "none"}>
                         <td>
                           <strong>{row.name}</strong>
-                          {row.id !== null && <small>{row.students} aluno(s)</small>}
+                          {row.id !== null && <small>{row.students} {row.students === 1 ? "aluno" : "alunos"}</small>}
                         </td>
                         <td>
                           {row.teacher ? (
@@ -232,7 +230,7 @@ export default function AdminOversightPage() {
                         <strong>
                           {item.code} · {item.name}
                         </strong>
-                        <small>{item.events} saída(s)</small>
+                        <small>{item.events} {item.events === 1 ? "saída" : "saídas"}</small>
                       </div>
                       <strong>
                         {item.outQuantity} {item.unit}

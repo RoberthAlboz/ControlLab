@@ -34,7 +34,7 @@ export default function StepQuizEditor({
       <legend>
         <CircleHelp size={15} aria-hidden="true" /> Verificação da etapa {stepNumber}
       </legend>
-      <p className="quiz-editor-hint">O aluno só conclui a etapa depois de acertar. Marque a alternativa correta.</p>
+      <p className="quiz-editor-hint">O aluno vê a verificação depois de concluir a etapa; responder é opcional. Marque a alternativa correta.</p>
       <textarea
         className="me-input"
         aria-label={`Pergunta da verificação da etapa ${stepNumber}`}

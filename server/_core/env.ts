@@ -18,7 +18,7 @@ function readPositiveInt(value: string | undefined, fallback: number) {
 }
 
 function readDatabaseProvider() {
-  const value = (process.env.DATABASE_PROVIDER || "sqlite").trim().toLowerCase();
+  const value = (process.env.DATABASE_PROVIDER || "postgres").trim().toLowerCase();
   if (value === "postgresql" || value === "supabase") return "postgres";
   return value;
 }
@@ -27,6 +27,15 @@ function readDatabaseProvider() {
  * `trust proxy` do Express. Vazio (padrão) = o IP é o da conexão direta.
  * Atrás de um proxy reverso use o número de saltos (ex.: 1) ou `loopback`.
  */
+/** Na Vercel o disco não persiste: os arquivos enviados vão para o banco. */
+export const isVercel = Boolean(process.env.VERCEL);
+
+function readStorageDriver(provider: string) {
+  const value = (process.env.STORAGE_DRIVER ?? "").trim().toLowerCase();
+  if (value) return value;
+  return provider === "postgres" || isVercel ? "database" : "disk";
+}
+
 function readTrustProxy(): boolean | number | string | undefined {
   const value = (process.env.TRUST_PROXY ?? "").trim();
   if (!value || value === "false") return undefined;
@@ -50,8 +59,9 @@ export const ENV = {
   appId: process.env.APP_ID || "forgelab",
   cookieSecret: readSessionSecret(),
   /**
-   * Banco usado: `sqlite` (padrão, banco principal do projeto) ou `postgres`
-   * (ex.: Supabase, via DATABASE_URL). Aceita também `supabase`/`postgresql`.
+   * Banco usado: `postgres` (padrão: Supabase, via DATABASE_URL) ou `sqlite`
+   * (arquivo local, usado pelos testes automáticos e para trabalhar sem internet).
+   * Aceita também `supabase`/`postgresql`.
    */
   databaseProvider: readDatabaseProvider() as "sqlite" | "postgres",
   /** Arquivo SQLite (padrão: data/forgelab.db, relativo à pasta do projeto). */
@@ -66,7 +76,9 @@ export const ENV = {
   isTest: nodeEnv === "test" || process.env.VITEST === "true",
   /** Duração da sessão em horas (padrão: 12 h). */
   sessionTtlMs: readPositiveInt(process.env.SESSION_TTL_HOURS, 12) * 60 * 60 * 1000,
-  /** Pasta local onde fotos de perfil e imagens de módulos são gravadas. */
+  /** Onde ficam os arquivos enviados: `database` (tabela stored_files) ou `disk` (UPLOAD_DIR). */
+  storageDriver: readStorageDriver(readDatabaseProvider()) as "database" | "disk",
+  /** Pasta local dos arquivos enviados (somente com STORAGE_DRIVER=disk). */
   uploadDir: process.env.UPLOAD_DIR || "uploads",
   trustProxy: readTrustProxy(),
   /** Fuso da escola: define "hoje", a semana e a sequência de dias de estudo. */
@@ -92,8 +104,18 @@ export function assertServerEnv() {
   } else if (ENV.databaseProvider === "postgres" && !ENV.databaseUrl) {
     problems.push("DATABASE_URL não definido (obrigatório com DATABASE_PROVIDER=postgres)");
   }
+  if (ENV.storageDriver !== "database" && ENV.storageDriver !== "disk") {
+    problems.push(`STORAGE_DRIVER inválido ("${ENV.storageDriver}"); use database ou disk`);
+  }
+  if (isVercel && ENV.databaseProvider === "sqlite") {
+    problems.push("Na Vercel o disco não persiste: use DATABASE_PROVIDER=postgres com o DATABASE_URL do Supabase");
+  }
+  if (isVercel && ENV.storageDriver === "disk") {
+    problems.push("Na Vercel o disco não persiste: use STORAGE_DRIVER=database (ou deixe vazio)");
+  }
   if (problems.length) {
-    const message = `Configuração incompleta no .env:\n - ${problems.join("\n - ")}\nCopie .env.example para .env e ajuste os valores.`;
+    const where = isVercel ? "nas variáveis de ambiente do projeto na Vercel" : "no .env";
+    const message = `Configuração incompleta ${where}:\n - ${problems.join("\n - ")}\nVeja .env.example para a lista de variáveis.`;
     throw new Error(message);
   }
 }

@@ -4,6 +4,7 @@
 
 # Build outputs
 dist/
+.vercel/
 build/
 *.dist
 
@@ -128,3 +129,10 @@ data/
 .claude/
 CLAUDE.md
 skills-lock.json
+
+# Testes de navegador: banco, uploads e relatórios de cada execução
+e2e/.tmp/
+playwright-report/
+
+# Senhas das contas geradas por pnpm db:export-sql
+supabase/*.local.txt

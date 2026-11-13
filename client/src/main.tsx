@@ -23,6 +23,7 @@ import "./styles/quiz.css";
 import "./styles/theme-ux.css";
 import "./styles/workshop.css";
 import "./styles/dashboard-home.css";
+import "./styles/app-screens.css";
 
 const queryClient = new QueryClient({
   defaultOptions: {

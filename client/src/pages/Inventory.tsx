@@ -106,9 +106,7 @@ export default function InventoryPage({
             ESTOQUE <span>/</span> FERRAMENTARIA
           </div>
           <h1>
-            Estoque da
-            <br />
-            <em>ferramentaria.</em>
+            Estoque da <em>ferramentaria.</em>
           </h1>
           <p>Saldo, localização e empréstimos de cada peça.</p>
         </div>
@@ -180,7 +178,7 @@ export default function InventoryPage({
               value={totals?.activeLoans}
               detail={
                 totals?.overdueLoans
-                  ? `${totals.overdueLoans} atrasado(s)`
+                  ? `${totals.overdueLoans} ${totals.overdueLoans === 1 ? "atrasado" : "atrasados"}`
                   : `${totals?.reservedLoans ?? 0} aguardando retirada`
               }
               tone={totals?.overdueLoans ? "alert" : undefined}

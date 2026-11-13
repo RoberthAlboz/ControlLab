@@ -4,7 +4,9 @@
     "shared/**/*",
     "server/**/*",
     "scripts/**/*.ts",
-    "drizzle/**/*.ts"
+    "drizzle/**/*.ts",
+    "e2e/**/*.ts",
+    "playwright.config.ts"
   ],
   "exclude": [
     "node_modules",

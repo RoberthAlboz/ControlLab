@@ -115,9 +115,9 @@ function UnitDots({ station }: { station: Station }) {
   const free = Math.max(0, onHook - reserved);
   const label = state === "maintenance"
     ? `${total} em manutenção`
-    : `${onHook} de ${total} no gancho${reserved ? `, ${reserved} reservada(s)` : ""}`;
+    : `${onHook} de ${total} no gancho${reserved ? `, ${reserved} ${reserved === 1 ? "reservada" : "reservadas"}` : ""}`;
   return (
-    <div className="shadow-station-units" aria-label={label} title={label}>
+    <div className="shadow-station-units" role="img" aria-label={label} title={label}>
       {total <= MAX_DOTS && (
         <span className="shadow-station-dots" aria-hidden="true">
           {Array.from({ length: total }, (_, index) => (
@@ -294,7 +294,7 @@ export default function ShadowBoard({
                     >
                       <svg viewBox="0 0 60 122" aria-hidden="true" focusable="false">
                         <circle cx="30" cy="7" r="2.6" className="shadow-board-peg" />
-                        <ToolSvg shape={shape} className="shadow-board-outline" />
+                        <ToolSvg shape={shape} className="shadow-board-outline" flat />
                         <g className="shadow-board-tool">
                           <ToolSvg shape={shape} className="shadow-board-tool-body" />
                         </g>
