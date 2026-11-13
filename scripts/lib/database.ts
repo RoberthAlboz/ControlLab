@@ -36,6 +36,7 @@ const APP_TABLES = [
   "student_badges",
   "student_notes",
   "auth_sessions",
+  "stored_files",
   "users",
   "__drizzle_migrations",
 ];
@@ -53,11 +54,11 @@ export function databaseLabel() {
   return usesPostgres() ? describePostgresUrl(ENV.databaseUrl) : databaseFile();
 }
 
-function readJournal(migrationsFolder: string) {
+export function readJournal(migrationsFolder: string) {
   return JSON.parse(readFileSync(path.join(migrationsFolder, "meta", "_journal.json"), "utf8")) as { entries: JournalEntry[] };
 }
 
-function readStatements(migrationsFolder: string, tag: string) {
+export function readStatements(migrationsFolder: string, tag: string) {
   const content = readFileSync(path.join(migrationsFolder, `${tag}.sql`), "utf8");
   const statements = content.split("--> statement-breakpoint").map(part => part.trim()).filter(Boolean);
   return { content, statements };

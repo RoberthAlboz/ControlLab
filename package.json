@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "tsx watch --clear-screen=false server/_core/index.ts",
     "build": "vite build && node scripts/build-server.mjs",
+    "build:vercel": "vite build && node scripts/build-vercel.mjs",
     "start": "node dist/index.js",
     "check": "tsc --noEmit",
     "test": "vitest run",
@@ -16,6 +17,7 @@
     "db:seed": "tsx scripts/db-seed.ts",
     "db:setup": "tsx scripts/db-setup.ts",
     "db:reset": "tsx scripts/db-reset.ts",
+    "db:export-sql": "tsx scripts/export-supabase-sql.ts",
     "uploads:clean": "tsx scripts/uploads-clean.ts",
     "user:create": "tsx scripts/create-user.ts"
   },

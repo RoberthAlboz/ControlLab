@@ -13,6 +13,8 @@ export default defineConfig({
   },
   test: {
     environment: "node",
+    // Os testes usam bancos SQLite temporários (o Postgres/Supabase é o banco do sistema).
+    env: { DATABASE_PROVIDER: "sqlite", STORAGE_DRIVER: "disk" },
     // Testes do cliente cobrem a lógica pura das telas (sem DOM), por isso rodam no mesmo ambiente node.
     include: ["server/**/*.test.ts", "server/**/*.spec.ts", "client/src/**/*.test.ts"],
   },

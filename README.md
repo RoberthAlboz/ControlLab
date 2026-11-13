@@ -60,7 +60,7 @@ Fluxos completos em [`docs/FLUXOS_DO_SISTEMA.md`](docs/FLUXOS_DO_SISTEMA.md).
 ## Pré-requisitos
 
 - **Node.js 22.16 ou mais novo** (Node 22 LTS atualizado ou 24) e **pnpm** (`corepack enable` ativa o pnpm que vem com o Node).
-- **Banco**: nada a instalar. O Control Lab usa **SQLite**, que já vem embutido no Node.js; o banco é o arquivo `data/forgelab.db` dentro da pasta do projeto. Opcionalmente, os dados podem ficar num **Postgres/Supabase** (veja [Banco no Supabase](#banco-no-supabase)).
+- **Banco**: um projeto no **Supabase** (Postgres), gratuito. Nada a instalar no computador. Veja [Banco no Supabase](#banco-no-supabase).
 - **VS Code** com as extensões sugeridas em `.vscode/extensions.json` (opcional).
 
 ## Primeira execução (VS Code)
@@ -71,8 +71,8 @@ Abra a pasta do projeto no VS Code e, no terminal integrado:
 
 ```bash
 pnpm install                 # 1. dependências
-cp .env.example .env         # 2. configuração (no Windows: copy .env.example .env)
-pnpm db:setup                # 3. cria data/forgelab.db, aplica migrations e a seed
+cp .env.example .env         # 2. configuração (no Windows: copy .env.example .env); preencha DATABASE_URL
+pnpm db:setup                # 3. cria as tabelas no Supabase e a seed de demonstração
 pnpm dev                     # 4. inicia frontend + API em http://localhost:3000
 ```
 
@@ -84,15 +84,15 @@ O arquivo `.env.example` documenta todas as variáveis. As principais:
 
 | Variável | Para que serve |
 |---|---|
-| `DATABASE_PROVIDER` | `sqlite` (padrão) ou `postgres` (Supabase). |
-| `DATABASE_FILE` | Arquivo do banco SQLite (padrão `data/forgelab.db`, relativo à pasta do projeto). |
-| `DATABASE_URL`, `DATABASE_SSL` | Conexão com o Postgres/Supabase (somente com `DATABASE_PROVIDER=postgres`). |
+| `DATABASE_URL`, `DATABASE_SSL` | Conexão com o Postgres do Supabase (veja [Banco no Supabase](#banco-no-supabase)). |
+| `DATABASE_PROVIDER` | `postgres` (padrão). `sqlite` usa um arquivo local (`DATABASE_FILE`), como fazem os testes automáticos. |
+| `STORAGE_DRIVER` | Onde ficam fotos e anexos: `database` (padrão com Postgres, tabela `stored_files`) ou `disk` (`UPLOAD_DIR`). |
 | `SESSION_SECRET` | Assina as sessões. Troque por um valor longo e aleatório (≥ 32 caracteres em produção). |
 | `SESSION_TTL_HOURS` | Validade da sessão (padrão 12 h). |
 | `APP_URL`, `PORT`, `NODE_ENV` | Endereço, porta e ambiente. |
 | `SEED_*` | Contas de **desenvolvimento** criadas pela seed. |
 
-Se o banco não puder ser aberto ou ainda não tiver tabelas, o servidor mostra no terminal o motivo e o que fazer (versão do Node, `DATABASE_FILE`, `pnpm db:setup`).
+Se o banco não puder ser aberto ou ainda não tiver tabelas, o servidor mostra no terminal o motivo e o que fazer (`DATABASE_URL`, senha, `pnpm db:setup`).
 
 ### Contas de desenvolvimento
 
@@ -114,35 +114,59 @@ pnpm user:create -- --email maria@escola.br --name "Maria Silva" --role teacher
 
 | Comando | O que faz |
 |---|---|
-| `pnpm db:setup` | Cria o arquivo do banco se não existir, aplica migrations e roda a seed. Seguro para repetir. |
+| `pnpm db:setup` | Aplica as migrations e roda a seed. Seguro para repetir. |
 | `pnpm db:migrate` | Aplica somente as migrations pendentes. |
 | `pnpm db:seed` | Roda a seed idempotente (não duplica dados). |
+| `pnpm db:export-sql` | Gera `supabase/controllab-supabase.sql` (estrutura + seed) para colar no SQL Editor do Supabase. |
 | `pnpm db:generate` | Gera uma nova migration a partir de `drizzle/schema.ts`. |
 | `pnpm db:reset` | **Apaga** e recria o banco de desenvolvimento (pede confirmação; bloqueado em produção). Pare o `pnpm dev` antes. |
 
-**Visualizar o banco no VS Code**: instale a extensão sugerida *SQLite Viewer* e clique em `data/forgelab.db`. Backup = copiar esse arquivo (com o `pnpm dev` parado). Estrutura completa em [`docs/BANCO_DE_DADOS.md`](docs/BANCO_DE_DADOS.md).
+Estrutura completa em [`docs/BANCO_DE_DADOS.md`](docs/BANCO_DE_DADOS.md).
 
 ## Banco no Supabase
 
-O SQLite é o banco principal, mas os mesmos dados podem ficar num Postgres do **Supabase** sem mudar código:
+O banco do sistema é o Postgres do **Supabase**. Há duas formas de prepará-lo:
 
-1. No Supabase, crie o projeto e copie a connection string em **Connect → Session pooler**.
-2. No `.env` (ou nas variáveis do serviço de hospedagem):
+**A. Pelo navegador (sem rodar nada no computador)**
+
+1. No Supabase, abra **SQL Editor → New query**, cole o conteúdo de [`supabase/controllab-supabase.sql`](supabase/controllab-supabase.sql) e clique em **Run**.
+2. O script cria todas as tabelas (com RLS ligado) e a seed de demonstração. Pode ser rodado de novo sem duplicar nada.
+3. As senhas das contas da seed são sorteadas a cada `pnpm db:export-sql` e ficam em `supabase/CONTAS-SEED.local.txt`, que não vai para o git.
+
+**B. Pelo projeto**
+
+1. Copie a connection string em **Connect → Session pooler** e preencha o `.env`:
    ```env
    DATABASE_PROVIDER=postgres
    DATABASE_URL=postgresql://postgres.<ref>:<senha>@aws-0-<região>.pooler.supabase.com:5432/postgres
    ```
-3. `pnpm db:setup` cria as tabelas (e a seed, fora de produção). Alternativa: colar `drizzle/postgres/0000_controllab_baseline.sql` no SQL Editor do Supabase.
+   Caracteres especiais da senha precisam de URL-encode (`&` vira `%26`, `@` vira `%40`).
+2. `pnpm db:setup` cria as tabelas e a seed (com as senhas `SEED_*` do `.env`).
 
-Para voltar ao SQLite, use `DATABASE_PROVIDER=sqlite`. Detalhes em [`docs/BANCO_DE_DADOS.md`](docs/BANCO_DE_DADOS.md#postgres--supabase-uso-temporário).
+Redes que bloqueiam a porta do Postgres (comum em escolas) impedem o passo B e o `pnpm dev` com Supabase; o passo A e o sistema publicado na Vercel não são afetados. Sem internet, `DATABASE_PROVIDER=sqlite` usa um arquivo local (`data/forgelab.db`).
 
-## Deploy
+## Deploy na Vercel
 
-1. **Hospedagem**: um serviço Node.js de longa duração (Render, Railway, Fly.io…). Vercel/Netlify não servem: o servidor é Express e as imagens enviadas ficam em disco.
-2. **Comandos**: build `pnpm install --prod=false && pnpm build` (o `--prod=false` garante as ferramentas de build mesmo com `NODE_ENV=production`); antes de iniciar, `pnpm db:migrate`; start `pnpm start`.
-3. **Variáveis**: `NODE_ENV=production`, `SESSION_SECRET` novo (≥ 32 caracteres), `APP_URL`, `DATABASE_PROVIDER`/`DATABASE_URL` (Supabase) ou `DATABASE_FILE` num disco persistente (SQLite), e `UPLOAD_DIR` num disco persistente. Nunca use os valores do `.env.example` em produção.
-4. **Contas reais**: `pnpm user:create -- --email ... --name "..." --role teacher` (a seed não roda em produção).
-5. **Uploads**: sem disco persistente, fotos de perfil e imagens de módulos somem a cada novo deploy.
+O projeto já vem configurado (`vercel.json`): o frontend sai da CDN da Vercel e a API roda como uma função Node em São Paulo (`gru1`), perto do Supabase.
+
+1. **Banco**: prepare o Supabase (passo A acima).
+2. **Projeto**: na Vercel, **Add New → Project** e importe o repositório. Não mude nada nas configurações de build: o `vercel.json` define `pnpm build:vercel`.
+3. **Variáveis de ambiente** (Settings → Environment Variables):
+
+   | Variável | Valor |
+   |---|---|
+   | `DATABASE_URL` | Connection string do Supabase em **Connect → Transaction pooler** (porta 6543), com a senha em URL-encode. |
+   | `SESSION_SECRET` | Valor novo e aleatório, ≥ 32 caracteres: `node -e "console.log(require('crypto').randomBytes(48).toString('base64url'))"` |
+   | `APP_URL` | Endereço do site na Vercel (ex.: `https://controllab.vercel.app`). |
+   | `TRUST_PROXY` | `1` (o limite de tentativas de login passa a ver o IP real). |
+
+   `NODE_ENV`, `DATABASE_PROVIDER` e `STORAGE_DRIVER` não precisam ser definidos: a função já roda em produção, com Postgres e com os arquivos no banco.
+4. **Deploy**. A função recusa iniciar com configuração incompleta e diz o que falta no log da Vercel.
+5. **Contas reais**: crie pela tela de administração, ou com `pnpm user:create` apontando o `.env` para o Supabase.
+
+Limites da Vercel: cada envio de arquivo vai até **4,5 MB** (fotos, imagens de módulos e anexos maiores que isso são recusados pela Vercel) e cada requisição tem até 30 s.
+
+Outra hospedagem Node (Render, Railway…): build `pnpm install --prod=false && pnpm build`, antes de iniciar `pnpm db:migrate`, start `pnpm start`, com as mesmas variáveis e `NODE_ENV=production`.
 
 ## Testes, verificação e build
 
@@ -171,8 +195,11 @@ No navegador, “Sair” encerra e revoga a sessão no servidor.
 client/        React 19 + Vite + Tailwind 4 + Framer Motion (telas, login, estoque; estilos em src/styles/)
 server/        Express + tRPC (autenticação, módulos, progresso, estoque)
 shared/        regras e validações usadas pelo cliente e pelo servidor
-drizzle/       schema SQLite, migration base, versão Postgres/Supabase (postgres/)
+drizzle/       schema (Drizzle) e migrations; postgres/ = estrutura do Supabase
+supabase/      script único para o SQL Editor do Supabase (estrutura + seed)
 scripts/       setup, migração, seed, reset e criação de usuários
+e2e/           testes de navegador (Playwright + axe)
+patches/       correção aplicada ao wouter na instalação (pnpm)
 docs/          auditoria, permissões, banco e fluxos (+ histórico do design)
 ```
 

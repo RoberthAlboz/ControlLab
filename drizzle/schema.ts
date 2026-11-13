@@ -1,9 +1,12 @@
 import { sql } from "drizzle-orm";
-import { check, foreignKey, index, integer, sqliteTable, text, uniqueIndex, type AnySQLiteColumn } from "drizzle-orm/sqlite-core";
+import { blob, check, foreignKey, index, integer, sqliteTable, text, uniqueIndex, type AnySQLiteColumn } from "drizzle-orm/sqlite-core";
 
 /**
- * Banco SQLite (arquivo em data/forgelab.db). Convenções:
- * - datas: INTEGER em milissegundos (`timestamp_ms`), convertidas para Date pelo Drizzle;
+ * Schema do Control Lab. O banco do sistema é o Postgres do Supabase
+ * (estrutura em drizzle/postgres/); o Drizzle gera o SQL no dialeto do SQLite e
+ * server/_core/postgres.ts o adapta. O mesmo schema roda num arquivo SQLite nos
+ * testes automáticos. Convenções, iguais nos dois bancos:
+ * - datas: INTEGER/BIGINT em milissegundos (`timestamp_ms`), convertidas para Date pelo Drizzle;
  * - booleanos: INTEGER 0/1 (mantido do schema original);
  * - enums: TEXT com valores restritos pelo TypeScript e validados pelo zod na API.
  */
@@ -419,6 +422,19 @@ export const inventoryAuditLog = sqliteTable("inventory_audit_log", {
   userFk: foreignKey({ name: "inventory_audit_user_fk", columns: [table.userId], foreignColumns: [users.id] }),
 }));
 
+/**
+ * Arquivos enviados (fotos de perfil, imagens e anexos de módulos) quando o
+ * armazenamento é o banco (STORAGE_DRIVER=database, padrão com Postgres e na
+ * Vercel, onde o disco não persiste). A chave é o caminho depois de /uploads/.
+ */
+export const storedFiles = sqliteTable("stored_files", {
+  key: text("key").primaryKey(),
+  contentType: text("contentType").notNull(),
+  size: integer("size").notNull(),
+  data: blob("data", { mode: "buffer" }).notNull(),
+  createdAt: createdAt("createdAt"),
+});
+
 export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;
 export type AuthSession = typeof authSessions.$inferSelect;
@@ -436,3 +452,4 @@ export type InventoryItem = typeof inventoryItems.$inferSelect;
 export type InventoryLoan = typeof inventoryLoans.$inferSelect;
 export type InventoryMovement = typeof inventoryMovements.$inferSelect;
 export type InventoryAuditEntry = typeof inventoryAuditLog.$inferSelect;
+export type StoredFile = typeof storedFiles.$inferSelect;

@@ -4,6 +4,7 @@
 
 # Build outputs
 dist/
+.vercel/
 build/
 *.dist
 
@@ -128,3 +129,6 @@ data/
 .claude/
 CLAUDE.md
 skills-lock.json
+
+# Senhas das contas geradas por pnpm db:export-sql
+supabase/*.local.txt
