@@ -14,7 +14,6 @@ export default function StepQuizPanel({
   quiz,
   mode,
   passed,
-  locked,
   pending,
   onAnswer,
 }: {
@@ -22,8 +21,6 @@ export default function StepQuizPanel({
   mode: "student" | "teacher";
   /** O servidor já registrou o acerto desta etapa. */
   passed: boolean;
-  /** Etapa ainda não iniciada (ou já concluída): não aceita resposta. */
-  locked: boolean;
   pending: boolean;
   onAnswer: (selectedIndex: number) => Promise<Feedback | null>;
 }) {
@@ -33,7 +30,7 @@ export default function StepQuizPanel({
   const solved = passed || feedback?.correct === true;
 
   const submit = async () => {
-    if (selected === null || pending || solved || locked) return;
+    if (selected === null || pending || solved) return;
     const result = await onAnswer(selected);
     if (result) setFeedback(result);
   };
@@ -69,7 +66,7 @@ export default function StepQuizPanel({
               role="radio"
               aria-checked={isChosen || isCorrectPreview}
               className={`step-quiz-option ${state}`}
-              disabled={isTeacher || solved || locked || pending}
+              disabled={isTeacher || solved || pending}
               onClick={() => {
                 setSelected(index);
                 if (feedback && !feedback.correct) setFeedback(null);
@@ -85,7 +82,7 @@ export default function StepQuizPanel({
       </div>
       <div className="step-quiz-footer" role="status" aria-live="polite">
         {isTeacher ? (
-          <p>Pré-visualização: quiz opcional, não bloqueia a conclusão da etapa.{quiz.explanation ? ` Explicação: ${quiz.explanation}` : ""}</p>
+          <p>Pré-visualização: o aluno vê esta verificação depois de concluir a etapa; responder é opcional.{quiz.explanation ? ` Explicação: ${quiz.explanation}` : ""}</p>
         ) : solved ? (
           <p className="step-quiz-ok">
             <Check size={15} aria-hidden="true" /> Resposta correta.{feedback?.explanation ? ` ${feedback.explanation}` : ""}          </p>
@@ -93,13 +90,11 @@ export default function StepQuizPanel({
           <p className="step-quiz-wrong">
             <X size={15} aria-hidden="true" /> Ainda não. Releia a etapa e escolha outra alternativa.
           </p>
-        ) : locked ? (
-          <p>Inicie a etapa para responder.</p>
         ) : (
           <p>Opcional: escolha uma alternativa e confira.</p>
         )}
         {!isTeacher && !solved && (
-          <button type="button" className="step-quiz-submit" onClick={() => void submit()} disabled={selected === null || locked || pending}>
+          <button type="button" className="step-quiz-submit" onClick={() => void submit()} disabled={selected === null || pending}>
             {pending ? (
               <LoaderCircle className="reader-action-spinner" size={15} aria-hidden="true" />
             ) : feedback && !feedback.correct ? (

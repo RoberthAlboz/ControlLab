@@ -132,9 +132,10 @@ describe("quiz: fluxo do aluno no banco", () => {
   });
 
   it("não deixa concluir antes do tempo mínimo", async () => {
-    // Responder antes de iniciar a etapa não vale.
-    await expect(db.answerStepQuiz(STUDENT, "q", 0, 1)).rejects.toThrow(/Inicie a etapa/);
+    // A verificação só abre com a etapa concluída: nem antes de iniciar, nem com o timer correndo.
+    await expect(db.answerStepQuiz(STUDENT, "q", 0, 1)).rejects.toThrow(/Conclua a etapa/);
     await db.startStudentStep(STUDENT, "q", 0);
+    await expect(db.answerStepQuiz(STUDENT, "q", 0, 1)).rejects.toThrow(/Conclua a etapa/);
     await expect(db.answerStepQuiz(STUDENT, "q", 1, 0)).rejects.toMatchObject({ code: "NOT_FOUND" });
     await expect(db.updateProgress(STUDENT, "q", 1)).rejects.toThrow(new RegExp(`${MIN_STEP_SECONDS} segundos`));
   });
@@ -150,13 +151,15 @@ describe("quiz: fluxo do aluno no banco", () => {
   });
 
   it("erro não revela o gabarito; acerto mostra a explicação", async () => {
-    expect(await db.answerStepQuiz(STUDENT, "q", 0, 0)).toEqual({ correct: false, explanation: "" });
-    expect(await db.answerStepQuiz(STUDENT, "q", 0, 1)).toEqual({ correct: true, explanation: quiz.explanation });
     await backdateSession(0, 60);
-    expect((await db.getCatalog(STUDENT, "all", "student")).modules[0].steps[0].quizPassed).toBe(true);
     const done = await db.updateProgress(STUDENT, "q", 1);
     expect(done.elapsedSeconds).toBeGreaterThanOrEqual(59);
-    await expect(db.answerStepQuiz(STUDENT, "q", 0, 1)).rejects.toMatchObject({ code: "BAD_REQUEST" });
+    expect(await db.answerStepQuiz(STUDENT, "q", 0, 0)).toEqual({ correct: false, explanation: "" });
+    expect((await db.getCatalog(STUDENT, "all", "student")).modules[0].steps[0].quizPassed).toBe(false);
+    expect(await db.answerStepQuiz(STUDENT, "q", 0, 1)).toEqual({ correct: true, explanation: quiz.explanation });
+    expect((await db.getCatalog(STUDENT, "all", "student")).modules[0].steps[0].quizPassed).toBe(true);
+    // Depois do acerto não há nova tentativa, que distorceria as métricas do docente.
+    await expect(db.answerStepQuiz(STUDENT, "q", 0, 1)).rejects.toThrow(/já foi respondida/);
   });
 
   it("uma aba esquecida aberta credita no máximo o teto da etapa", async () => {
