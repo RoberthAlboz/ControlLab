@@ -175,7 +175,10 @@ pnpm check     # TypeScript
 pnpm test      # Vitest (regras de estoque, permissões, sessão, progresso, cronômetro…)
 pnpm build     # frontend (Vite) + servidor (esbuild) em dist/
 pnpm start     # executa o build de produção (o bundle do servidor já roda em modo production)
+pnpm test:e2e  # Playwright: fluxos reais no navegador, acessibilidade (axe) e celular
 ```
+
+Os testes de navegador sobem um servidor próprio na porta 3920, com banco e uploads em `e2e/.tmp`, recriados a cada execução: o banco de `data/` não é tocado e o `pnpm dev` pode continuar aberto. Localmente usam o Google Chrome instalado; sem ele, rode `pnpm exec playwright install chromium` e defina `CI=1`. Cobrem login e permissões, o aluno concluindo uma etapa (com a espera mínima de 20 s), o docente criando módulo e fazendo um empréstimo completo, falhas do servidor, uma turma de 30 alunos com 200 itens no estoque, a auditoria WCAG 2.1 AA nos dois temas e a ausência de rolagem lateral em 390 px. Uma execução leva cerca de 4 minutos.
 
 ## Resetar o ambiente local
 
