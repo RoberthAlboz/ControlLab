@@ -36,8 +36,8 @@
 .hd-gear { position: absolute; display: block; opacity: 0; will-change: transform, opacity; transition: transform 2.4s cubic-bezier(0.22, 0.61, 0.36, 1), opacity 0.8s ease-out; }
 .hd-gear svg { display: block; width: 100%; height: 100%; fill: var(--hd-gear-fill); filter: blur(var(--hd-gear-blur, 1.5px)); opacity: var(--hd-gear-alpha); }
 /* Início: engrenagens vermelhas bem desfocadas, como no desenho original. */
-.clean-app[data-screen="dashboard"] .hd-backdrop { --hd-gear-fill: #c4080c; --hd-gear-alpha: 0.1; --hd-gear-blur: 9px; }
-html.dark .clean-app[data-screen="dashboard"] .hd-backdrop { --hd-gear-fill: #ff5a2c; --hd-gear-alpha: 0.07; }
+.clean-app:is([data-screen="dashboard"], [data-screen="library"]) .hd-backdrop { --hd-gear-fill: #c4080c; --hd-gear-alpha: 0.1; --hd-gear-blur: 9px; }
+html.dark .clean-app:is([data-screen="dashboard"], [data-screen="library"]) .hd-backdrop { --hd-gear-fill: #ff5a2c; --hd-gear-alpha: 0.07; }
 .clean-app[data-screen="dashboard"] .hd-gear { transition: none; }
 /* Modo noturno: quase preto quente, com brasa nos cantos e no pé da página. */
 html.dark .clean-app[data-screen] { --hd-accent: linear-gradient(135deg, #a90a0c, #dd3410); background: #0e0a09; }
