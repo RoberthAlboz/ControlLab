@@ -43,27 +43,29 @@ html.dark .clean-app[data-screen]:not([data-screen="dashboard"]) .hd-backdrop-gl
 
 /* Módulos: fundo em degradê leve de branco e cinza claro, sem brilho vermelho. */
 .clean-app[data-screen="library"] .hd-backdrop-glow { display: none; }
-.clean-app[data-screen="library"] .hd-backdrop { background: linear-gradient(180deg, #ffffff 0%, #f1f2f4 100%); }
+.clean-app[data-screen="library"] .hd-backdrop { background: linear-gradient(180deg, #e3e5e8 0%, #b4b9bf 100%); }
 html.dark .clean-app[data-screen="library"] .hd-backdrop { background: linear-gradient(180deg, #14100f 0%, #0e0a09 100%); }
 /* Banner liso, na cor do fundo, destacado por uma sombra forte; engrenagens nas cores da marca. */
-.clean-app .library-hero { border: 1px solid rgba(255, 255, 255, 0.95); background: linear-gradient(180deg, #ffffff 0%, #f1f2f4 100%); box-shadow: 0 30px 70px rgba(31, 22, 22, 0.24), 0 10px 24px rgba(31, 22, 22, 0.14), 0 0 0 1px rgba(31, 22, 22, 0.06); }
+.clean-app .library-hero { justify-content: flex-start; gap: 28px; border: 1px solid rgba(255, 255, 255, 0.7); background: linear-gradient(180deg, #d9dcdf 0%, #b4b9bf 100%); box-shadow: 0 30px 70px rgba(31, 22, 22, 0.34), 0 10px 24px rgba(31, 22, 22, 0.2), 0 0 0 1px rgba(31, 22, 22, 0.08); }
 .clean-app .library-hero::before, .clean-app .library-hero::after, .clean-app .library-hero-pulse { display: none !important; }
-.clean-app .library-hero .breadcrumb { color: var(--fl-red); }
-.clean-app .library-hero .breadcrumb span { color: var(--fl-subtle); }
-.clean-app .library-hero h1 { background: linear-gradient(100deg, #8e0707, #c4080c); -webkit-background-clip: text; background-clip: text; color: transparent; -webkit-text-fill-color: transparent; }
+.clean-app .library-hero > div:first-child { max-width: 680px; }
+.clean-app .library-hero .library-stat { align-self: flex-end; margin-bottom: 4px; }
+.clean-app .library-hero .breadcrumb { color: var(--fl-red-deep); }
+.clean-app .library-hero .breadcrumb span { color: #4a4440; }
+.clean-app .library-hero h1 { background: linear-gradient(100deg, #7a0606, #b00a0e); -webkit-background-clip: text; background-clip: text; color: transparent; -webkit-text-fill-color: transparent; }
 .clean-app .library-hero h1 em { color: inherit; -webkit-text-fill-color: inherit; }
-.clean-app .library-hero p { color: var(--fl-muted); }
-.clean-app .library-hero .library-stat { border-left: 2px solid var(--fl-red); color: var(--fl-red-deep); }
+.clean-app .library-hero p { color: #302b29; }
+.clean-app .library-hero .library-stat { border-left: 2px solid var(--fl-red-deep); color: var(--fl-red-deep); }
 .clean-app .library-hero .library-stat b { color: var(--fl-red-deep); }
-.clean-app .library-hero .library-stat span { color: var(--fl-muted); }
+.clean-app .library-hero .library-stat span { color: #302b29; }
 html.dark .clean-app .library-hero { border-color: rgba(255, 240, 230, 0.08); background: linear-gradient(180deg, #1c1615 0%, #120d0c 100%); box-shadow: 0 30px 70px rgba(0, 0, 0, 0.7), 0 10px 24px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 240, 230, 0.05); }
 html.dark .clean-app .library-hero h1 { background: none; color: #ffffff; -webkit-text-fill-color: #ffffff; }
 html.dark .clean-app .library-hero p, html.dark .clean-app .library-hero .library-stat span { color: var(--fl-muted); }
 html.dark .clean-app .library-hero .library-stat b { color: #ffffff; }
-.library-hero-gears { --hg-u: 0.8px; position: absolute; z-index: 0; top: 18px; right: 24%; width: 0; height: 0; pointer-events: none; }
+.library-hero-gears { --hg-u: 0.8px; position: absolute; z-index: 0; top: 6px; right: 8%; width: 0; height: 0; pointer-events: none; }
 .library-hero-gears .hd-gear svg { filter: blur(1.5px); }
-.library-hero-gears .is-big svg { fill: #c4080c; opacity: 0.13; }
-.library-hero-gears .is-small svg { fill: #8e0707; opacity: 0.2; }
+.library-hero-gears .is-big svg { fill: #ffffff; opacity: 0.42; }
+.library-hero-gears .is-small svg { fill: #ffffff; opacity: 0.6; }
 html.dark .library-hero-gears .hd-gear svg { fill: #ff9ea1; }
 html.dark .library-hero-gears .is-big svg { opacity: 0.12; }
 html.dark .library-hero-gears .is-small svg { opacity: 0.18; }
