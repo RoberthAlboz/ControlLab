@@ -12,7 +12,7 @@ const TURN = Math.PI * 0.02; // rad da engrenagem principal do topo ao fim da p�
 const TURN_BY_SCREEN: Record<string, number> = { dashboard: Math.PI * 1.2 };
 const MIN_SCROLL = 40;
 // Telas em que as engrenagens giram sozinhas, devagar e sem parar (CSS), em vez de acompanhar a rolagem.
-const SPIN = new Set(["library"]);
+const SPIN = new Set(["library", "reader"]);
 const SPIN_PERIOD = 120; // segundos por volta da engrenagem principal
 const GLOW_REST = 0.12;
 
@@ -36,18 +36,18 @@ const DASHBOARD = [
   group("is-left", [{ teeth: 30 }, { teeth: 14, parent: 0, angle: -38 }], [[0.4, 0.7], [0.7, 1]]),
 ];
 
+const LIBRARY: Group[] = [
+    group("is-corner", [{ teeth: 12 }], [[0.1, 0.4]]),
+    group("is-floor", [{ teeth: 18 }, { teeth: 10, parent: 0, angle: -40 }], [[0.2, 0.55], [0.35, 0.7]]),
+  ];
+
 /** A mesma linguagem do Início, com uma composição própria em cada tela. */
 const SCENES: Record<string, Group[]> = {
   dashboard: DASHBOARD,
-  // Pequenas, no pé da página (uma no canto, outras na borda de baixo) e só surgem quando a página é rolada.
-  library: [
-    group("is-corner", [{ teeth: 12 }], [[0.1, 0.4]]),
-    group("is-floor", [{ teeth: 18 }, { teeth: 10, parent: 0, angle: -40 }], [[0.2, 0.55], [0.35, 0.7]]),
-  ],
+  // Pequenas, no pé da página; Módulos e Leitor usam a mesma composição.
+  library: LIBRARY,
   notes: [group("is-right", [{ teeth: 24 }, { teeth: 12, parent: 0, angle: 140 }], [[-1, 0], [0.3, 0.8]])],
-  reader: [
-    group("is-right", [{ teeth: 44 }, { teeth: 12, parent: 0, angle: 160 }], [[-1, 0], [0.2, 0.6]]),
-  ],
+  reader: LIBRARY,
   inventory: [
     group("is-left", [{ teeth: 28 }, { teeth: 20, parent: 0, angle: -30 }, { teeth: 12, parent: 1, angle: 40 }], [[-1, 0], [0.2, 0.6], [0.6, 1]]),
   ],
