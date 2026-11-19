@@ -216,6 +216,9 @@ html.dark .clean-app .hd-home .hd-hero h1 { background: none; color: #ffffff; -w
 .clean-app .hd-home .hd-hero-stats .period-select { display: flex; width: 100%; height: 46px; align-items: center; justify-content: space-between; gap: 6px; padding: 0 18px; }
 .clean-app .hd-home .hd-hero-stats .period-select :is(span, svg, select) { color: var(--fl-ink); }
 .clean-app .hd-home .hd-hero-stats .period-select select { min-width: 0; flex: 1; border: 0; outline: 0; background: transparent; }
+/* O anel de foco já envolve a pílula: o campo por dentro fica redondo e sem o quadrado de contorno. */
+.clean-app .period-select select,
+.clean-app .period-select select:is(:hover, :focus, :focus-visible) { border-color: transparent; border-radius: 999px; outline: 0; box-shadow: none; }
 .clean-app .hd-home .hd-hero-stats .period-select option { color: #000000; }
 html.dark .clean-app .hd-home .hd-hero-stats .period-select option { background: #181211; color: #fff7f2; }
 
