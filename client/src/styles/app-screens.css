@@ -53,8 +53,8 @@ html.dark .clean-app[data-screen="library"] .hd-backdrop { background: linear-gr
   border-radius: 32px;
   background:
     linear-gradient(112deg, transparent 38%, rgba(255, 255, 255, 0.045) 52%, transparent 66%),
-    linear-gradient(135deg, #3b414d 0%, #2d323c 55%, #262b34 100%);
-  box-shadow: 0 26px 56px rgba(28, 33, 46, 0.3), 0 8px 18px rgba(28, 33, 46, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.07);
+    linear-gradient(135deg, #3f4145 0%, #303236 55%, #28292d 100%);
+  box-shadow: 0 26px 56px rgba(30, 30, 32, 0.3), 0 8px 18px rgba(30, 30, 32, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.07);
 }
 /* Disco grande por trás das engrenagens, como na peça de referência. */
 .clean-app .library-hero::before {
@@ -65,18 +65,18 @@ html.dark .clean-app[data-screen="library"] .hd-backdrop { background: linear-gr
 }
 .clean-app .library-hero::after, .clean-app .library-hero-pulse { display: none !important; }
 .clean-app .library-hero > div:first-child { max-width: 760px; }
-.clean-app .library-hero .breadcrumb { color: #aeb6c4; font-weight: 500; }
-.clean-app .library-hero .breadcrumb span { color: rgba(174, 182, 196, 0.55); }
+.clean-app .library-hero .breadcrumb { color: #b4b7bd; font-weight: 500; }
+.clean-app .library-hero .breadcrumb span { color: rgba(180, 183, 189, 0.55); }
 .clean-app .library-hero h1 { background: none; color: #ffffff; -webkit-text-fill-color: #ffffff; filter: none; }
-.clean-app .library-hero h1 em { color: #ff4a4f; -webkit-text-fill-color: #ff4a4f; }
+.clean-app .library-hero h1 em { background: linear-gradient(135deg, #8e0707, #c4080c); -webkit-background-clip: text; background-clip: text; color: transparent; -webkit-text-fill-color: transparent; }
 .clean-app .library-hero h1 em::first-letter { text-transform: uppercase; }
-.clean-app .library-hero p { color: #b3bac7; }
+.clean-app .library-hero p { color: #b8bbc1; }
 .clean-app .library-hero .library-stat { align-self: flex-end; margin-bottom: 6px; padding: 6px 0 6px 52px; border-left: 1px solid rgba(255, 255, 255, 0.16); color: #ffffff; }
 .clean-app .library-hero .library-stat b { color: #ffffff; font-weight: 700; }
-.clean-app .library-hero .library-stat span { color: #aeb6c4; }
+.clean-app .library-hero .library-stat span { color: #b4b7bd; }
 .library-hero-gears { --hg-u: 1.5px; position: absolute; z-index: 0; top: 36px; right: 6.5%; width: 0; height: 0; pointer-events: none; }
 .library-hero-gears .hd-gear { opacity: 1; transition: none; will-change: transform; transform: rotate(var(--phase)); }
-.library-hero-gears .hd-gear svg { fill: #b6c0d1; opacity: 0.3; filter: blur(0.5px); }
+.library-hero-gears .hd-gear svg { fill: #c2c4c9; opacity: 0.3; filter: blur(0.5px); }
 @keyframes hero-gear-spin { from { transform: rotate(var(--phase)); } to { transform: rotate(calc(var(--phase) + 360deg)); } }
 @media (prefers-reduced-motion: no-preference) {
   .library-hero-gears .hd-gear { animation: hero-gear-spin var(--period) linear infinite var(--dir); }
