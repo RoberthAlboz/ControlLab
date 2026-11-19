@@ -41,13 +41,33 @@ html.dark .clean-app :is(.inventory-hero, .nt-header, .rd .reader-title, .access
 .clean-app[data-screen]:not([data-screen="dashboard"]) .hd-backdrop-glow { background: radial-gradient(85% 30% at 50% 106%, rgba(196, 8, 12, 0.3) 0%, rgba(196, 8, 12, 0.1) 55%, rgba(196, 8, 12, 0) 100%); }
 html.dark .clean-app[data-screen]:not([data-screen="dashboard"]) .hd-backdrop-glow { background: radial-gradient(70% 30% at 60% 108%, rgba(244, 89, 43, 0.26) 0%, rgba(196, 8, 12, 0.1) 55%, rgba(196, 8, 12, 0) 100%); }
 
-/* Módulos: fundo em degradê leve de branco e cinza claro, sem brilho vermelho; as engrenagens vão no banner. */
+/* Módulos: fundo em degradê leve de branco e cinza claro, sem brilho vermelho. */
 .clean-app[data-screen="library"] .hd-backdrop-glow { display: none; }
 .clean-app[data-screen="library"] .hd-backdrop { background: linear-gradient(180deg, #ffffff 0%, #f1f2f4 100%); }
 html.dark .clean-app[data-screen="library"] .hd-backdrop { background: linear-gradient(180deg, #14100f 0%, #0e0a09 100%); }
-.library-hero-gears { --hg-u: 0.8px; position: absolute; z-index: 0; top: 50%; right: 24%; width: 0; height: 0; pointer-events: none; }
-.library-hero-gears .hd-gear svg { fill: #ffffff; opacity: 0.24; filter: blur(3px); }
-@media (max-width: 760px) { .library-hero-gears { right: 8%; } }
+/* Banner liso, na cor do fundo, destacado por uma sombra forte; engrenagens nas cores da marca. */
+.clean-app .library-hero { border: 1px solid rgba(255, 255, 255, 0.95); background: linear-gradient(180deg, #ffffff 0%, #f1f2f4 100%); box-shadow: 0 30px 70px rgba(31, 22, 22, 0.24), 0 10px 24px rgba(31, 22, 22, 0.14), 0 0 0 1px rgba(31, 22, 22, 0.06); }
+.clean-app .library-hero::before, .clean-app .library-hero::after, .clean-app .library-hero-pulse { display: none !important; }
+.clean-app .library-hero .breadcrumb { color: var(--fl-red); }
+.clean-app .library-hero .breadcrumb span { color: var(--fl-subtle); }
+.clean-app .library-hero h1 { background: linear-gradient(100deg, #8e0707, #c4080c); -webkit-background-clip: text; background-clip: text; color: transparent; -webkit-text-fill-color: transparent; }
+.clean-app .library-hero h1 em { color: inherit; -webkit-text-fill-color: inherit; }
+.clean-app .library-hero p { color: var(--fl-muted); }
+.clean-app .library-hero .library-stat { border-left: 2px solid var(--fl-red); color: var(--fl-red-deep); }
+.clean-app .library-hero .library-stat b { color: var(--fl-red-deep); }
+.clean-app .library-hero .library-stat span { color: var(--fl-muted); }
+html.dark .clean-app .library-hero { border-color: rgba(255, 240, 230, 0.08); background: linear-gradient(180deg, #1c1615 0%, #120d0c 100%); box-shadow: 0 30px 70px rgba(0, 0, 0, 0.7), 0 10px 24px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 240, 230, 0.05); }
+html.dark .clean-app .library-hero h1 { background: none; color: #ffffff; -webkit-text-fill-color: #ffffff; }
+html.dark .clean-app .library-hero p, html.dark .clean-app .library-hero .library-stat span { color: var(--fl-muted); }
+html.dark .clean-app .library-hero .library-stat b { color: #ffffff; }
+.library-hero-gears { --hg-u: 0.8px; position: absolute; z-index: 0; top: 18px; right: 24%; width: 0; height: 0; pointer-events: none; }
+.library-hero-gears .hd-gear svg { filter: blur(1.5px); }
+.library-hero-gears .is-big svg { fill: #c4080c; opacity: 0.13; }
+.library-hero-gears .is-small svg { fill: #8e0707; opacity: 0.2; }
+html.dark .library-hero-gears .hd-gear svg { fill: #ff9ea1; }
+html.dark .library-hero-gears .is-big svg { opacity: 0.12; }
+html.dark .library-hero-gears .is-small svg { opacity: 0.18; }
+@media (max-width: 760px) { .library-hero-gears { right: 4%; } }
 
 /* ------------------------------------------------------------------ */
 /* Painéis de vidro                                                     */
@@ -175,7 +195,7 @@ html.dark .clean-app .fl-chip-group button:is(.is-selected, [aria-pressed="true"
 /* ------------------------------------------------------------------ */
 /* Biblioteca: o único banner vermelho e a capa na cor de cada módulo   */
 /* ------------------------------------------------------------------ */
-.clean-app .library-hero { overflow: hidden; border-radius: 26px; background: linear-gradient(118deg, #8e0707 0%, #c4080c 62%, #8e0707 100%); box-shadow: 0 24px 60px rgba(142, 7, 7, 0.22); }
+.clean-app .library-hero { overflow: hidden; border-radius: 26px; }
 .clean-app .library-hero h1 { font-family: var(--fl-display) !important; font-weight: 700 !important; letter-spacing: -0.015em; }
 .clean-app .library-hero .library-stat b { font-weight: 400; letter-spacing: -0.02em; }
 .clean-app .library-content .library-tabs button { border-color: var(--hd-edge); background: var(--hd-pill); box-shadow: 0 8px 22px rgba(142, 7, 7, 0.07); color: var(--fl-ink); font-weight: 500; }

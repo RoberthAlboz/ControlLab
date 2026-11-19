@@ -3,13 +3,14 @@ import { buildTrain, deg } from "@/lib/gears";
 
 /**
  * Engrenagens dentro do banner vermelho dos módulos. Mesma animação do fundo do Início:
- * a primeira já está lá, as outras surgem com a rolagem e todas giram engrenadas, só que mais devagar.
+ * as duas já estão lá ao abrir e giram engrenadas com a rolagem, só que mais devagar.
  */
 const MODULE = 10;
 const TURN = Math.PI * 0.02 * 0.6;
 const MIN_SCROLL = 40;
-const SPECS = [{ teeth: 26 }, { teeth: 14, parent: 0, angle: 200 }, { teeth: 18, parent: 1, angle: 150 }];
-const BANDS: [number, number][] = [[-1, 0], [0.15, 0.5], [0.45, 0.85]];
+// Uma grande, cortada no canto superior direito, e uma menor inteira ao lado, mais abaixo.
+const SPECS = [{ teeth: 26 }, { teeth: 14, parent: 0, angle: 158 }];
+const BANDS: [number, number][] = [[-1, 0], [-1, 0]];
 const TRAIN = buildTrain(SPECS, MODULE);
 const clamp01 = (value: number) => Math.max(0, Math.min(1, value));
 
@@ -55,7 +56,7 @@ export default function HeroGears() {
         const radius = gear.pitch + MODULE;
         return (
           <span
-            className="hd-gear"
+            className={`hd-gear ${index === 0 ? "is-big" : "is-small"}`}
             key={index}
             ref={element => {
               refs.current[index] = element;
