@@ -9,6 +9,8 @@ import { buildTrain, deg, type Gear } from "@/lib/gears";
 const MODULE = 10;
 const TURN = Math.PI * 0.02; // rad da engrenagem principal do topo ao fim da página
 const MIN_SCROLL = 40;
+// Rolagem das engrenagens por tela, em relação ao Início (1): o catálogo de módulos gira um pouco mais devagar.
+const TURN_SCALE: Record<string, number> = { library: 0.6 };
 const GLOW_REST = 0.12;
 
 type Reveal = { gear: Gear; from: number; to: number };
@@ -34,8 +36,7 @@ const DASHBOARD = [
 /** A mesma linguagem do Início, com uma composição própria em cada tela. */
 const SCENES: Record<string, Group[]> = {
   dashboard: DASHBOARD,
-  // As engrenagens dos módulos ficam no banner (HeroGears), não no fundo.
-  library: [],
+  library: DASHBOARD,
   notes: [group("is-right", [{ teeth: 24 }, { teeth: 12, parent: 0, angle: 140 }], [[-1, 0], [0.3, 0.8]])],
   reader: [
     group("is-right", [{ teeth: 44 }, { teeth: 12, parent: 0, angle: 160 }], [[-1, 0], [0.2, 0.6]]),
@@ -64,6 +65,7 @@ export default function HomeBackdrop({ screen = "dashboard" }: { screen?: string
   const glowRef = useRef<HTMLElement>(null);
   const gearRefs = useRef<(HTMLElement | null)[]>([]);
   const groups = SCENES[screen] ?? DASHBOARD;
+  const turnScale = TURN_SCALE[screen] ?? 1;
 
   useEffect(() => {
     const reveals = groups.flatMap(entry => entry.gears);
@@ -82,7 +84,7 @@ export default function HomeBackdrop({ screen = "dashboard" }: { screen?: string
         const element = gearRefs.current[index];
         if (!element) return;
         element.style.opacity = String(clamp01((progress - from) / (to - from)));
-        const turn = motion.matches ? 0 : progress * TURN * gear.ratio;
+        const turn = motion.matches ? 0 : progress * TURN * turnScale * gear.ratio;
         element.style.transform = `rotate(${deg(gear.phase + turn)}deg)`;
       });
     };
@@ -103,7 +105,7 @@ export default function HomeBackdrop({ screen = "dashboard" }: { screen?: string
       motion.removeEventListener("change", schedule);
       observer.disconnect();
     };
-  }, [groups]);
+  }, [groups, turnScale]);
 
   let index = -1;
   return (

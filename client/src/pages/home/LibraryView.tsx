@@ -1,5 +1,4 @@
 import { BookOpen, Plus, Search, X } from "lucide-react";
-import HeroGears from "@/components/forge/HeroGears";
 import { type DidacticModule, ModuleCard } from "./shared";
 import {
   countModulesByKind,
@@ -50,7 +49,6 @@ export function LibraryView({
           <i />
           <i />
         </span>
-        <HeroGears />
         <div>
           <div className="breadcrumb">
             CONTROL LAB <span>/</span> MÓDULOS

@@ -41,48 +41,9 @@ html.dark .clean-app :is(.inventory-hero, .nt-header, .rd .reader-title, .access
 .clean-app[data-screen]:not([data-screen="dashboard"]) .hd-backdrop-glow { background: radial-gradient(85% 30% at 50% 106%, rgba(196, 8, 12, 0.3) 0%, rgba(196, 8, 12, 0.1) 55%, rgba(196, 8, 12, 0) 100%); }
 html.dark .clean-app[data-screen]:not([data-screen="dashboard"]) .hd-backdrop-glow { background: radial-gradient(70% 30% at 60% 108%, rgba(244, 89, 43, 0.26) 0%, rgba(196, 8, 12, 0.1) 55%, rgba(196, 8, 12, 0) 100%); }
 
-/* Módulos: fundo claro e sem brilho vermelho; o banner é a peça de destaque, em ardósia com engrenagens translúcidas. */
+/* Módulos: sem brilho vermelho no pé da página e engrenagens mais desfocadas. */
 .clean-app[data-screen="library"] .hd-backdrop-glow { display: none; }
-.clean-app[data-screen="library"] .hd-backdrop { background: linear-gradient(180deg, #ffffff 0%, #f1f2f4 100%); }
-html.dark .clean-app[data-screen="library"] .hd-backdrop { background: linear-gradient(180deg, #14100f 0%, #0e0a09 100%); }
-.clean-app .library-hero {
-  justify-content: flex-start;
-  gap: 40px;
-  min-height: 240px;
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 32px;
-  background:
-    linear-gradient(112deg, transparent 38%, rgba(255, 255, 255, 0.045) 52%, transparent 66%),
-    linear-gradient(135deg, #3f4145 0%, #303236 55%, #28292d 100%);
-  box-shadow: 0 26px 56px rgba(30, 30, 32, 0.3), 0 8px 18px rgba(30, 30, 32, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.07);
-}
-/* Disco grande por trás das engrenagens, como na peça de referência. */
-.clean-app .library-hero::before {
-  position: absolute; z-index: 0; inset: auto; top: -190px; right: -200px; display: block;
-  width: 560px; height: 560px; border: 1px solid rgba(255, 255, 255, 0.09); border-radius: 50%;
-  background: radial-gradient(circle, rgba(255, 255, 255, 0.04) 0%, rgba(255, 255, 255, 0.015) 70%);
-  animation: none; content: "";
-}
-.clean-app .library-hero::after, .clean-app .library-hero-pulse { display: none !important; }
-.clean-app .library-hero > div:first-child { max-width: 760px; }
-.clean-app .library-hero .breadcrumb { color: #b4b7bd; font-weight: 500; }
-.clean-app .library-hero .breadcrumb span { color: rgba(180, 183, 189, 0.55); }
-.clean-app .library-hero h1 { background: none; color: #ffffff; -webkit-text-fill-color: #ffffff; filter: none; }
-.clean-app .library-hero h1 em { background: linear-gradient(135deg, #b00a0e, #e0151a); -webkit-background-clip: text; background-clip: text; color: transparent; -webkit-text-fill-color: transparent; -webkit-text-stroke: 1px #ffffff; paint-order: stroke fill; display: inline-block; }
-.clean-app .library-hero h1 em::first-letter { text-transform: uppercase; }
-.clean-app .library-hero p { color: #b8bbc1; }
-.clean-app .library-hero .library-stat { align-self: flex-end; margin-bottom: 6px; padding: 6px 0 6px 40px; border-left: 1px solid rgba(255, 255, 255, 0.16); color: #ffffff; }
-.clean-app .library-hero .library-stat b { color: #ffffff; font-weight: 700 !important; font-size: 2.4rem; line-height: 1; }
-.clean-app .library-hero .library-stat span { position: relative; z-index: 2; color: #b4b7bd; }
-.library-hero-gears { --hg-u: 1.1px; position: absolute; z-index: 0; top: 30px; right: 3%; width: 0; height: 0; pointer-events: none; }
-.library-hero-gears .hd-gear { opacity: 1; transition: none; will-change: transform; transform: rotate(var(--phase)); }
-.library-hero-gears .hd-gear svg { fill: #c2c4c9; opacity: 0.15; filter: blur(0.5px); }
-.library-hero-gears .hd-gear:nth-child(3) svg { opacity: 0.28; filter: none; }
-@keyframes hero-gear-spin { from { transform: rotate(var(--phase)); } to { transform: rotate(calc(var(--phase) + 360deg)); } }
-@media (prefers-reduced-motion: no-preference) {
-  .library-hero-gears .hd-gear { animation: hero-gear-spin var(--period) linear infinite var(--dir); }
-}
-@media (max-width: 760px) { .library-hero-gears { --hg-u: 0.9px; right: 2%; } .clean-app .library-hero .library-stat { padding-left: 0; border-left: 0; } }
+.clean-app[data-screen="library"] .hd-gear svg { filter: blur(5px); }
 
 /* ------------------------------------------------------------------ */
 /* Painéis de vidro                                                     */
@@ -210,7 +171,7 @@ html.dark .clean-app .fl-chip-group button:is(.is-selected, [aria-pressed="true"
 /* ------------------------------------------------------------------ */
 /* Biblioteca: o único banner vermelho e a capa na cor de cada módulo   */
 /* ------------------------------------------------------------------ */
-.clean-app .library-hero { overflow: hidden; border-radius: 26px; }
+.clean-app .library-hero { overflow: hidden; border-radius: 26px; background: linear-gradient(118deg, #8e0707 0%, #c4080c 62%, #8e0707 100%); box-shadow: 0 24px 60px rgba(142, 7, 7, 0.22); }
 .clean-app .library-hero h1 { font-family: var(--fl-display) !important; font-weight: 700 !important; letter-spacing: -0.015em; }
 .clean-app .library-hero .library-stat b { font-weight: 400; letter-spacing: -0.02em; }
 .clean-app .library-content .library-tabs button { border-color: var(--hd-edge); background: var(--hd-pill); box-shadow: 0 8px 22px rgba(142, 7, 7, 0.07); color: var(--fl-ink); font-weight: 500; }
