@@ -597,10 +597,6 @@ export function ModuleCard({
         }}
         onClick={onOpen}
       >
-        {/* Número do módulo em marca d'água: só decoração. */}
-        <i className="module-cover-mark" aria-hidden="true">
-          {module.code.match(/\d+/)?.[0] ?? ""}
-        </i>
         <div className="module-cover-kicker">
           {module.code} · {module.kind}
         </div>
