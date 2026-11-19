@@ -151,6 +151,8 @@ html.dark .clean-app .access-denied-card {
 .clean-app .inventory-toolbar select { padding: 0 16px; }
 html.dark .clean-app .inventory-toolbar option { background: #181211; color: #fff7f2; }
 .clean-app :is(.fl-search, .library-content .search-box, .nt-search, .nt-student):focus-within { border-color: transparent; box-shadow: 0 0 0 2px var(--fl-red); }
+/* O anel de foco já está na pílula inteira (acima): sem o quadrado extra em volta do campo. */
+.clean-app .library-content .library-toolbar .search-box input:focus-visible { outline: none; }
 .clean-app .inventory-toolbar select:focus-visible { outline: 0; box-shadow: 0 0 0 2px var(--fl-red); }
 
 /* Abas: trilho de vidro, aba ativa em vermelho */
