@@ -37,12 +37,10 @@ const DASHBOARD = [
 /** A mesma linguagem do Início, com uma composição própria em cada tela. */
 const SCENES: Record<string, Group[]> = {
   dashboard: DASHBOARD,
+  // Pequenas, no pé da página (uma no canto, outras na borda de baixo) e só surgem quando a página é rolada.
   library: [
-    group(
-      "is-right",
-      [{ teeth: 28 }, { teeth: 16, parent: 0, angle: -128 }, { teeth: 22, parent: 1, angle: -172 }],
-      [[-1, 0], [-1, 0], [-1, 0]]
-    ),
+    group("is-corner", [{ teeth: 12 }], [[0.1, 0.4]]),
+    group("is-floor", [{ teeth: 18 }, { teeth: 10, parent: 0, angle: -40 }], [[0.2, 0.55], [0.35, 0.7]]),
   ],
   notes: [group("is-right", [{ teeth: 24 }, { teeth: 12, parent: 0, angle: 140 }], [[-1, 0], [0.3, 0.8]])],
   reader: [
@@ -83,7 +81,7 @@ export default function HomeBackdrop({ screen = "dashboard" }: { screen?: string
       const root = document.documentElement;
       const range = root.scrollHeight - root.clientHeight;
       const still = motion.matches || range < MIN_SCROLL;
-      const progress = still ? 1 : clamp01(root.scrollTop / range);
+      const progress = still ? (spin ? 0 : 1) : clamp01(root.scrollTop / range);
       if (glowRef.current) {
         glowRef.current.style.opacity = String(GLOW_REST + (1 - GLOW_REST) * progress);
       }
