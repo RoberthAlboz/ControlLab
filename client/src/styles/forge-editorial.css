@@ -731,11 +731,11 @@ html.dark .clean-app, html.dark .me-shell {
   --theme-heading: #fff7f2;
   --theme-muted: #bdaea6;
   --theme-subtle: #a39388;
-  --theme-accent-soft: #2e1a13;
+  --theme-accent-soft: #2e1416;
   --theme-shadow: rgba(0,0,0,.2);
-  --forge-red: #ff6a3d;
-  --forge-red-deep: #ff8f6b;
-  --forge-red-wash: #2e1a13;
+  --forge-red: #ff4d52;
+  --forge-red-deep: #ff8a8d;
+  --forge-red-wash: #2e1416;
   --forge-red-rgb: 255, 106, 61;
   --profile-glow-rgb: 255, 106, 61;
   background: var(--theme-bg);
@@ -766,11 +766,11 @@ html.dark .clean-app .sidebar-course {
   box-shadow: inset 0 1px rgba(255,255,255,.045), 0 10px 24px rgba(0,0,0,.16);
 }
 html.dark .clean-app .sidebar-course .course-title { color: var(--theme-heading); }
-html.dark .clean-app .sidebar-course .course-title span { color: #ff8f6b; }
+html.dark .clean-app .sidebar-course .course-title span { color: #ff8a8d; }
 html.dark .clean-app .sidebar-course .course-bar { background: rgba(255,240,230,.1); }
-html.dark .clean-app .sidebar-course .course-bar i { background: #ff6a3d; }
+html.dark .clean-app .sidebar-course .course-bar i { background: #ff4d52; }
 html.dark .clean-app .sidebar-course p { color: var(--theme-muted); }
-html.dark .clean-app .sidebar-course button { color: #ff8f6b; }
+html.dark .clean-app .sidebar-course button { color: #ff8a8d; }
 html.dark .clean-app .sidebar-course button:hover { color: #ffb79f; }
 
 /* Perfil do aluno: painel de identidade com linguagem de console editorial. */
@@ -820,14 +820,14 @@ html.dark .clean-app .student-profile-panel {
   --profile-line: rgba(255,240,230,.1);
   --profile-card: rgba(255,240,230,.04);
   --profile-card-strong: rgba(255,240,230,.08);
-  --profile-accent: #ff8f6b;
-  --profile-accent-strong: #dd3410;
-  background: radial-gradient(180px 140px at 50% 8%, rgba(244,89,43,.2), transparent 72%), linear-gradient(155deg, var(--profile-bg) 0%, var(--profile-bg-deep) 82%);
+  --profile-accent: #ff8a8d;
+  --profile-accent-strong: #e0151a;
+  background: radial-gradient(180px 140px at 50% 8%, rgba(224, 21, 26,.2), transparent 72%), linear-gradient(155deg, var(--profile-bg) 0%, var(--profile-bg-deep) 82%);
   border-right-color: rgba(255,240,230,.1);
 }
 html.dark .clean-app .student-profile-panel::before { background-image: linear-gradient(rgba(255,240,230,.04) 1px, transparent 1px), linear-gradient(90deg, rgba(255,240,230,.04) 1px, transparent 1px); mask-image: linear-gradient(to bottom, rgba(0,0,0,.8), transparent 70%); }
-html.dark .clean-app .student-profile-panel::after { background: linear-gradient(90deg, transparent, #ff8f6b, #c4080c, transparent); }
-html.dark .clean-app .student-avatar-large { background: linear-gradient(145deg, #ff8f6b, #a90a0c 76%); box-shadow: 0 0 0 7px rgba(255,143,107,.1), 0 16px 42px rgba(0,0,0,.56); }
+html.dark .clean-app .student-profile-panel::after { background: linear-gradient(90deg, transparent, #ff8a8d, #c4080c, transparent); }
+html.dark .clean-app .student-avatar-large { background: linear-gradient(145deg, #ff8a8d, #a90a0c 76%); box-shadow: 0 0 0 7px rgba(255, 138, 141,.1), 0 16px 42px rgba(0,0,0,.56); }
 html.dark .clean-app .level-ring { background: radial-gradient(circle at 30% 20%, rgba(255,240,230,.1), transparent 40%), var(--profile-card); box-shadow: inset 0 1px rgba(255,240,230,.08), 0 14px 38px rgba(0,0,0,.42); }
 
 /* Fundo ambiente do perfil: mesh lento inspirado em gradientes animados e beams de grade. */
@@ -1947,7 +1947,7 @@ html.dark .teacher-student-status.is-completed { color: #86efac; }
 .teacher-analytics-note { color: var(--theme-muted); font-size: .75rem !important; }
 /* Cores dos gráficos, validadas (CVD, luminosidade, contraste) para cada superfície */
 .teacher-analytics { --chart-ord-1: #eba3a6; --chart-ord-2: #d9474c; --chart-ord-3: #8f0609; --chart-cat-1: #c4080c; --chart-cat-2: #2a78d6; --chart-cat-3: #1baf7a; }
-html.dark .teacher-analytics { --chart-ord-1: #8a3438; --chart-ord-2: #c94a4f; --chart-ord-3: #f39a9d; --chart-cat-1: #f4592b; --chart-cat-2: #3987e5; --chart-cat-3: #199e70; }
+html.dark .teacher-analytics { --chart-ord-1: #8a3438; --chart-ord-2: #c94a4f; --chart-ord-3: #f39a9d; --chart-cat-1: #ff5a5f; --chart-cat-2: #3987e5; --chart-cat-3: #199e70; }
 .teacher-chart-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
 .teacher-chart-card { min-width: 0; padding: 17px; border: 1px solid var(--theme-border); border-radius: 12px; background: var(--theme-surface); box-shadow: 0 8px 24px var(--theme-shadow); }
 .teacher-chart-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }

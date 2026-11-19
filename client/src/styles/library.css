@@ -84,7 +84,7 @@
 /* Mesma cor que a sombra interna de antes produzia sobre os tons claros, agora como fundo de verdade:
    leitores de contraste não enxergam sombras e mediam o texto contra o tom claro. */
 html.dark .clean-app .library-content .module-cover { background: #2b2322 !important; box-shadow: none; }
-html.dark .clean-app .library-content .module-cover-icon { background: #0e0a09; color: #ff6a3d; }
+html.dark .clean-app .library-content .module-cover-icon { background: #0e0a09; color: #ff4d52; }
 
 @media (max-width: 600px) {
   .clean-app .library-content .search-box { width: 100%; }

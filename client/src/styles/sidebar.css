@@ -62,11 +62,11 @@ html.dark .cl-nav {
   --nav-line: #2a201d;
   --nav-hover: #1e1715;
   --nav-soft: #181211;
-  --nav-accent: #ff6a3d;
+  --nav-accent: #ff4d52;
   --nav-active-bg: linear-gradient(90deg, rgba(196, 8, 12, 0.28), rgba(142, 7, 7, 0.1) 70%, transparent);
   --nav-ring-track: #322824;
   --nav-ring-hole: #181211;
-  --nav-avatar-bg: #2e1a13;
+  --nav-avatar-bg: #2e1416;
   --nav-shadow: 18px 0 50px rgba(0, 0, 0, 0.4);
   --nav-glow: rgba(196, 8, 12, 0.22);
 }
