@@ -478,13 +478,15 @@ html.dark .clean-app .hd-home :is(.teacher-modal, .calendar-modal, .tp-modal) { 
 /* Abas e ações no topo, título no meio, indicadores na base da primeira tela. */
 .clean-app main.td.hd-home > .td-nav { order: -1; }
 /* Coluna explícita: com coluna automática, a fileira de indicadores encolhia até o texto mais longo. */
-.clean-app main.td.hd-home > .hd-hero { position: relative; display: grid; margin: 0; padding: 0; border: 0; grid-template-columns: minmax(0, 1fr); grid-template-rows: auto 1fr auto; gap: 12px; }
+.clean-app main.td.hd-home > .hd-hero { position: relative; display: grid; margin: 0; padding: 0; border: 0; grid-template-columns: minmax(0, 1fr); grid-template-rows: 1fr auto auto 1fr auto; gap: 0; }
 /* A primeira tela mostra também as prioridades e o que vem abaixo, não só o resumo. */
 .clean-app main.td.hd-home > .hd-hero:has(.td-summary) { min-height: min(calc(100svh - 107px), 540px); }
 .clean-app main.td.hd-home:has(> .td-nav) > .hd-hero:has(.td-summary) { min-height: min(calc(100svh - 165px), 540px); }
 .clean-app main.td.hd-home .hd-hero-copy { display: contents; }
-.clean-app main.td.hd-home .hd-hero-copy > div:not(.td-hero-actions) { grid-area: 2 / 1 / 3 / -1; align-self: center; padding: 18px 0; }
-.clean-app main.td.hd-home .td-hero-actions { display: flex; grid-area: 1 / 1 / 2 / -1; }
+/* Título e texto no meio da primeira tela, com os botões logo abaixo; os indicadores ficam na base. */
+.clean-app main.td.hd-home .hd-hero-copy > div:not(.td-hero-actions) { grid-area: 2 / 1 / 3 / -1; align-self: end; padding: 18px 0 0; }
+.clean-app main.td.hd-home .td-hero-actions { display: flex; grid-area: 3 / 1 / 4 / -1; align-self: start; padding: 22px 0 18px; }
+.clean-app main.td.hd-home .hd-hero .td-summary { grid-area: 5 / 1 / 6 / -1; margin-top: 12px; }
 .clean-app main.td.hd-home > .teacher-data-status { min-height: 0; }
 
 /* ------------------------------------------------------------------ */
@@ -526,6 +528,9 @@ html.dark .clean-app .hd-home :is(.teacher-modal, .calendar-modal, .tp-modal) { 
   .clean-app .hd-home .hd-hero-stats .period-select { order: -1; }
   .clean-app main.td.hd-home > .hd-hero:has(.td-summary),
   .clean-app main.td.hd-home:has(> .td-nav) > .hd-hero:has(.td-summary) { min-height: 0; }
+  .clean-app main.td.hd-home > .hd-hero { grid-template-rows: auto; gap: 12px; }
+  .clean-app main.td.hd-home .td-hero-actions { grid-area: auto / 1 / auto / -1; padding: 4px 0 8px; }
+  .clean-app main.td.hd-home .hd-hero .td-summary { margin-top: 0; }
   .clean-app .hd-home :is(.student-stat-grid, .td-summary) { grid-area: auto / 1 / auto / -1; grid-auto-flow: row; grid-template-columns: minmax(0, 1fr); grid-auto-columns: auto; justify-content: stretch; }
   .clean-app .student-dashboard.hd-home > *,
   .clean-app .hd-home :is(.hd-hero-copy > div, .student-top-actions, .hd-hero-stats .period-select, .student-right-column > *, .hd-modules, .student-main-column > .student-schedule) { grid-area: auto / 1 / auto / -1 !important; margin: 0; }
