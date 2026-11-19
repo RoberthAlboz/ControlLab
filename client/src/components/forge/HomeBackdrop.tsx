@@ -12,7 +12,7 @@ const TURN = Math.PI * 0.02; // rad da engrenagem principal do topo ao fim da p�
 const TURN_BY_SCREEN: Record<string, number> = { dashboard: Math.PI * 1.2 };
 const MIN_SCROLL = 40;
 // Telas em que as engrenagens giram sozinhas, devagar e sem parar (CSS), em vez de acompanhar a rolagem.
-const SPIN = new Set(["library", "reader", "inventory"]);
+const SPIN = new Set(["library", "reader", "inventory", "oversight", "classrooms", "users"]);
 const SPIN_PERIOD = 120; // segundos por volta da engrenagem principal
 const GLOW_REST = 0.12;
 
@@ -44,24 +44,17 @@ const LIBRARY: Group[] = [
 /** A mesma linguagem do Início, com uma composição própria em cada tela. */
 const SCENES: Record<string, Group[]> = {
   dashboard: DASHBOARD,
-  // Pequenas, no pé da página; Módulos, Leitor e Estoque usam a mesma composição.
+  // Pequenas, no pé da página; Módulos, Leitor, Estoque e Administração usam a mesma composição.
   library: LIBRARY,
   notes: [group("is-right", [{ teeth: 24 }, { teeth: 12, parent: 0, angle: 140 }], [[-1, 0], [0.3, 0.8]])],
   reader: LIBRARY,
   inventory: LIBRARY,
-  oversight: [
-    group("is-right", [{ teeth: 20 }, { teeth: 32, parent: 0, angle: 200 }], [[-1, 0], [0.3, 0.8]]),
-  ],
-  classrooms: [
-    group("is-right", [{ teeth: 22 }, { teeth: 22, parent: 0, angle: 150 }, { teeth: 22, parent: 1, angle: 210 }], [[-1, 0], [-1, 0], [-1, 0]]),
-  ],
+  oversight: LIBRARY,
+  classrooms: LIBRARY,
   editor: [
     group("is-left", [{ teeth: 26 }, { teeth: 14, parent: 0, angle: 30 }], [[-1, 0], [0.2, 0.7]]),
   ],
-  users: [
-    group("is-right", [{ teeth: 30 }], [[-1, 0]]),
-    group("is-left", [{ teeth: 18 }], [[-1, 0]]),
-  ],
+  users: LIBRARY,
 };
 
 const clamp01 = (value: number) => Math.max(0, Math.min(1, value));
