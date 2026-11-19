@@ -22,3 +22,16 @@ html.dark .clean-app .library-content .module-cover:not([style*="url("]) { backg
 
 /* Botão de fechar dos diálogos: círculo perfeito, sem encolher no cabeçalho flex. */
 .fl-modal-header > .fl-icon-button { flex: none; width: 36px; height: 36px; border-radius: 50%; }
+
+/* Diálogos: campos lado a lado alinhados pelo topo (o campo sem dica não estica) e seleção em vermelho. */
+.fl-form-grid { align-items: start; }
+.fl-segmented label { border-radius: 999px; }
+html:not(.dark) .fl-segmented label.is-selected { border-color: var(--fl-red); background: var(--fl-red); color: #ffffff; }
+
+/* Painel de ferramentas: filtro "Todas" ativo no vermelho da marca; fechar do detalhe redondo. */
+.shadow-chip.is-active:not(.is-complete, .is-out, .is-overdue, .is-maintenance) { border-color: var(--fl-red); background: var(--fl-red); color: #ffffff; box-shadow: none; }
+.shadow-chip.is-active:not(.is-complete, .is-out, .is-overdue, .is-maintenance) b { color: inherit; }
+.shadow-detail-close { border-radius: 50%; }
+
+/* Seletores do estoque no celular: o texto longo termina em reticências em vez de ser cortado pela seta. */
+.clean-app .inventory-toolbar select { text-overflow: ellipsis; }
