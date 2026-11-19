@@ -5,7 +5,6 @@ import { trpc } from "@/lib/trpc";
 import { useTheme } from "@/contexts/ThemeContext";
 import { safeRedirectPath } from "@shared/roles";
 import BootScreen from "@/components/forge/BootScreen";
-import AuthCharacters, { type AuthMood } from "@/components/forge/AuthCharacters";
 import BrandLogo from "@/components/forge/BrandLogo";
 import ThemeSunMoon from "@/components/forge/ThemeSunMoon";
 import DevAccessDialog from "@/components/forge/DevAccessDialog";
@@ -43,7 +42,6 @@ export default function LoginPage() {
   const [failures, setFailures] = useState(0);
   const [locked, setLocked] = useState(false);
   const [devAccessOpen, setDevAccessOpen] = useState(false);
-  const [passwordFocused, setPasswordFocused] = useState(false);
   const emailRef = useRef<HTMLInputElement>(null);
   const passwordRef = useRef<HTMLInputElement>(null);
   const emailId = useId();
@@ -102,15 +100,16 @@ export default function LoginPage() {
   }
 
   const isDevelopment = infoQuery.data?.environment === "development";
-  // A cena reage ao formulário: triste com erro, de olhos fechados ao digitar a senha, feliz ao entrar.
-  const hasError = Boolean(formError || errors.email || errors.password);
-  const mood: AuthMood = locked ? "happy" : hasError ? "sad" : passwordFocused && !showPassword ? "hiding" : "idle";
 
   return (
     <div className="auth-screen">
       <div className="auth-card">
       <section className="auth-stage" aria-hidden="true">
-        <AuthCharacters mood={mood} />
+        <img className="auth-art" src="/brand/login-plataforma.webp" alt="" width={736} height={736} decoding="async" />
+        <div className="auth-stage-copy">
+          <span>FERRAMENTARIA</span>
+          <p>Módulos guiados para alunos e o controle do estoque para docentes, no mesmo lugar.</p>
+        </div>
       </section>
 
       <main className="auth-form-panel">
@@ -138,7 +137,11 @@ export default function LoginPage() {
 
         <div className="auth-form-wrap">
           <BrandLogo withMark className="auth-logo" />
-          <h1>Bem-vindo de volta!</h1>
+          <h1>
+            Olá!
+            <br />
+            Bem-vindo de volta
+          </h1>
           <p className="auth-lead">Use o e-mail e a senha cadastrados pela escola.</p>
 
           <form className="auth-form" onSubmit={submit} noValidate aria-describedby={formError ? errorId : undefined}>
@@ -190,8 +193,6 @@ export default function LoginPage() {
                     if (errors.password) setErrors(current => ({ ...current, password: undefined }));
                   }}
                   onKeyUp={event => setCapsLock(event.getModifierState?.("CapsLock") ?? false)}
-                  onFocus={() => setPasswordFocused(true)}
-                  onBlur={() => setPasswordFocused(false)}
                   aria-invalid={Boolean(errors.password)}
                   aria-describedby={[errors.password ? `${passwordId}-error` : "", capsLock ? `${passwordId}-caps` : ""].filter(Boolean).join(" ") || undefined}
                   disabled={loginMutation.isPending}
