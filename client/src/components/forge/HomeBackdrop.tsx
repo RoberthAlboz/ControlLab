@@ -8,6 +8,8 @@ import { buildTrain, deg, type Gear } from "@/lib/gears";
  */
 const MODULE = 10;
 const TURN = Math.PI * 0.02; // rad da engrenagem principal do topo ao fim da página
+// O Início mantém a rolagem original, com voltas completas; as demais telas giram quase imperceptivelmente.
+const TURN_BY_SCREEN: Record<string, number> = { dashboard: Math.PI * 1.2 };
 const MIN_SCROLL = 40;
 // Telas em que as engrenagens giram sozinhas, devagar e sem parar (CSS), em vez de acompanhar a rolagem.
 const SPIN = new Set(["library"]);
@@ -71,6 +73,7 @@ export default function HomeBackdrop({ screen = "dashboard" }: { screen?: string
   const gearRefs = useRef<(HTMLElement | null)[]>([]);
   const groups = SCENES[screen] ?? DASHBOARD;
   const spin = SPIN.has(screen);
+  const turnRange = TURN_BY_SCREEN[screen] ?? TURN;
 
   useEffect(() => {
     const reveals = groups.flatMap(entry => entry.gears);
@@ -90,7 +93,7 @@ export default function HomeBackdrop({ screen = "dashboard" }: { screen?: string
         if (!element) return;
         element.style.opacity = String(clamp01((progress - from) / (to - from)));
         if (spin) return;
-        const turn = motion.matches ? 0 : progress * TURN * gear.ratio;
+        const turn = motion.matches ? 0 : progress * turnRange * gear.ratio;
         element.style.transform = `rotate(${deg(gear.phase + turn)}deg)`;
       });
     };
@@ -111,7 +114,7 @@ export default function HomeBackdrop({ screen = "dashboard" }: { screen?: string
       motion.removeEventListener("change", schedule);
       observer.disconnect();
     };
-  }, [groups, spin]);
+  }, [groups, spin, turnRange]);
 
   let index = -1;
   return (
