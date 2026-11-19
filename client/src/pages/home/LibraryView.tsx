@@ -95,6 +95,15 @@ export function LibraryView({
               </span>
             </button>
           ))}
+          {hasFilters && (
+            <button
+              type="button"
+              className="library-clear-filters"
+              onClick={clearFilters}
+            >
+              Limpar filtros <X size={13} aria-hidden="true" />
+            </button>
+          )}
         </div>
         <label className="search-box">
           <Search size={16} />
@@ -121,45 +130,10 @@ export function LibraryView({
           </button>
         )}
       </div>
-      <div className="library-results-bar">
-        {/* Sem filtro, o total já está no banner: a contagem só volta ao filtrar. */}
-        <span role="status" aria-live="polite">
-          {hasFilters ? libraryResultText(visibleModules.length, true) : ""}
-        </span>
-        {hasFilters && (
-          <div className="library-active-filters">
-            {kindFilter !== "Todos" && (
-              <button
-                type="button"
-                className="library-filter-chip"
-                aria-label={`Remover filtro ${kindFilter}`}
-                onClick={() => onKindFilterChange("Todos")}
-              >
-                {kindFilter} <X size={12} aria-hidden="true" />
-              </button>
-            )}
-            {search.trim() && (
-              <button
-                type="button"
-                className="library-filter-chip"
-                aria-label={`Remover busca ${search.trim()}`}
-                onClick={() => onSearchChange("")}
-              >
-                “{search.trim()}” <X size={12} aria-hidden="true" />
-              </button>
-            )}
-          </div>
-        )}
-        {hasFilters && visibleModules.length > 0 && (
-          <button
-            type="button"
-            className="library-clear-filters"
-            onClick={clearFilters}
-          >
-            Limpar filtros <X size={13} />
-          </button>
-        )}
-      </div>
+      {/* A contagem fica só para leitores de tela: quem enxerga já vê o resultado na grade. */}
+      <span className="sr-only" role="status" aria-live="polite">
+        {hasFilters ? libraryResultText(visibleModules.length, true) : ""}
+      </span>
       {visibleModules.length > 0 ? (
         <div className="module-grid">
           {visibleModules.map(module => (
