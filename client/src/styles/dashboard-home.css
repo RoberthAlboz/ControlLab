@@ -36,8 +36,8 @@
 .hd-gear { position: absolute; display: block; opacity: 0; will-change: transform, opacity; transition: transform 1.2s cubic-bezier(0.22, 0.61, 0.36, 1), opacity 0.8s ease-out; }
 .hd-gear svg { display: block; width: 100%; height: 100%; fill: var(--hd-gear-fill); filter: blur(var(--hd-gear-blur, 9px)); opacity: var(--hd-gear-alpha); }
 /* Ferramentaria: engrenagens como peças de ferramenta, cinza claro e nítidas. */
-.clean-app[data-screen="inventory"] .hd-backdrop { --hd-gear-fill: #b4b9bf; --hd-gear-alpha: 0.35; --hd-gear-blur: 1.5px; }
-html.dark .clean-app[data-screen="inventory"] .hd-backdrop { --hd-gear-fill: #c9ccd1; --hd-gear-alpha: 0.09; }
+.clean-app:is([data-screen="inventory"], [data-screen="library"]) .hd-backdrop { --hd-gear-fill: #b4b9bf; --hd-gear-alpha: 0.35; --hd-gear-blur: 1.5px; }
+html.dark .clean-app:is([data-screen="inventory"], [data-screen="library"]) .hd-backdrop { --hd-gear-fill: #c9ccd1; --hd-gear-alpha: 0.09; }
 /* Modo noturno: quase preto quente, com brasa nos cantos e no pé da página. */
 html.dark .clean-app[data-screen] { --hd-accent: linear-gradient(135deg, #a90a0c, #dd3410); background: #0e0a09; }
 html.dark .hd-backdrop {
