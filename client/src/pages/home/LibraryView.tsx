@@ -126,6 +126,30 @@ export function LibraryView({
         <span role="status" aria-live="polite">
           {hasFilters ? libraryResultText(visibleModules.length, true) : ""}
         </span>
+        {hasFilters && (
+          <div className="library-active-filters">
+            {kindFilter !== "Todos" && (
+              <button
+                type="button"
+                className="library-filter-chip"
+                aria-label={`Remover filtro ${kindFilter}`}
+                onClick={() => onKindFilterChange("Todos")}
+              >
+                {kindFilter} <X size={12} aria-hidden="true" />
+              </button>
+            )}
+            {search.trim() && (
+              <button
+                type="button"
+                className="library-filter-chip"
+                aria-label={`Remover busca ${search.trim()}`}
+                onClick={() => onSearchChange("")}
+              >
+                “{search.trim()}” <X size={12} aria-hidden="true" />
+              </button>
+            )}
+          </div>
+        )}
         {hasFilters && visibleModules.length > 0 && (
           <button
             type="button"
