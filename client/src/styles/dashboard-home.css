@@ -217,7 +217,7 @@ html.dark .clean-app .hd-home .hd-hero h1 { background: none; color: #ffffff; -w
 .clean-app .hd-home .hd-hero-stats .period-select :is(span, svg, select) { color: var(--fl-ink); }
 .clean-app .hd-home .hd-hero-stats .period-select select { min-width: 0; flex: 1; border: 0; outline: 0; background: transparent; }
 /* O campo por dentro mantém o destaque de antes, agora com cantos arredondados. */
-.clean-app .period-select select { border-radius: 999px; }
+.clean-app .period-select select { padding: 6px 6px 6px 14px; border-radius: 999px; }
 .clean-app .hd-home .hd-hero-stats .period-select option { color: #000000; }
 html.dark .clean-app .hd-home .hd-hero-stats .period-select option { background: #181211; color: #fff7f2; }
 
