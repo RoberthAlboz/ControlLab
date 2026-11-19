@@ -41,41 +41,47 @@ html.dark .clean-app :is(.inventory-hero, .nt-header, .rd .reader-title, .access
 .clean-app[data-screen]:not([data-screen="dashboard"]) .hd-backdrop-glow { background: radial-gradient(85% 30% at 50% 106%, rgba(196, 8, 12, 0.3) 0%, rgba(196, 8, 12, 0.1) 55%, rgba(196, 8, 12, 0) 100%); }
 html.dark .clean-app[data-screen]:not([data-screen="dashboard"]) .hd-backdrop-glow { background: radial-gradient(70% 30% at 60% 108%, rgba(244, 89, 43, 0.26) 0%, rgba(196, 8, 12, 0.1) 55%, rgba(196, 8, 12, 0) 100%); }
 
-/* Módulos: fundo claro e sem brilho vermelho; o banner é a peça de destaque, em grafite com engrenagens claras. */
+/* Módulos: fundo claro e sem brilho vermelho; o banner é a peça de destaque, em ardósia com engrenagens translúcidas. */
 .clean-app[data-screen="library"] .hd-backdrop-glow { display: none; }
 .clean-app[data-screen="library"] .hd-backdrop { background: linear-gradient(180deg, #ffffff 0%, #f1f2f4 100%); }
 html.dark .clean-app[data-screen="library"] .hd-backdrop { background: linear-gradient(180deg, #14100f 0%, #0e0a09 100%); }
 .clean-app .library-hero {
   justify-content: flex-start;
-  gap: 28px;
-  min-height: 230px;
-  border: 1px solid rgba(255, 255, 255, 0.28);
-  background: radial-gradient(70% 120% at 100% 0%, rgba(255, 255, 255, 0.14) 0%, rgba(255, 255, 255, 0) 60%), linear-gradient(160deg, #8a9097 0%, #656b73 55%, #4b5058 100%);
-  box-shadow: 0 30px 70px rgba(31, 22, 22, 0.38), 0 10px 24px rgba(31, 22, 22, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.35), inset 0 -1px 0 rgba(0, 0, 0, 0.2);
+  gap: 52px;
+  min-height: 240px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 32px;
+  background:
+    linear-gradient(112deg, transparent 38%, rgba(255, 255, 255, 0.045) 52%, transparent 66%),
+    linear-gradient(135deg, #3b414d 0%, #2d323c 55%, #262b34 100%);
+  box-shadow: 0 26px 56px rgba(28, 33, 46, 0.3), 0 8px 18px rgba(28, 33, 46, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.07);
 }
-.clean-app .library-hero::before, .clean-app .library-hero-pulse { display: none !important; }
-/* Filete vermelho no pé do banner: a única marca de cor, para amarrar com a identidade. */
-.clean-app .library-hero::after {
-  position: absolute !important; z-index: 1; top: auto; right: 0; bottom: 0; left: 0; display: block !important;
-  width: auto; height: 4px; border: 0; border-radius: 0; box-shadow: none;
-  background: linear-gradient(90deg, #8e0707 0%, #c4080c 45%, rgba(196, 8, 12, 0) 100%);
+/* Disco grande por trás das engrenagens, como na peça de referência. */
+.clean-app .library-hero::before {
+  position: absolute; z-index: 0; inset: auto; top: -190px; right: -150px; display: block;
+  width: 560px; height: 560px; border: 1px solid rgba(255, 255, 255, 0.09); border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.04) 0%, rgba(255, 255, 255, 0.015) 70%);
+  animation: none; content: "";
 }
-.clean-app .library-hero > div:first-child { max-width: 680px; }
-.clean-app .library-hero .library-stat { align-self: flex-end; margin-bottom: 6px; }
-.clean-app .library-hero .breadcrumb { color: #ffb3b5; font-weight: 600; }
-.clean-app .library-hero .breadcrumb span { color: rgba(255, 255, 255, 0.6); }
-.clean-app .library-hero h1 { background: linear-gradient(100deg, #ff4d52 0%, #ff9a9d 38%, #ffffff 80%); -webkit-background-clip: text; background-clip: text; color: transparent; -webkit-text-fill-color: transparent; filter: drop-shadow(0 2px 10px rgba(0, 0, 0, 0.28)); }
-.clean-app .library-hero h1 em { color: inherit; -webkit-text-fill-color: inherit; }
-.clean-app .library-hero p { color: rgba(255, 255, 255, 0.9); }
-.clean-app .library-hero .library-stat { border-left: 2px solid #ff4d52; color: #ffffff; }
-.clean-app .library-hero .library-stat b { color: #ffffff; }
-.clean-app .library-hero .library-stat span { color: rgba(255, 255, 255, 0.82); }
-html.dark .clean-app .library-hero { border-color: rgba(255, 240, 230, 0.08); background: linear-gradient(180deg, #1c1615 0%, #120d0c 100%); box-shadow: 0 30px 70px rgba(0, 0, 0, 0.7), 0 10px 24px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 240, 230, 0.05); }
-.library-hero-gears { --hg-u: 1.15px; position: absolute; z-index: 0; top: 4px; right: 7%; width: 0; height: 0; pointer-events: none; }
-.library-hero-gears .hd-gear svg { filter: blur(1.5px); fill: #ffffff; }
-.library-hero-gears .is-big svg { opacity: 0.26; }
-.library-hero-gears .is-small svg { opacity: 0.38; }
-@media (max-width: 760px) { .library-hero-gears { --hg-u: 0.8px; right: 2%; } }
+.clean-app .library-hero::after, .clean-app .library-hero-pulse { display: none !important; }
+.clean-app .library-hero > div:first-child { max-width: 760px; }
+.clean-app .library-hero .breadcrumb { color: #aeb6c4; font-weight: 500; }
+.clean-app .library-hero .breadcrumb span { color: rgba(174, 182, 196, 0.55); }
+.clean-app .library-hero h1 { background: none; color: #ffffff; -webkit-text-fill-color: #ffffff; filter: none; }
+.clean-app .library-hero h1 em { color: #ff4a4f; -webkit-text-fill-color: #ff4a4f; }
+.clean-app .library-hero h1 em::first-letter { text-transform: uppercase; }
+.clean-app .library-hero p { color: #b3bac7; }
+.clean-app .library-hero .library-stat { align-self: flex-end; margin-bottom: 6px; padding: 6px 0 6px 52px; border-left: 1px solid rgba(255, 255, 255, 0.16); color: #ffffff; }
+.clean-app .library-hero .library-stat b { color: #ffffff; font-weight: 700; }
+.clean-app .library-hero .library-stat span { color: #aeb6c4; }
+.library-hero-gears { --hg-u: 1.5px; position: absolute; z-index: 0; top: 36px; right: 6.5%; width: 0; height: 0; pointer-events: none; }
+.library-hero-gears .hd-gear { opacity: 1; transition: none; will-change: transform; transform: rotate(var(--phase)); }
+.library-hero-gears .hd-gear svg { fill: #b6c0d1; opacity: 0.3; filter: blur(0.5px); }
+@keyframes hero-gear-spin { from { transform: rotate(var(--phase)); } to { transform: rotate(calc(var(--phase) + 360deg)); } }
+@media (prefers-reduced-motion: no-preference) {
+  .library-hero-gears .hd-gear { animation: hero-gear-spin var(--period) linear infinite var(--dir); }
+}
+@media (max-width: 760px) { .library-hero-gears { --hg-u: 0.9px; right: 2%; } .clean-app .library-hero .library-stat { padding-left: 0; border-left: 0; } }
 
 /* ------------------------------------------------------------------ */
 /* Painéis de vidro                                                     */
