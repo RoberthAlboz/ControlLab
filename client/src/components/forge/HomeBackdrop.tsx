@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { type CSSProperties, useEffect, useRef } from "react";
 import { buildTrain, deg, type Gear } from "@/lib/gears";
 
 /**
@@ -8,9 +8,12 @@ import { buildTrain, deg, type Gear } from "@/lib/gears";
  */
 const MODULE = 10;
 const TURN = Math.PI * 0.02; // rad da engrenagem principal do topo ao fim da página
-// O Início e os Módulos têm a rolagem original, com voltas completas; as demais telas giram quase imperceptivelmente.
-const TURN_BY_SCREEN: Record<string, number> = { dashboard: Math.PI * 1.2, library: Math.PI * 1.2 };
+// O Início mantém a rolagem original, com voltas completas; as demais telas giram quase imperceptivelmente.
+const TURN_BY_SCREEN: Record<string, number> = { dashboard: Math.PI * 1.2 };
 const MIN_SCROLL = 40;
+// Telas em que as engrenagens giram sozinhas, devagar e sem parar (CSS), em vez de acompanhar a rolagem.
+const SPIN = new Set(["library"]);
+const SPIN_PERIOD = 120; // segundos por volta da engrenagem principal
 const GLOW_REST = 0.12;
 
 type Reveal = { gear: Gear; from: number; to: number };
@@ -36,8 +39,11 @@ const DASHBOARD = [
 /** A mesma linguagem do Início, com uma composição própria em cada tela. */
 const SCENES: Record<string, Group[]> = {
   dashboard: DASHBOARD,
-  // Módulos usa a mesma composição do Início.
-  library: DASHBOARD,
+  // Pequenas, no pé da página (uma no canto, outras na borda de baixo) e só surgem quando a página é rolada.
+  library: [
+    group("is-corner", [{ teeth: 12 }], [[0.1, 0.4]]),
+    group("is-floor", [{ teeth: 18 }, { teeth: 10, parent: 0, angle: -40 }], [[0.2, 0.55], [0.35, 0.7]]),
+  ],
   notes: [group("is-right", [{ teeth: 24 }, { teeth: 12, parent: 0, angle: 140 }], [[-1, 0], [0.3, 0.8]])],
   reader: [
     group("is-right", [{ teeth: 44 }, { teeth: 12, parent: 0, angle: 160 }], [[-1, 0], [0.2, 0.6]]),
@@ -66,6 +72,7 @@ export default function HomeBackdrop({ screen = "dashboard" }: { screen?: string
   const glowRef = useRef<HTMLElement>(null);
   const gearRefs = useRef<(HTMLElement | null)[]>([]);
   const groups = SCENES[screen] ?? DASHBOARD;
+  const spin = SPIN.has(screen);
   const turnRange = TURN_BY_SCREEN[screen] ?? TURN;
 
   useEffect(() => {
@@ -77,7 +84,7 @@ export default function HomeBackdrop({ screen = "dashboard" }: { screen?: string
       const root = document.documentElement;
       const range = root.scrollHeight - root.clientHeight;
       const still = motion.matches || range < MIN_SCROLL;
-      const progress = still ? 1 : clamp01(root.scrollTop / range);
+      const progress = still ? (spin ? 0 : 1) : clamp01(root.scrollTop / range);
       if (glowRef.current) {
         glowRef.current.style.opacity = String(GLOW_REST + (1 - GLOW_REST) * progress);
       }
@@ -85,6 +92,7 @@ export default function HomeBackdrop({ screen = "dashboard" }: { screen?: string
         const element = gearRefs.current[index];
         if (!element) return;
         element.style.opacity = String(clamp01((progress - from) / (to - from)));
+        if (spin) return;
         const turn = motion.matches ? 0 : progress * turnRange * gear.ratio;
         element.style.transform = `rotate(${deg(gear.phase + turn)}deg)`;
       });
@@ -106,11 +114,11 @@ export default function HomeBackdrop({ screen = "dashboard" }: { screen?: string
       motion.removeEventListener("change", schedule);
       observer.disconnect();
     };
-  }, [groups, turnRange]);
+  }, [groups, spin, turnRange]);
 
   let index = -1;
   return (
-    <div className="hd-backdrop" aria-hidden="true">
+    <div className={`hd-backdrop${spin ? " is-spin" : ""}`} aria-hidden="true">
       <i className="hd-backdrop-glow" ref={glowRef} />
       {groups.map(entry => (
         <div className={`hd-gears ${entry.side}`} key={entry.side}>
@@ -130,6 +138,13 @@ export default function HomeBackdrop({ screen = "dashboard" }: { screen?: string
                   top: `calc(${(gear.y - radius).toFixed(2)} * var(--hd-u))`,
                   width: `calc(${radius * 2} * var(--hd-u))`,
                   height: `calc(${radius * 2} * var(--hd-u))`,
+                  ...(spin
+                    ? ({
+                        "--phase": `${deg(gear.phase)}deg`,
+                        "--period": `${(SPIN_PERIOD / Math.abs(gear.ratio)).toFixed(1)}s`,
+                        "--dir": gear.ratio < 0 ? "reverse" : "normal",
+                      } as CSSProperties)
+                    : null),
                 }}
               >
                 <svg viewBox={`${-radius} ${-radius} ${radius * 2} ${radius * 2}`}>
