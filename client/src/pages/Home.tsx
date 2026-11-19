@@ -648,7 +648,7 @@ export default function Home({
         loggingOut={loggingOut}
       />
       <HomeBackdrop screen={view} />
-      <div className="clean-main">
+      <div className="clean-main" id="conteudo">
         <header className="clean-header">
           <div className="header-left">
             <button

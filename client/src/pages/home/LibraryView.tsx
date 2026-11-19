@@ -54,7 +54,7 @@ export function LibraryView({
             CONTROL LAB <span>/</span> MÓDULOS
           </div>
           <h1>
-            Módulos de
+            Módulos de{" "}
             <br />
             <em>ferramentaria.</em>
           </h1>
@@ -136,6 +136,7 @@ export function LibraryView({
       </span>
       {visibleModules.length > 0 ? (
         <div className="module-grid">
+          <h2 className="sr-only">Lista de módulos</h2>
           {visibleModules.map(module => (
             <ModuleCard
               key={module.id}

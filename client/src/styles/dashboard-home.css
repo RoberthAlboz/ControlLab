@@ -100,8 +100,8 @@ html.dark .clean-app[data-screen] > .clean-main > main {
 /* Menu e cabeçalho                                                    */
 /* ------------------------------------------------------------------ */
 /* Trilho sem caixas: ícones soltos sobre o fundo, um fio vertical e um círculo suave só no item ativo. */
-.clean-app[data-screen] .cl-nav { --nav-bg: transparent; --nav-line: rgba(142, 7, 7, 0.12); --nav-hover: transparent; --nav-soft: rgba(142, 7, 7, 0.08); --nav-muted: #6b5d5d; --nav-ring-track: rgba(196, 8, 12, 0.2); --nav-icon: #3a2f2f; --nav-icon-hover: rgba(196, 8, 12, 0.07); --nav-icon-active: rgba(196, 8, 12, 0.12); --nav-icon-on: #c4080c; }
-html.dark .clean-app[data-screen] .cl-nav { --nav-line: rgba(255, 240, 230, 0.1); --nav-soft: rgba(255, 240, 230, 0.09); --nav-ring-track: rgba(255, 240, 230, 0.2); --nav-icon: #d9cdc6; --nav-icon-hover: rgba(255, 240, 230, 0.08); --nav-icon-active: rgba(255, 240, 230, 0.16); --nav-icon-on: #ffffff; }
+.clean-app[data-screen] .cl-nav { --nav-bg: transparent; --nav-line: rgba(142, 7, 7, 0.12); --nav-hover: transparent; --nav-soft: rgba(142, 7, 7, 0.08); --nav-muted: #5b4f4f; --nav-ring-track: rgba(196, 8, 12, 0.2); --nav-icon: #3a2f2f; --nav-icon-hover: rgba(196, 8, 12, 0.07); --nav-icon-active: rgba(196, 8, 12, 0.12); --nav-icon-on: #c4080c; }
+html.dark .clean-app[data-screen] .cl-nav { --nav-muted: #b9aaa2; --nav-line: rgba(255, 240, 230, 0.1); --nav-soft: rgba(255, 240, 230, 0.09); --nav-ring-track: rgba(255, 240, 230, 0.2); --nav-icon: #d9cdc6; --nav-icon-hover: rgba(255, 240, 230, 0.08); --nav-icon-active: rgba(255, 240, 230, 0.16); --nav-icon-on: #ffffff; }
 .clean-app[data-screen] .cl-nav::after { background: var(--nav-line); }
 .clean-app[data-screen] .cl-nav-glow,
 .clean-app[data-screen] .cl-nav-active::before { display: none; }

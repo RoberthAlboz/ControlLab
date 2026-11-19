@@ -291,7 +291,7 @@ export function StudentDashboard({
           </div>
         </section>
       </header>
-      <aside className="student-profile-panel sp-panel">
+      <aside className="student-profile-panel sp-panel" aria-label="Perfil do aluno">
         <div className="sp-identity">
           <div
             className="sp-avatar-ring"

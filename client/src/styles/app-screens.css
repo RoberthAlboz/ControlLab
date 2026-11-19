@@ -435,3 +435,9 @@ html.dark .me-card, html.dark .me-summary { border-color: rgba(255, 240, 230, 0.
 @media (prefers-reduced-motion: reduce) {
   .clean-app :is(.fl-button, button.inventory-metric, .library-content .module-card):is(:hover, :active) { transform: none !important; }
 }
+
+/* Tipografia: títulos sem linhas órfãs, números alinhados e separador do breadcrumb legível. */
+.clean-app :is(h1, h2, h3) { text-wrap: balance; }
+.clean-app :is(.hd-stat b, .td-stat b, .student-stat-card b, .inventory-metric b, .library-stat b, .module-progress b, .sp-level-chip) { font-variant-numeric: tabular-nums; }
+.clean-app .library-hero .breadcrumb span { color: rgba(255, 255, 255, 0.78); }
+html.dark .clean-app .sp-panel .sp-level-chip { background: linear-gradient(135deg, #b00a0e, #d4121a); }
