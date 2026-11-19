@@ -124,8 +124,6 @@ html.dark .clean-app[data-screen] .cl-nav { --nav-line: rgba(255, 240, 230, 0.1)
 .clean-app[data-screen] .cl-nav-sections + .cl-nav-user { margin-top: 0; padding-top: 6px; border-radius: 26px; }
 .clean-app[data-screen] .cl-nav-avatar { width: 40px; height: 40px; border: 0; }
 @media (min-width: 861px) {
-  /* O trilho já mostra o símbolo; no cabeçalho fica só o nome. */
-  .clean-app[data-screen] .reference-brand .brand-symbol { display: none; }
   /* Ícones centralizados na altura, como um grupo só; os rótulos voltam quando o menu fica fixado. */
   .clean-app[data-screen] .cl-nav-sections::before,
   .clean-app[data-screen] .cl-nav-sections::after { flex: 1 0 0; content: ""; }
