@@ -45,7 +45,7 @@ html.dark .clean-app[data-screen]:not([data-screen="dashboard"]) .hd-backdrop-gl
 .clean-app[data-screen="library"] .hd-backdrop-glow { display: none; }
 .clean-app[data-screen="library"] .hd-gear svg { filter: blur(2px); }
 /* Engrenagens pequenas no pé da página: surgem com a rolagem e giram sozinhas. */
-.clean-app[data-screen="library"] .hd-backdrop { --hd-u: 0.05vmax; }
+.clean-app[data-screen="library"] .hd-backdrop { --hd-u: 0.065vmax; }
 .clean-app[data-screen="library"] .hd-gears.is-corner { top: auto; right: 3vw; bottom: 14vh; }
 .clean-app[data-screen="library"] .hd-gears.is-floor { top: auto; right: 34vw; bottom: -2vh; }
 .hd-backdrop.is-spin .hd-gear { transform: rotate(var(--phase)); transition: opacity 0.8s ease-out; }
