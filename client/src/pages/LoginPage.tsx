@@ -5,7 +5,7 @@ import { trpc } from "@/lib/trpc";
 import { useTheme } from "@/contexts/ThemeContext";
 import { safeRedirectPath } from "@shared/roles";
 import BootScreen from "@/components/forge/BootScreen";
-import AuthGearTrain from "@/components/forge/AuthGearTrain";
+import AuthCharacters, { type AuthMood } from "@/components/forge/AuthCharacters";
 import BrandLogo from "@/components/forge/BrandLogo";
 import ThemeSunMoon from "@/components/forge/ThemeSunMoon";
 import DevAccessDialog from "@/components/forge/DevAccessDialog";
@@ -43,6 +43,7 @@ export default function LoginPage() {
   const [failures, setFailures] = useState(0);
   const [locked, setLocked] = useState(false);
   const [devAccessOpen, setDevAccessOpen] = useState(false);
+  const [passwordFocused, setPasswordFocused] = useState(false);
   const emailRef = useRef<HTMLInputElement>(null);
   const passwordRef = useRef<HTMLInputElement>(null);
   const emailId = useId();
@@ -101,41 +102,19 @@ export default function LoginPage() {
   }
 
   const isDevelopment = infoQuery.data?.environment === "development";
+  // A cena reage ao formulário: triste com erro, de olhos fechados ao digitar a senha, feliz ao entrar.
+  const hasError = Boolean(formError || errors.email || errors.password);
+  const mood: AuthMood = locked ? "happy" : hasError ? "sad" : passwordFocused && !showPassword ? "hiding" : "idle";
 
   return (
     <div className="auth-screen">
-      <section className="auth-brand-panel" aria-hidden="true">
-        <div className="auth-brand-grid" />
-        <AuthGearTrain activity={email.length + password.length} busy={loginMutation.isPending && !locked} jolt={failures} locked={locked} />
-        <div className="auth-brand-top">
-          <BrandLogo tone="inverse" withMark />
-          <span>FERRAMENTARIA</span>
-        </div>
-        <div className="auth-brand-copy">
-          <h2>
-            Aprender o processo.
-            <br />
-            <em>Cuidar da ferramenta.</em>
-          </h2>
-          <p>Módulos guiados para alunos e, para docentes, o controle do estoque da ferramentaria no mesmo lugar.</p>
-        </div>
-        <dl className="auth-brand-spec">
-          <div>
-            <dt>Alunos</dt>
-            <dd>Módulos, etapas e progresso</dd>
-          </div>
-          <div>
-            <dt>Docentes</dt>
-            <dd>Conteúdo, turma e estoque</dd>
-          </div>
-        </dl>
+      <div className="auth-card">
+      <section className="auth-stage" aria-hidden="true">
+        <AuthCharacters mood={mood} />
       </section>
 
       <main className="auth-form-panel">
         <div className="auth-form-top">
-          <div className="auth-mobile-brand">
-            <BrandLogo size="sm" withMark />
-          </div>
           {isDevelopment && (
             <button
               type="button"
@@ -158,9 +137,9 @@ export default function LoginPage() {
         </div>
 
         <div className="auth-form-wrap">
-          <span className="eyebrow">ACESSO À PLATAFORMA</span>
-          <h1>Entrar no Control Lab</h1>
-          <p className="auth-lead">Use o e-mail e a senha cadastrados pela escola. O sistema identifica automaticamente se a conta é de aluno ou de docente.</p>
+          <BrandLogo withMark className="auth-logo" />
+          <h1>Bem-vindo de volta!</h1>
+          <p className="auth-lead">Use o e-mail e a senha cadastrados pela escola.</p>
 
           <form className="auth-form" onSubmit={submit} noValidate aria-describedby={formError ? errorId : undefined}>
             {formError && (
@@ -211,6 +190,8 @@ export default function LoginPage() {
                     if (errors.password) setErrors(current => ({ ...current, password: undefined }));
                   }}
                   onKeyUp={event => setCapsLock(event.getModifierState?.("CapsLock") ?? false)}
+                  onFocus={() => setPasswordFocused(true)}
+                  onBlur={() => setPasswordFocused(false)}
                   aria-invalid={Boolean(errors.password)}
                   aria-describedby={[errors.password ? `${passwordId}-error` : "", capsLock ? `${passwordId}-caps` : ""].filter(Boolean).join(" ") || undefined}
                   disabled={loginMutation.isPending}
@@ -261,6 +242,7 @@ export default function LoginPage() {
           </p>
         </div>
       </main>
+      </div>
 
       {isDevelopment && (
         <DevAccessDialog

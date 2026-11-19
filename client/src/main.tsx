@@ -25,6 +25,7 @@ import "./styles/workshop.css";
 import "./styles/dashboard-home.css";
 import "./styles/app-screens.css";
 import "./styles/harmony.css";
+import "./styles/login.css";
 
 const queryClient = new QueryClient({
   defaultOptions: {
