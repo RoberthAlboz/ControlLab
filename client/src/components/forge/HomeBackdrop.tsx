@@ -7,7 +7,7 @@ import { buildTrain, deg, type Gear } from "@/lib/gears";
  * Página sem rolagem ou movimento reduzido: mostra a composição final, parada.
  */
 const MODULE = 10;
-const TURN = Math.PI * 1.2; // rad da engrenagem principal do topo ao fim da página
+const TURN = Math.PI * 0.45; // rad da engrenagem principal do topo ao fim da página
 const MIN_SCROLL = 40;
 const GLOW_REST = 0.12;
 
