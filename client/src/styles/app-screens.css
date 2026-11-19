@@ -68,7 +68,7 @@ html.dark .clean-app[data-screen="library"] .hd-backdrop { background: linear-gr
 .clean-app .library-hero .breadcrumb { color: #b4b7bd; font-weight: 500; }
 .clean-app .library-hero .breadcrumb span { color: rgba(180, 183, 189, 0.55); }
 .clean-app .library-hero h1 { background: none; color: #ffffff; -webkit-text-fill-color: #ffffff; filter: none; }
-.clean-app .library-hero h1 em { background: linear-gradient(135deg, #8e0707, #c4080c); -webkit-background-clip: text; background-clip: text; color: transparent; -webkit-text-fill-color: transparent; }
+.clean-app .library-hero h1 em { background: linear-gradient(135deg, #8e0707, #c4080c); -webkit-background-clip: text; background-clip: text; color: transparent; -webkit-text-fill-color: transparent; -webkit-text-stroke: 1.5px #ffffff; paint-order: stroke fill; }
 .clean-app .library-hero h1 em::first-letter { text-transform: uppercase; }
 .clean-app .library-hero p { color: #b8bbc1; }
 .clean-app .library-hero .library-stat { align-self: flex-end; margin-bottom: 6px; padding: 6px 0 6px 52px; border-left: 1px solid rgba(255, 255, 255, 0.16); color: #ffffff; }
