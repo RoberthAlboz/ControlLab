@@ -37,10 +37,10 @@
 .hd-gear svg { display: block; width: 100%; height: 100%; fill: var(--hd-gear-fill); filter: blur(var(--hd-gear-blur, 1.5px)); opacity: var(--hd-gear-alpha); }
 /* Início: engrenagens vermelhas bem desfocadas, como no desenho original. */
 .clean-app:is([data-screen="dashboard"], [data-screen="library"], [data-screen="reader"], [data-screen="inventory"]) .hd-backdrop { --hd-gear-fill: #c4080c; --hd-gear-alpha: 0.1; --hd-gear-blur: 9px; }
-html.dark .clean-app:is([data-screen="dashboard"], [data-screen="library"], [data-screen="reader"], [data-screen="inventory"]) .hd-backdrop { --hd-gear-fill: #e0151a; --hd-gear-alpha: 0.07; }
+html.dark .clean-app:is([data-screen="dashboard"], [data-screen="library"], [data-screen="reader"], [data-screen="inventory"]) .hd-backdrop { --hd-gear-fill: #ff4d52; --hd-gear-alpha: 0.07; }
 .clean-app[data-screen="dashboard"] .hd-gear { transition: none; }
 /* Modo noturno: quase preto quente, com brasa nos cantos e no pé da página. */
-html.dark .clean-app[data-screen] { --hd-accent: linear-gradient(135deg, #a90a0c, #e0151a); background: #0e0a09; }
+html.dark .clean-app[data-screen] { --hd-accent: linear-gradient(135deg, #c4080c, #ff4d52); background: #0e0a09; }
 html.dark .hd-backdrop {
   --hd-gear-fill: #c9ccd1;
   --hd-gear-alpha: 0.09;
@@ -57,14 +57,14 @@ html.dark .hd-backdrop-glow { background: radial-gradient(70% 40% at 60% 108%, r
 
 /* Tokens em todas as telas; os modais do estoque e da administração saem em portal e não os herdam. */
 .clean-app[data-screen] > .clean-main > main {
-  --hd-card: rgba(255, 255, 255, 0.82);
+  --hd-card: #ffffff;
   --hd-glass: rgba(255, 255, 255, 0.7);
   --hd-pill: rgba(255, 255, 255, 0.78);
-  --hd-edge: rgba(255, 255, 255, 0.9);
+  --hd-edge: rgba(40, 24, 24, 0.09);
   --hd-row: rgba(255, 255, 255, 0.66);
   --hd-chip: #ffffff;
-  --hd-shadow: 0 8px 24px rgba(142, 7, 7, 0.08), 0 2px 6px rgba(142, 7, 7, 0.04);
-  --hd-track: rgba(142, 7, 7, 0.13);
+  --hd-shadow: var(--shadow-card);
+  --hd-track: rgba(40, 24, 24, 0.13);
   --hd-red-a: #8e0707;
   --hd-red-b: #c4080c;
   --fl-surface: var(--hd-card);
@@ -74,13 +74,13 @@ html.dark .hd-backdrop-glow { background: radial-gradient(70% 40% at 60% 108%, r
   background: transparent;
 }
 html.dark .clean-app[data-screen] > .clean-main > main {
-  --hd-card: rgba(24, 18, 17, 0.78);
+  --hd-card: #181211;
   --hd-glass: rgba(24, 18, 17, 0.72);
   --hd-pill: rgba(14, 10, 9, 0.62);
   --hd-edge: rgba(255, 240, 230, 0.1);
   --hd-row: rgba(255, 240, 230, 0.04);
   --hd-chip: rgba(255, 240, 230, 0.08);
-  --hd-shadow: 0 18px 44px rgba(0, 0, 0, 0.42);
+  --hd-shadow: var(--shadow-card);
   --hd-track: rgba(255, 240, 230, 0.1);
   --hd-red-a: #c4080c;
   --hd-red-b: #ff4d52;
@@ -100,7 +100,7 @@ html.dark .clean-app[data-screen] > .clean-main > main {
 /* Menu e cabeçalho                                                    */
 /* ------------------------------------------------------------------ */
 /* Trilho sem caixas: ícones soltos sobre o fundo, um fio vertical e um círculo suave só no item ativo. */
-.clean-app[data-screen] .cl-nav { --nav-bg: transparent; --nav-line: rgba(142, 7, 7, 0.12); --nav-hover: transparent; --nav-soft: rgba(142, 7, 7, 0.08); --nav-muted: #5b4f4f; --nav-ring-track: rgba(196, 8, 12, 0.2); --nav-icon: #3a2f2f; --nav-icon-hover: rgba(196, 8, 12, 0.07); --nav-icon-active: rgba(196, 8, 12, 0.12); --nav-icon-on: #c4080c; }
+.clean-app[data-screen] .cl-nav { --nav-bg: transparent; --nav-line: rgba(40, 24, 24, 0.12); --nav-hover: transparent; --nav-soft: rgba(40, 24, 24, 0.08); --nav-muted: #5b4f4f; --nav-ring-track: rgba(196, 8, 12, 0.2); --nav-icon: #3a2f2f; --nav-icon-hover: rgba(196, 8, 12, 0.07); --nav-icon-active: rgba(196, 8, 12, 0.12); --nav-icon-on: #c4080c; }
 html.dark .clean-app[data-screen] .cl-nav { --nav-muted: #b9aaa2; --nav-line: rgba(255, 240, 230, 0.1); --nav-soft: rgba(255, 240, 230, 0.09); --nav-ring-track: rgba(255, 240, 230, 0.2); --nav-icon: #d9cdc6; --nav-icon-hover: rgba(255, 240, 230, 0.08); --nav-icon-active: rgba(255, 240, 230, 0.16); --nav-icon-on: #ffffff; }
 .clean-app[data-screen] .cl-nav::after { background: var(--nav-line); }
 .clean-app[data-screen] .cl-nav-glow,
@@ -138,7 +138,7 @@ html.dark .clean-app[data-screen] .cl-nav { --nav-muted: #b9aaa2; --nav-line: rg
   .clean-app[data-screen] .cl-nav { --nav-bg: rgba(255, 255, 255, 0.94); -webkit-backdrop-filter: blur(24px); backdrop-filter: blur(24px); }
   html.dark .clean-app[data-screen] .cl-nav { --nav-bg: rgba(18, 13, 12, 0.96); }
 }
-.clean-app[data-screen] .clean-header .cl-header-icon { border-color: rgba(255, 255, 255, 0.9); border-radius: 50%; background: rgba(255, 255, 255, 0.82); box-shadow: 0 6px 16px rgba(142, 7, 7, 0.08); }
+.clean-app[data-screen] .clean-header .cl-header-icon { border-color: rgba(255, 255, 255, 0.9); border-radius: 50%; background: rgba(255, 255, 255, 0.82); box-shadow: 0 6px 16px rgba(40, 24, 24, 0.08); }
 html.dark .clean-app[data-screen] .clean-header .cl-header-icon { border-color: rgba(255, 240, 230, 0.1); background: rgba(14, 10, 9, 0.62); }
 .clean-app[data-screen] .clean-header .cl-header-icon:hover { color: var(--fl-red); }
 
@@ -148,7 +148,7 @@ html.dark .clean-app[data-screen] .clean-header .cl-header-icon { border-color: 
 .clean-app .hd-home :is(.student-stat-card, .td-stat, .hd-modules, .student-profile-panel.sp-panel, .rc-card, #ah-turmas, #ah-calendario, #td-modulos) {
   position: relative;
   border: 1px solid var(--hd-edge) !important;
-  border-radius: 22px;
+  border-radius: var(--r-card);
   background: var(--hd-card) !important;
   box-shadow: var(--hd-shadow) !important;
   -webkit-backdrop-filter: blur(18px) saturate(1.2);
@@ -163,7 +163,7 @@ html.dark .clean-app .hd-home :is(.student-stat-card, .td-stat, .hd-modules, .st
   border: 1px solid var(--hd-edge);
   border-radius: 26px;
   background: var(--hd-glass);
-  box-shadow: 0 24px 60px rgba(142, 7, 7, 0.16);
+  box-shadow: 0 24px 60px rgba(40, 24, 24, 0.16);
   -webkit-backdrop-filter: blur(22px) saturate(1.3);
   backdrop-filter: blur(22px) saturate(1.3);
 }
@@ -206,7 +206,7 @@ html.dark .clean-app .hd-home .hd-hero h1 { background: none; color: #ffffff; -w
   border: 1px solid var(--hd-edge);
   border-radius: 999px;
   background: var(--hd-pill);
-  box-shadow: 0 8px 22px rgba(142, 7, 7, 0.07);
+  box-shadow: 0 8px 22px rgba(40, 24, 24, 0.07);
 }
 .clean-app .hd-home .student-search { display: flex; width: 100%; height: 46px; align-items: center; gap: 10px; padding: 0 18px; }
 .clean-app .hd-home .student-search svg { flex: none; color: var(--fl-ink); }
@@ -235,7 +235,7 @@ html.dark .clean-app .hd-home .hd-hero-stats .period-select option { background:
 html.dark .clean-app .td.hd-home .td-nav .td-nav-count { background: rgba(255, 240, 230, 0.1); }
 
 .clean-app .td.hd-home .td-hero-actions { gap: 8px; }
-.clean-app .td.hd-home .td-btn { min-height: 42px; border: 1px solid var(--hd-edge); border-radius: 999px; background: var(--hd-pill); box-shadow: 0 8px 22px rgba(142, 7, 7, 0.07); font-weight: 500; }
+.clean-app .td.hd-home .td-btn { min-height: 42px; border: 1px solid var(--hd-edge); border-radius: 999px; background: var(--hd-pill); box-shadow: 0 8px 22px rgba(40, 24, 24, 0.07); font-weight: 500; }
 .clean-app .td.hd-home .td-btn { transition: background-color 160ms ease, box-shadow 160ms ease, transform 160ms var(--fl-ease); }
 /* forge-editorial.css zera o movimento de botões e links com !important; aqui ele volta só no Início. */
 .clean-app .td.hd-home .td-btn:hover { background: var(--hd-chip); transform: translateY(-1px) !important; }
@@ -287,7 +287,7 @@ html.dark .clean-app .td.hd-home .td-nav .td-nav-count { background: rgba(255, 2
   border: 0 !important;
   border-radius: 50%;
   background: var(--hd-chip);
-  box-shadow: 0 4px 12px rgba(142, 7, 7, 0.1);
+  box-shadow: 0 4px 12px rgba(40, 24, 24, 0.1);
   color: var(--fl-ink);
 }
 .clean-app .td.hd-home .td-stat.has-alert .td-stat-icon { background: var(--hd-accent); color: #fff6f6; }
@@ -298,7 +298,7 @@ html.dark .clean-app .td.hd-home .td-nav .td-nav-count { background: rgba(255, 2
 .clean-app .hd-home .student-stat-card > strong * { color: inherit; font-size: inherit !important; font-weight: 400 !important; }
 .clean-app .td.hd-home .td-stat strong small { margin-left: 0.15em; font-size: 0.5em !important; font-weight: 400 !important; }
 .clean-app .hd-home :is(.student-stat-card > small, .td-stat > em) { margin-top: 12px; grid-area: 4 / 1 / 5 / -1; justify-self: center; text-align: center; color: var(--fl-muted); font-size: 0.78rem !important; font-style: normal; font-weight: 400; line-height: 1.4; }
-.clean-app .td.hd-home .td-stat:hover { box-shadow: 0 22px 52px rgba(142, 7, 7, 0.16) !important; transform: translateY(-2px) !important; }
+.clean-app .td.hd-home .td-stat:hover { box-shadow: 0 22px 52px rgba(40, 24, 24, 0.16) !important; transform: translateY(-2px) !important; }
 
 /* Sem medidor: quando não há escala real para desenhar, o número ocupa o cartão sozinho. */
 .clean-app .hd-home :is(.student-stat-card, .td-stat):not(:has(.hd-meter, .hd-ticks)) { grid-template-rows: 42px 1fr auto; align-content: normal; }
@@ -332,7 +332,7 @@ html.dark .clean-app .hd-home .hd-ticks-bars i.is-on { background: linear-gradie
 .clean-app .hd-home .student-module-cards { min-height: 0; margin: 0; gap: 10px; }
 /* Até três módulos lado a lado, sem célula vazia no fim da grade. */
 .clean-app .hd-home .student-main-column .student-module-cards { grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); }
-.clean-app .hd-home .student-main-column .student-module-card { position: relative; min-height: 0; padding: 16px; border: 1px solid var(--fl-line) !important; border-radius: 18px; background: var(--hd-row) !important; box-shadow: none !important; }
+.clean-app .hd-home .student-main-column .student-module-card { position: relative; min-height: 0; padding: 16px; border: 1px solid var(--fl-line) !important; border-radius: var(--r-card); background: var(--hd-row) !important; box-shadow: none !important; }
 .clean-app .hd-home .student-main-column .student-module-card { transition: border-color 160ms ease, transform 180ms var(--fl-ease); }
 .clean-app .hd-home .student-main-column .student-module-card:hover { border-color: rgba(196, 8, 12, 0.45) !important; transform: translateY(-2px) !important; }
 .clean-app .hd-home .student-main-column .student-module-card:active { transform: scale(0.99) !important; }
@@ -341,13 +341,13 @@ html.dark .clean-app .hd-home .hd-ticks-bars i.is-on { background: linear-gradie
 .clean-app .hd-home .rc-notes { transition: transform 180ms var(--fl-ease); }
 .clean-app .hd-home .rc-notes:hover { transform: translateY(-2px) !important; }
 .clean-app .hd-home .rc-notes:active { transform: scale(0.99) !important; }
-.clean-app .hd-home .student-main-column .student-card-icon { width: 38px; height: 38px; border: 0; border-radius: 50%; background: var(--hd-chip); box-shadow: 0 4px 12px rgba(142, 7, 7, 0.1); color: var(--fl-ink); }
+.clean-app .hd-home .student-main-column .student-card-icon { width: 38px; height: 38px; border: 0; border-radius: 50%; background: var(--hd-chip); box-shadow: 0 4px 12px rgba(40, 24, 24, 0.1); color: var(--fl-ink); }
 .clean-app .hd-home .student-main-column .student-card-kind { color: var(--fl-muted); font-weight: 500; letter-spacing: 0.04em; }
 .clean-app .hd-home .student-main-column .student-card-action { padding-left: 0; color: var(--fl-red-deep); }
 .clean-app .hd-home .student-main-column .student-module-card:hover .student-card-action { padding-left: 10px; }
 .clean-app .hd-home .student-card-progress-fill { background: linear-gradient(90deg, var(--hd-red-a), var(--hd-red-b)); }
 .clean-app .hd-home .student-empty-state,
-.clean-app .hd-home .student-empty-bench { border-radius: 18px; }
+.clean-app .hd-home .student-empty-bench { border-radius: var(--r-card); }
 
 /* Cronograma em vidro */
 .clean-app .hd-home .student-main-column .student-schedule { display: flex; max-height: 520px; flex-direction: column; margin: 0; padding: 18px; overflow: auto; border-top: 1px solid var(--hd-edge); }
@@ -356,11 +356,11 @@ html.dark .clean-app .hd-home .hd-ticks-bars i.is-on { background: linear-gradie
 .clean-app .hd-home .student-schedule .student-section-heading h2 { margin-top: 2px; color: var(--fl-ink); font-size: 1.35rem !important; line-height: 1.2; }
 .clean-app .hd-home .student-main-column .student-schedule .student-section-heading button { flex: none; padding: 6px 11px; border: 1px solid var(--fl-line); border-radius: 999px; background: var(--hd-row); color: var(--fl-ink); }
 .clean-app .hd-home .student-main-column .schedule-row { grid-template-columns: 48px minmax(0, 1fr); gap: 8px; margin-top: 6px; border: 0; }
-.clean-app .hd-home .student-main-column .schedule-day { border-radius: 14px; background: var(--hd-row); color: var(--fl-muted); }
+.clean-app .hd-home .student-main-column .schedule-day { border-radius: var(--r-card); background: var(--hd-row); color: var(--fl-muted); }
 .clean-app .hd-home .student-main-column .schedule-day strong { color: var(--fl-ink); font: 400 1.1rem/1.1 var(--fl-body); }
 .clean-app .hd-home .student-main-column .schedule-line::before { display: none; }
 .clean-app .hd-home .student-main-column .schedule-line { padding: 0; border: 0; }
-.clean-app .hd-home .student-main-column .schedule-block { border: 0; border-radius: 14px; background: var(--hd-row) !important; color: var(--fl-ink); }
+.clean-app .hd-home .student-main-column .schedule-block { border: 0; border-radius: var(--r-card); background: var(--hd-row) !important; color: var(--fl-ink); }
 .clean-app .hd-home .student-main-column .schedule-block:hover { box-shadow: 0 0 0 1px rgba(196, 8, 12, 0.45); transform: none; }
 .clean-app .hd-home .student-main-column .schedule-block :is(b, svg) { color: var(--fl-ink); font-weight: 500; }
 .clean-app .hd-home .student-main-column .schedule-block small { color: var(--fl-muted); }
@@ -389,7 +389,7 @@ html.dark .clean-app .hd-home .hd-ticks-bars i.is-on { background: linear-gradie
 /* Coluna lateral */
 .clean-app .hd-home .rc-card { overflow: hidden; }
 .clean-app .hd-home .rc-head h2 { color: var(--fl-ink); font-size: 1.15rem !important; }.clean-app .hd-home .rc-notes { align-content: start; }
-.clean-app .hd-home .rc-notes-icon { width: 42px; height: 42px; border: 0; border-radius: 50%; background: var(--hd-chip); box-shadow: 0 4px 12px rgba(142, 7, 7, 0.1); color: var(--fl-ink); }
+.clean-app .hd-home .rc-notes-icon { width: 42px; height: 42px; border: 0; border-radius: 50%; background: var(--hd-chip); box-shadow: 0 4px 12px rgba(40, 24, 24, 0.1); color: var(--fl-ink); }
 .clean-app .hd-home .rc-notes-go { background: transparent; color: var(--fl-ink); }
 .clean-app .hd-home .rc-notes:hover .rc-notes-go { background: transparent; color: var(--fl-red); }
 .clean-app .hd-home .rc-notes::after { display: none; }
@@ -400,22 +400,22 @@ html.dark .clean-app .hd-home .hd-ticks-bars i.is-on { background: linear-gradie
 .clean-app .td.hd-home .td-todo .eyebrow { color: var(--fl-red); font-size: 0.75rem !important; font-weight: 500; letter-spacing: 0.08em; }
 .clean-app .td.hd-home .td-todo h2 { margin-top: 2px; font-size: 1.35rem !important; }
 .clean-app .td.hd-home .td-todo ul { gap: 6px; }
-.clean-app .td.hd-home .td-todo-item { grid-template-columns: 34px minmax(0, 1fr) auto; gap: 10px; padding: 9px 12px 9px 9px; border: 0; border-radius: 16px; background: var(--hd-row); }
+.clean-app .td.hd-home .td-todo-item { grid-template-columns: 34px minmax(0, 1fr) auto; gap: 10px; padding: 9px 12px 9px 9px; border: 0; border-radius: var(--r-card); background: var(--hd-row); }
 .clean-app .td.hd-home .td-todo-item:hover { box-shadow: 0 0 0 1px rgba(196, 8, 12, 0.45); }
 .clean-app .td.hd-home .td-todo-icon { width: 34px; height: 34px; border-radius: 50%; }
 .clean-app .td.hd-home .td-todo-copy strong { color: var(--fl-ink); font: 500 0.86rem/1.25 var(--fl-body); white-space: normal; }
 .clean-app .td.hd-home .td-todo-copy em { font-size: 0.75rem; font-style: normal; font-weight: 400; }
 .clean-app .td.hd-home .td-todo-action { font-size: 0.76rem; font-weight: 600; }
-.clean-app .td.hd-home .td-empty { border-radius: 16px; }
+.clean-app .td.hd-home .td-empty { border-radius: var(--r-card); }
 
 /* Seções abaixo da grade */
 .clean-app .td.hd-home .td-section { margin: 0; }
 .clean-app .td.hd-home :is(#ah-turmas, #ah-calendario, #td-modulos) { padding: 20px; }
 .clean-app .td.hd-home :is(.td-section-head, #ah-calendario) h2 { color: var(--fl-ink); font-size: 1.35rem !important; line-height: 1.2; }
 .clean-app .td.hd-home :is(#ah-turmas, #ah-calendario, #td-modulos) .eyebrow { color: var(--fl-red) !important; font-size: 0.75rem !important; font-weight: 500; letter-spacing: 0.08em; }
-.clean-app .td.hd-home #ah-turmas .fl-table-wrap { overflow: auto; border-radius: 14px; }
+.clean-app .td.hd-home #ah-turmas .fl-table-wrap { overflow: auto; border-radius: var(--r-card); }
 /* Sem backdrop-filter: estes painéis contêm modais fixos, que ficariam presos dentro deles. */
-.clean-app .td.hd-home :is(.teacher-analytics, .teacher-supervision, .teacher-badge-manager, .schedule-manager) { margin: 0 0 10px; border-color: var(--hd-edge) !important; border-radius: 22px; background: var(--hd-card); box-shadow: var(--hd-shadow); }
+.clean-app .td.hd-home :is(.teacher-analytics, .teacher-supervision, .teacher-badge-manager, .schedule-manager) { margin: 0 0 10px; border-color: var(--hd-edge) !important; border-radius: var(--r-card); background: var(--hd-card); box-shadow: var(--hd-shadow); }
 .clean-app .td.hd-home #ah-calendario > * { margin: 0; padding: 0; border: 0 !important; background: transparent; box-shadow: none; }
 .clean-app .td.hd-home .teacher-data-status:not(:empty) { width: fit-content; padding: 8px 16px; border: 1px solid var(--hd-edge); border-radius: 999px; background: var(--hd-card); }
 
@@ -535,7 +535,7 @@ html.dark .clean-app .hd-home :is(.teacher-modal, .calendar-modal, .tp-modal) { 
   .clean-app .student-dashboard.hd-home > *,
   .clean-app .hd-home :is(.hd-hero-copy > div, .student-top-actions, .hd-hero-stats .period-select, .student-right-column > *, .hd-modules, .student-main-column > .student-schedule) { grid-area: auto / 1 / auto / -1 !important; margin: 0; }
   .clean-app .hd-home .student-tabs { flex-wrap: wrap; gap: 8px; }
-  .clean-app .hd-home .student-tabs .student-tab-filters { width: 100%; flex-wrap: wrap; justify-content: center; border-radius: 24px; }
+  .clean-app .hd-home .student-tabs .student-tab-filters { width: 100%; flex-wrap: wrap; justify-content: center; border-radius: var(--r-card); }
   .clean-app .hd-home .student-tabs .student-tab-filters button { padding: 7px 10px; }
   /* Mesma leitura de sempre: indicadores, módulos e cronograma antes do perfil. */
   .clean-app .hd-home .hd-modules { order: 1; }
@@ -545,7 +545,7 @@ html.dark .clean-app .hd-home :is(.teacher-modal, .calendar-modal, .tp-modal) { 
   .clean-app .hd-home .hd-hero h1 { max-width: none; }
   .clean-app .hd-home .hd-hero p { max-width: none; }
   .clean-app .hd-home .student-main-column .student-module-cards { grid-template-columns: minmax(0, 1fr); }
-  .clean-app .td.hd-home .td-nav { width: 100%; border-radius: 24px; flex-wrap: wrap; justify-content: center; }
+  .clean-app .td.hd-home .td-nav { width: 100%; border-radius: var(--r-card); flex-wrap: wrap; justify-content: center; }
   .clean-app .td.hd-home .td-todo-item { grid-template-columns: 34px minmax(0, 1fr); }
   .clean-app .td.hd-home .td-todo-action { grid-column: 2; }
 }

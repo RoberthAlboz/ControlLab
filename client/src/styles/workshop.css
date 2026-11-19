@@ -51,7 +51,7 @@ html.dark .tool-glyph-body path:not(.shadow-board-detail) { stroke: #1b1d1f; }
 
 .inventory-item-cell { display: flex; align-items: center; gap: 12px; min-width: 0; }
 .inventory-item-cell > div { min-width: 0; }
-.inventory-item-glyph { flex: none; width: 34px; height: 46px; padding: 3px 0; border: 1px solid var(--fl-line); border-radius: 6px; background: var(--fl-surface-2); }
+.inventory-item-glyph { flex: none; width: 34px; height: 46px; padding: 3px 0; border: 1px solid var(--fl-line); border-radius: var(--r-ctl); background: var(--fl-surface-2); }
 .inventory-detail-head { display: flex; flex-wrap: wrap; align-items: stretch; gap: 14px; }
 .inventory-detail-head .fl-facts { min-width: min(100%, 300px); }
 
@@ -96,7 +96,7 @@ html.dark .inventory-view-toggle button.is-selected { background: var(--fl-red-w
 .icon-picker { margin: 0; padding: 0; border: 0; }
 .icon-picker legend { margin-bottom: 6px; padding: 0; color: var(--fl-ink-soft); font: 600 0.8125rem/1.3 var(--fl-body); }
 .icon-picker-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(78px, 1fr)); gap: 6px; }
-.icon-picker-option { display: grid; justify-items: center; gap: 4px; padding: 8px 4px 6px; border: 1px solid var(--fl-line); border-radius: 8px; background: transparent; color: var(--fl-muted); font-size: 0.75rem; font-weight: 600; line-height: 1.2; text-align: center; cursor: pointer; }
+.icon-picker-option { display: grid; justify-items: center; gap: 4px; padding: 8px 4px 6px; border: 1px solid var(--fl-line); border-radius: var(--r-ctl); background: transparent; color: var(--fl-muted); font-size: 0.75rem; font-weight: 600; line-height: 1.2; text-align: center; cursor: pointer; }
 .icon-picker-option .tool-glyph { width: 30px; height: 61px; }
 .icon-picker-option:hover { border-color: var(--fl-red); color: var(--fl-ink); }
 .icon-picker-option:focus-visible { outline: 2px solid rgba(var(--fl-red-rgb), 0.72); outline-offset: 2px; }
@@ -124,7 +124,7 @@ html.dark :is(.shadow-board-summary, .shadow-station, .shadow-detail) { --st-com
 .shadow-chip.is-active { border-color: var(--chip, var(--fl-ink)); background: color-mix(in srgb, var(--chip, var(--fl-ink)) 12%, var(--fl-surface)); color: var(--fl-ink); box-shadow: inset 0 0 0 1px var(--chip, var(--fl-ink)); }
 .shadow-chip:disabled { opacity: 0.45; cursor: default; }
 .shadow-chip:focus-visible { outline: 2px solid var(--fl-red); outline-offset: 2px; }
-.clean-app .shadow-board-none { margin: 0; padding: 22px; border: 1px dashed var(--fl-line-strong); border-radius: 10px; text-align: center; }
+.clean-app .shadow-board-none { margin: 0; padding: 22px; border: 1px dashed var(--fl-line-strong); border-radius: var(--r-ctl); text-align: center; }
 
 .shadow-board {
   --peg: rgba(0, 0, 0, 0.16);
@@ -133,7 +133,7 @@ html.dark :is(.shadow-board-summary, .shadow-station, .shadow-detail) { --st-com
   gap: 18px 14px;
   padding: 22px 18px 18px;
   border: 1px solid var(--fl-line-strong);
-  border-radius: 10px;
+  border-radius: var(--r-ctl);
   background-color: var(--fl-surface-2);
   background-image: radial-gradient(circle, var(--peg) 1.6px, transparent 2.2px);
   background-size: 22px 22px;
@@ -142,7 +142,7 @@ html.dark :is(.shadow-board-summary, .shadow-station, .shadow-detail) { --st-com
 html.dark .shadow-board { --peg: rgba(0, 0, 0, 0.5); box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.04); }
 
 .shadow-station { display: grid; justify-items: center; gap: 6px; min-width: 0; }
-.shadow-station-hook { display: grid; width: 100%; padding: 0; border: 0; border-radius: 8px; background: transparent; cursor: pointer; }
+.shadow-station-hook { display: grid; width: 100%; padding: 0; border: 0; border-radius: var(--r-ctl); background: transparent; cursor: pointer; }
 .shadow-station-hook:focus-visible { outline: 2px solid var(--fl-red); outline-offset: 2px; }
 .shadow-station-hook svg { display: block; width: 64px; height: 130px; margin: 0 auto; overflow: visible; }
 
@@ -220,17 +220,17 @@ html.dark .clean-app .shadow-station:is(.is-overdue, .is-maintenance) .shadow-st
 .shadow-station.is-selected .shadow-station-hook { background: color-mix(in srgb, var(--st) 12%, transparent); box-shadow: inset 0 0 0 2px var(--st); }
 
 /* Detalhe da ferramenta escolhida: quem está com cada unidade */
-.shadow-detail { display: grid; gap: 12px; padding: 16px 18px; border: 1px solid var(--fl-line-strong); border-left: 5px solid var(--st); border-radius: 10px; background: var(--fl-surface); }
+.shadow-detail { display: grid; gap: 12px; padding: 16px 18px; border: 1px solid var(--fl-line-strong); border-left: 5px solid var(--st); border-radius: var(--r-ctl); background: var(--fl-surface); }
 .shadow-detail header { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
 .shadow-detail header > div { display: grid; gap: 3px; min-width: 0; }
 .clean-app .shadow-detail header small { color: var(--fl-muted); font-size: 0.75rem !important; }
 .shadow-detail header strong { color: var(--fl-ink); font: 700 1rem/1.3 var(--fl-body); }
 .shadow-detail-state { display: inline-flex; align-items: center; gap: 6px; color: var(--fl-ink-soft); font-size: 0.82rem; font-weight: 600; }
 .shadow-detail-state i { width: 10px; height: 10px; border-radius: 50%; background: var(--st); }
-.shadow-detail-close { display: grid; place-items: center; flex: none; width: 34px; height: 34px; border: 0; border-radius: 8px; background: transparent; color: var(--fl-muted); cursor: pointer; }
+.shadow-detail-close { display: grid; place-items: center; flex: none; width: 34px; height: 34px; border: 0; border-radius: var(--r-ctl); background: transparent; color: var(--fl-muted); cursor: pointer; }
 .shadow-detail-close:hover { background: var(--fl-surface-2); color: var(--fl-ink); }
 .shadow-detail-loans { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
-.shadow-detail-loans li { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 14px; padding: 10px 12px; border: 1px solid var(--fl-line); border-radius: 8px; }
+.shadow-detail-loans li { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 14px; padding: 10px 12px; border: 1px solid var(--fl-line); border-radius: var(--r-ctl); }
 .shadow-detail-loans li.is-overdue { border-color: var(--fl-red); background: color-mix(in srgb, var(--fl-red) 7%, transparent); }
 .shadow-detail-loans li > div { display: grid; gap: 2px; min-width: 0; }
 .shadow-detail-loans strong { color: var(--fl-ink); font-size: 0.9rem; }
@@ -402,7 +402,7 @@ html.dark .stamp-plate-bolt { fill: #3c4246; stroke: #2c3033; }
 /* ------------------------------------------------------------------ */
 /* Peça usinada (lista de etapas)                                      */
 /* ------------------------------------------------------------------ */
-.machined-part { display: grid; gap: 6px; margin: 0 2px; padding: 10px 10px 8px; border: 1px solid var(--fl-line); border-radius: 16px; background: var(--hd-row, var(--fl-paper)); }
+.machined-part { display: grid; gap: 6px; margin: 0 2px; padding: 10px 10px 8px; border: 1px solid var(--fl-line); border-radius: var(--r-card); background: var(--hd-row, var(--fl-paper)); }
 .machined-part svg { display: block; width: 100%; height: auto; overflow: visible; }
 .machined-part figcaption { display: flex; align-items: baseline; justify-content: space-between; padding: 0 2px; }
 .clean-app .machined-part figcaption span { display: inline-flex; align-items: center; gap: 5px; color: var(--fl-red-deep); font-size: 0.75rem !important; font-weight: 700; letter-spacing: 0.12em; }

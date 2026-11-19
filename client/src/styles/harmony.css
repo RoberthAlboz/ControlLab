@@ -1,0 +1,21 @@
+/* Harmonia visual — camada final. Um destaque (vermelho), uma superfície (cartão claro com linha fina),
+   uma escala de cantos e um ritmo de espaçamento. Só apresentação; nada muda no funcionamento. */
+
+/* Botões e campos seguem a mesma linguagem das abas e filtros: pílula para ações, 10 px para campos. */
+.clean-app :is(.fl-button, .new-module-button, .notes-new-button, .edit-module-button, .back-library) { border-radius: 999px; }
+
+/* Capas dos módulos: uma só cor quente e discreta, em vez de rosa, bege e azul por módulo. */
+.clean-app .library-content .module-cover:not([style*="url("]) { background: var(--fl-red-wash) !important; }
+html.dark .clean-app .library-content .module-cover:not([style*="url("]) { background: #2b2322 !important; }
+
+/* O caminho "Control Lab / Módulos" repete o menu lateral; o título já diz onde a pessoa está. */
+.clean-app .library-hero .breadcrumb { display: none; }
+
+/* Ritmo de espaçamento: 8, 16, 24, 40. */
+.clean-app .library-toolbar { margin: var(--sp-3) 0; gap: var(--sp-2); }
+.clean-app .library-content .module-grid { gap: var(--sp-3); }
+.clean-app .hd-home :is(.student-stat-grid, .td-summary) { gap: var(--sp-2); }
+.clean-app .td.hd-home :is(.teacher-analytics, .teacher-supervision, .teacher-badge-manager, .schedule-manager) { margin-bottom: var(--sp-2); }
+
+/* Cartões: sombra única e leve; o vidro fica só no banner. */
+.clean-app .module-card, .clean-app .hd-home :is(.td-stat, .student-module-card) { box-shadow: var(--shadow-card); }

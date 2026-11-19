@@ -23,9 +23,9 @@ html.dark .clean-app .library-hero h1 em { color: #ff8a8d; }
 html.dark .clean-app .library-hero .breadcrumb { color: #ffb79f; }
 html.dark .clean-app .small-icon-button.danger { border-color: rgba(255, 77, 82, 0.4); background: rgba(255, 77, 82, 0.1); color: #ff8a8d; }
 /* Botão principal e dia ativo com o mesmo degradê do Início; texto branco com contraste AA. */
-html.dark .fl-button-primary { border-color: transparent; background: linear-gradient(135deg, #a90a0c, #e0151a); color: #ffffff; }
-html.dark .fl-button-primary:not(:disabled):hover { border-color: transparent; background: linear-gradient(135deg, #a90a0c, #e0151a); color: #ffffff; filter: brightness(1.1); }
-html.dark .nt-day.is-active { background: linear-gradient(135deg, #a90a0c, #e0151a); box-shadow: 0 10px 22px rgba(0, 0, 0, 0.4); }
+html.dark .fl-button-primary { border-color: transparent; background: #c4080c; color: #ffffff; }
+html.dark .fl-button-primary:not(:disabled):hover { border-color: transparent; background: #c4080c; color: #ffffff; filter: brightness(1.1); }
+html.dark .nt-day.is-active { background: #c4080c; box-shadow: 0 10px 22px rgba(0, 0, 0, 0.4); }
 
 /* Barras de rolagem — Chrome, Edge, Safari */
 ::-webkit-scrollbar { width: 12px; height: 12px; }

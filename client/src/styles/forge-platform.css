@@ -24,7 +24,16 @@
   --fl-info-wash: #e7eef7;
   --fl-overlay: rgba(27, 25, 23, 0.46);
   --fl-shadow: 0 24px 60px rgba(29, 24, 21, 0.18);
-  --fl-radius: 4px;
+  --fl-radius: 10px;
+  /* Escala única: cantos, sombra de cartão e ritmo de espaçamento. */
+  --r-ctl: 10px;
+  --r-card: 18px;
+  --shadow-card: 0 1px 2px rgba(40, 24, 24, 0.05), 0 8px 24px rgba(40, 24, 24, 0.06);
+  --sp-1: 8px;
+  --sp-2: 16px;
+  --sp-3: 24px;
+  --sp-4: 40px;
+  --sp-5: 64px;
   --fl-display: Sifonn, "League Spartan", Gotham, Montserrat, system-ui, sans-serif;
   --fl-script: Authenia, "Mr Dafoe", cursive;
   --fl-body: Gotham, Montserrat, system-ui, sans-serif;
@@ -44,7 +53,7 @@ html.dark {
   --fl-red: #ff4d52;
   --fl-red-deep: #ff8a8d;
   --fl-red-wash: #2e1416;
-  --fl-red-rgb: 255, 106, 61;
+  --fl-red-rgb: 255, 77, 82;
   --fl-ok: #82c7a3;
   --fl-ok-wash: #1d3127;
   --fl-warn: #e6b65e;
@@ -53,6 +62,7 @@ html.dark {
   --fl-info-wash: #1e293a;
   --fl-overlay: rgba(0, 0, 0, 0.6);
   --fl-shadow: 0 24px 60px rgba(0, 0, 0, 0.5);
+  --shadow-card: 0 12px 32px rgba(0, 0, 0, 0.4);
 }
 
 .sr-only {

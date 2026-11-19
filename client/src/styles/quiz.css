@@ -1,9 +1,9 @@
 /* Mini-quiz das etapas: editor docente, painel no leitor e métricas da turma. */
 
 /* --- Editor (dentro de .me-step-body) --- */
-.quiz-editor-add { display: inline-flex; align-items: center; gap: 7px; justify-self: start; min-height: 36px; padding: 0 14px; border: 1.5px dashed var(--me-line); border-radius: 8px; background: transparent; color: var(--me-muted); font: 600 .82rem Gotham, Montserrat, sans-serif; cursor: pointer; }
+.quiz-editor-add { display: inline-flex; align-items: center; gap: 7px; justify-self: start; min-height: 36px; padding: 0 14px; border: 1.5px dashed var(--me-line); border-radius: var(--r-ctl); background: transparent; color: var(--me-muted); font: 600 .82rem Gotham, Montserrat, sans-serif; cursor: pointer; }
 .quiz-editor-add:hover { border-color: var(--me-red); background: var(--me-red-wash); color: var(--me-red); }
-.quiz-editor { display: grid; gap: 10px; margin: 0; padding: 14px; border: 1px solid var(--me-line); border-radius: 10px; background: var(--me-bg); }
+.quiz-editor { display: grid; gap: 10px; margin: 0; padding: 14px; border: 1px solid var(--me-line); border-radius: var(--r-ctl); background: var(--me-bg); }
 .quiz-editor legend { display: inline-flex; align-items: center; gap: 6px; padding: 0 6px; color: var(--me-ink); font: 700 .82rem Gotham, Montserrat, sans-serif; }
 .quiz-editor-hint { margin: 0; color: var(--me-muted); font-size: .78rem; line-height: 1.45; }
 .quiz-editor textarea.me-input { min-height: 64px; }
@@ -11,21 +11,21 @@
 .quiz-editor-options li { display: flex; align-items: center; gap: 8px; }
 .quiz-editor-options li .me-input { flex: 1; min-width: 0; }
 .quiz-editor-options li.is-correct .me-input { border-color: #2f8a57; box-shadow: 0 0 0 2px rgba(47, 138, 87, .15); }
-.quiz-editor-correct { display: grid; place-items: center; flex: none; width: 34px; height: 34px; border-radius: 8px; cursor: pointer; }
+.quiz-editor-correct { display: grid; place-items: center; flex: none; width: 34px; height: 34px; border-radius: var(--r-ctl); cursor: pointer; }
 .quiz-editor-correct input { width: 18px; height: 18px; margin: 0; accent-color: #2f8a57; cursor: pointer; }
 .quiz-editor-more, .quiz-editor-remove { display: inline-flex; align-items: center; gap: 5px; justify-self: start; min-height: 32px; }
 .quiz-editor-remove { color: var(--me-muted); }
 
 /* --- Leitor (aluno e pré-visualização docente) --- */
-.step-quiz { display: grid; gap: 14px; margin: 18px 0 4px; padding: 18px; border: 1px solid var(--theme-border, #e5e6e8); border-left: 4px solid var(--forge-red); border-radius: 12px; background: var(--theme-surface, #fff); }
+.step-quiz { display: grid; gap: 14px; margin: 18px 0 4px; padding: 18px; border: 1px solid var(--theme-border, #e5e6e8); border-left: 4px solid var(--forge-red); border-radius: var(--r-ctl); background: var(--theme-surface, #fff); }
 .step-quiz.is-solved { border-left-color: #2f8a57; }
 .step-quiz-head { display: flex; align-items: flex-start; gap: 12px; }
-.step-quiz-icon { display: grid; place-items: center; flex: none; width: 34px; height: 34px; border-radius: 10px; background: var(--forge-red-wash); color: var(--forge-red); }
+.step-quiz-icon { display: grid; place-items: center; flex: none; width: 34px; height: 34px; border-radius: var(--r-ctl); background: var(--forge-red-wash); color: var(--forge-red); }
 .step-quiz.is-solved .step-quiz-icon { background: rgba(47, 138, 87, .14); color: #2f8a57; }
 .step-quiz-head small { display: block; margin-bottom: 4px; color: var(--theme-muted, #737980); font-size: 0.75rem; font-weight: 700; letter-spacing: .08em; }
 .step-quiz-head strong { display: block; color: var(--theme-heading, #0d1117); font-size: 1rem; line-height: 1.4; }
 .step-quiz-options { display: grid; gap: 8px; }
-.step-quiz-option { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 48px; padding: 10px 14px; border: 1.5px solid var(--theme-border, #e5e6e8); border-radius: 10px; background: var(--theme-surface-soft, #fbfbfc); color: var(--theme-text, #17191c); font: 500 .92rem/1.4 Gotham, Montserrat, sans-serif; text-align: left; cursor: pointer; transition: border-color .15s, background-color .15s; }
+.step-quiz-option { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 48px; padding: 10px 14px; border: 1.5px solid var(--theme-border, #e5e6e8); border-radius: var(--r-ctl); background: var(--theme-surface-soft, #fbfbfc); color: var(--theme-text, #17191c); font: 500 .92rem/1.4 Gotham, Montserrat, sans-serif; text-align: left; cursor: pointer; transition: border-color .15s, background-color .15s; }
 .step-quiz-option:hover:not(:disabled) { border-color: var(--forge-red); }
 .step-quiz-option:focus-visible { outline: 2px solid var(--forge-red); outline-offset: 2px; }
 .step-quiz-option:disabled { cursor: default; }
@@ -50,9 +50,9 @@ html.dark .step-quiz-option.is-correct, html.dark .step-quiz.is-solved .step-qui
 
 /* --- Métricas docentes --- */
 .quiz-insights { margin-top: 28px; }
-.quiz-insights-empty { display: flex; align-items: center; gap: 8px; margin: 0; padding: 16px; border: 1.5px dashed var(--theme-border, #e5e6e8); border-radius: 12px; color: var(--theme-muted, #737980); font-size: .88rem; }
+.quiz-insights-empty { display: flex; align-items: center; gap: 8px; margin: 0; padding: 16px; border: 1.5px dashed var(--theme-border, #e5e6e8); border-radius: var(--r-ctl); color: var(--theme-muted, #737980); font-size: .88rem; }
 .quiz-insights-list { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; }
-.quiz-insights-list li { display: grid; grid-template-columns: minmax(0, 1fr) minmax(160px, 240px); align-items: center; gap: 12px 20px; padding: 14px 16px; border: 1px solid var(--theme-border, #e5e6e8); border-radius: 12px; background: var(--theme-surface, #fff); }
+.quiz-insights-list li { display: grid; grid-template-columns: minmax(0, 1fr) minmax(160px, 240px); align-items: center; gap: 12px 20px; padding: 14px 16px; border: 1px solid var(--theme-border, #e5e6e8); border-radius: var(--r-ctl); background: var(--theme-surface, #fff); }
 .quiz-insights-list li.needs-review { border-left: 4px solid #b7791f; }
 .quiz-insights-copy { display: grid; gap: 4px; min-width: 0; }
 .quiz-insights-copy small { color: var(--theme-muted, #737980); font-size: .76rem; }

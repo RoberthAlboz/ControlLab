@@ -18,7 +18,7 @@
   --nav-ring-track: #f3e3e3;
   --nav-ring-hole: #ffffff;
   --nav-avatar-bg: #fde6e6;
-  --nav-shadow: 18px 0 50px rgba(142, 7, 7, 0.12);
+  --nav-shadow: 18px 0 50px rgba(40, 24, 24, 0.12);
   --nav-glow: rgba(196, 8, 12, 0.07);
   position: fixed;
   z-index: 40;
@@ -49,7 +49,7 @@
   right: 0;
   bottom: 0;
   width: 1px;
-  background: linear-gradient(180deg, var(--nav-line), rgba(196, 8, 12, 0.45) 35%, rgba(142, 7, 7, 0.25) 70%, var(--nav-line));
+  background: linear-gradient(180deg, var(--nav-line), rgba(196, 8, 12, 0.45) 35%, rgba(40, 24, 24, 0.25) 70%, var(--nav-line));
   content: "";
 }
 .cl-nav > :not(.cl-nav-glow) { position: relative; }
@@ -63,7 +63,7 @@ html.dark .cl-nav {
   --nav-hover: #1e1715;
   --nav-soft: #181211;
   --nav-accent: #ff4d52;
-  --nav-active-bg: linear-gradient(90deg, rgba(196, 8, 12, 0.28), rgba(142, 7, 7, 0.1) 70%, transparent);
+  --nav-active-bg: linear-gradient(90deg, rgba(196, 8, 12, 0.28), rgba(40, 24, 24, 0.1) 70%, transparent);
   --nav-ring-track: #322824;
   --nav-ring-hole: #181211;
   --nav-avatar-bg: #2e1416;
@@ -99,7 +99,7 @@ html.dark .cl-nav-avatar { color: #fff6f6; }
   padding-bottom: 6px;
   padding: 0;
   border: 1px solid rgba(196, 8, 12, 0.18);
-  border-radius: 14px;
+  border-radius: var(--r-card);
   background: var(--nav-soft);
   box-shadow: 0 8px 22px rgba(196, 8, 12, 0.12);
 }
@@ -112,7 +112,7 @@ html.dark .cl-nav-avatar { color: #fff6f6; }
   height: 34px;
   place-items: center;
   border: 1px solid var(--nav-line);
-  border-radius: 10px;
+  border-radius: var(--r-ctl);
   background: transparent;
   color: var(--nav-muted);
   cursor: pointer;
@@ -138,7 +138,7 @@ html.dark .cl-nav-avatar { color: #fff6f6; }
   gap: 10px;
   padding: 0 10px 0 0;
   border: 0;
-  border-radius: 14px;
+  border-radius: var(--r-card);
   background: transparent;
   color: var(--nav-muted);
   cursor: pointer;
@@ -153,7 +153,7 @@ html.dark .cl-nav-avatar { color: #fff6f6; }
   z-index: 0;
   inset: 0;
   border: 1px solid rgba(196, 8, 12, 0.2);
-  border-radius: 14px;
+  border-radius: var(--r-card);
   background: var(--nav-active-bg);
   box-shadow: 0 6px 18px rgba(196, 8, 12, 0.08);
 }
@@ -176,7 +176,7 @@ html.dark .cl-nav-avatar { color: #fff6f6; }
   gap: 10px;
   padding: 8px 10px 8px 0;
   border: 1px solid var(--nav-line);
-  border-radius: 16px;
+  border-radius: var(--r-card);
   background: var(--nav-soft);
   color: var(--nav-text);
   cursor: pointer;

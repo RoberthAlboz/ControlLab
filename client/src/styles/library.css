@@ -26,11 +26,11 @@
 .clean-app .library-content .module-card {
   overflow: hidden;
   border: 1px solid var(--fl-line);
-  border-radius: 16px;
+  border-radius: var(--r-card);
   background: var(--fl-surface);
   transition: transform 220ms var(--fl-ease), box-shadow 220ms ease, border-color 220ms ease;
 }
-.clean-app .library-content .module-card:hover { border-color: rgba(196, 8, 12, 0.28); box-shadow: 0 14px 32px rgba(142, 7, 7, 0.08); transform: translateY(-2px); }
+.clean-app .library-content .module-card:hover { border-color: rgba(196, 8, 12, 0.28); box-shadow: 0 14px 32px rgba(40, 24, 24, 0.08); transform: translateY(-2px); }
 
 /* Capa: só a cor do módulo, o código, o ícone e o status */
 .clean-app .library-content .module-cover {
@@ -46,7 +46,7 @@
   text-align: left;
 }
 .clean-app .library-content .module-cover-kicker { color: var(--fl-muted); font-size: 0.75rem !important; font-weight: 700; letter-spacing: 0.12em; }
-.clean-app .library-content .module-cover-icon { display: grid; width: 44px; height: 44px; place-items: center; border-radius: 12px; background: #ffffff; color: #c4080c; }
+.clean-app .library-content .module-cover-icon { display: grid; width: 44px; height: 44px; place-items: center; border-radius: var(--r-ctl); background: #ffffff; color: #c4080c; }
 .clean-app .library-content .module-cover .module-status { border-radius: 999px; font-size: 0.75rem !important; font-weight: 700; }
 .clean-app .library-content .module-cover:focus-visible { outline: 2px solid var(--fl-red); outline-offset: -4px; }
 
