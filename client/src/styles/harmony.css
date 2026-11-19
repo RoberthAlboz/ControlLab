@@ -19,3 +19,6 @@ html.dark .clean-app .library-content .module-cover:not([style*="url("]) { backg
 
 /* Cartões: sombra única e leve; o vidro fica só no banner. */
 .clean-app .module-card, .clean-app .hd-home :is(.td-stat, .student-module-card) { box-shadow: var(--shadow-card); }
+
+/* Botão de fechar dos diálogos: círculo perfeito, sem encolher no cabeçalho flex. */
+.fl-modal-header > .fl-icon-button { flex: none; width: 36px; height: 36px; border-radius: 50%; }
