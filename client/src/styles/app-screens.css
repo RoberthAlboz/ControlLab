@@ -41,6 +41,10 @@ html.dark .clean-app :is(.inventory-hero, .nt-header, .rd .reader-title, .access
 .clean-app[data-screen]:not([data-screen="dashboard"]) .hd-backdrop-glow { background: radial-gradient(85% 30% at 50% 106%, rgba(196, 8, 12, 0.3) 0%, rgba(196, 8, 12, 0.1) 55%, rgba(196, 8, 12, 0) 100%); }
 html.dark .clean-app[data-screen]:not([data-screen="dashboard"]) .hd-backdrop-glow { background: radial-gradient(70% 30% at 60% 108%, rgba(244, 89, 43, 0.26) 0%, rgba(196, 8, 12, 0.1) 55%, rgba(196, 8, 12, 0) 100%); }
 
+/* Módulos: sem brilho vermelho no pé da página e engrenagens mais desfocadas. */
+.clean-app[data-screen="library"] .hd-backdrop-glow { display: none; }
+.clean-app[data-screen="library"] .hd-gear svg { filter: blur(5px); }
+
 /* ------------------------------------------------------------------ */
 /* Painéis de vidro                                                     */
 /* ------------------------------------------------------------------ */
