@@ -41,9 +41,13 @@ html.dark .clean-app :is(.inventory-hero, .nt-header, .rd .reader-title, .access
 .clean-app[data-screen]:not([data-screen="dashboard"]) .hd-backdrop-glow { background: radial-gradient(85% 30% at 50% 106%, rgba(196, 8, 12, 0.3) 0%, rgba(196, 8, 12, 0.1) 55%, rgba(196, 8, 12, 0) 100%); }
 html.dark .clean-app[data-screen]:not([data-screen="dashboard"]) .hd-backdrop-glow { background: radial-gradient(70% 30% at 60% 108%, rgba(244, 89, 43, 0.26) 0%, rgba(196, 8, 12, 0.1) 55%, rgba(196, 8, 12, 0) 100%); }
 
-/* Módulos: sem brilho vermelho no pé da página e engrenagens mais desfocadas. */
+/* Módulos: fundo em degradê leve de branco e cinza claro, sem brilho vermelho; as engrenagens vão no banner. */
 .clean-app[data-screen="library"] .hd-backdrop-glow { display: none; }
-.clean-app[data-screen="library"] .hd-gear svg { filter: blur(5px); }
+.clean-app[data-screen="library"] .hd-backdrop { background: linear-gradient(180deg, #ffffff 0%, #f1f2f4 100%); }
+html.dark .clean-app[data-screen="library"] .hd-backdrop { background: linear-gradient(180deg, #14100f 0%, #0e0a09 100%); }
+.library-hero-gears { --hg-u: 0.8px; position: absolute; z-index: 0; top: 50%; right: 24%; width: 0; height: 0; pointer-events: none; }
+.library-hero-gears .hd-gear svg { fill: #ffffff; opacity: 0.24; filter: blur(3px); }
+@media (max-width: 760px) { .library-hero-gears { right: 8%; } }
 
 /* ------------------------------------------------------------------ */
 /* Painéis de vidro                                                     */
