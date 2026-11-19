@@ -35,3 +35,4 @@ html:not(.dark) .fl-segmented label.is-selected { border-color: var(--fl-red); b
 
 /* Seletores do estoque no celular: o texto longo termina em reticências em vez de ser cortado pela seta. */
 .clean-app .inventory-toolbar select { text-overflow: ellipsis; }
+html.dark .shadow-chip.is-active:not(.is-complete, .is-out, .is-overdue, .is-maintenance) { color: #0e0a09; }
